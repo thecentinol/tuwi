@@ -15,3 +15,10 @@ func NewClient() (*Client, error) {
 	}
 	return &Client{conn: conn}, nil
 }
+
+func (c *Client) Close() error {
+	if c.conn != nil {
+		return c.conn.Close()
+	}
+	return nil
+}
