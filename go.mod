@@ -1,4 +1,4 @@
-module tuwi
+module github.com/thecentinol/tuwi
 
 go 1.26.3
 
