@@ -149,3 +149,45 @@ func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 
 	return networks, nil
 }
+
+func GetActiveNetwork(c *Client) (*models.AccessPoint, error) {
+	var activeNetwork models.AccessPoint
+
+	devicePath, err := GetWifiDevice(c)
+	if err != nil {
+		return nil, err // NOTE: is return type correct
+	}
+	device := c.conn.Object(baseServiceName, devicePath)
+	active, err := device.GetProperty(activeAccessPoint)
+	if err != nil {
+		return nil, err
+	}
+	activePath := active.Value().(dbus.ObjectPath)
+	apObject := c.conn.Object(baseServiceName, activePath)
+
+	ssid, err := apObject.GetProperty(accessPointSsid)
+	if err != nil {
+		return nil, err
+	}
+
+	strength, err := apObject.GetProperty(accessPointStrength)
+	if err != nil {
+		return nil, err
+	}
+
+	flags, err := apObject.GetProperty(accessPointFlags)
+	if err != nil {
+		return nil, err
+	}
+
+	ssidBytes := string(ssid.Value().([]byte))
+	flagsVal := flags.Value().(uint32)
+	activeNetwork = models.AccessPoint{
+		SSID:     ssidBytes,
+		Strength: strength.Value().(uint8),
+		Secured:  flagsVal&0x00000001 != 0,
+		HasWps:   flagsVal&0x00000002 != 0,
+	}
+
+	return &activeNetwork, nil
+}
