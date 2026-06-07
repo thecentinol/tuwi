@@ -3,6 +3,7 @@ package dbus
 import (
 	"fmt"
 	"github.com/godbus/dbus/v5"
+	"github.com/thecentinol/tuwi/internal/models"
 	"log"
 	"time"
 )
@@ -80,6 +81,7 @@ func RequestScan(c *Client) error {
 	return nil
 }
 
+// this gets the raw paths for the access points
 func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
 	devicePath, err := GetWifiDevice(c)
 	if err != nil {
@@ -105,4 +107,45 @@ func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
 		return nil, err
 	}
 	return accessPoints, nil
+}
+
+// this gets the actual APs + details (ssid, strength, etc)
+func GetNetworks(c *Client) ([]models.AccessPoint, error) {
+	accessPoints, err := GetAccessPoints(c)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get access points: %v", err)
+	}
+
+	var networks []models.AccessPoint
+
+	for _, accessPointPath := range accessPoints {
+		ap := c.conn.Object(baseServiceName, accessPointPath)
+
+		ssid, err := ap.GetProperty(accessPointSsid)
+		if err != nil {
+			return nil, err
+		}
+
+		strength, err := ap.GetProperty(accessPointStrength)
+		if err != nil {
+			return nil, err
+		}
+
+		flags, err := ap.GetProperty(accessPointFlags)
+		if err != nil {
+			return nil, err
+		}
+
+		ssidBytes := string(ssid.Value().([]byte))
+		flagsVal := flags.Value().(uint32)
+		networks = append(networks, models.AccessPoint{
+			Hidden:   ssidBytes == "",
+			SSID:     ssidBytes,
+			Strength: strength.Value().(uint8),
+			Secured:  flagsVal&0x00000001 != 0,
+			HasWps:   flagsVal&0x00000002 != 0,
+		})
+	}
+
+	return networks, nil
 }
