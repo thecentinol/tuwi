@@ -6,6 +6,15 @@ const (
 
 	deviceType = baseServiceName + ".Device.DeviceType"
 
+	// settings
+	settingsBaseObjPath     = baseObjPath + "/Settings"
+	settingsBaseServiceName = baseServiceName + ".Settings"
+	listConnections         = settingsBaseServiceName + ".ListConnections"
+
+	// settings connection
+	settConnection = settingsBaseServiceName + ".Connection"
+	getSettings    = settConnection + ".GetSettings"
+
 	// wireless
 	deviceWireless    = baseServiceName + ".Device.Wireless"
 	activeAccessPoint = baseServiceName + ".Device.Wireless.ActiveAccessPoint"
