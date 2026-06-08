@@ -147,7 +147,7 @@ func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 		networks = append(networks, models.AccessPoint{
 			Hidden:   ssidBytes == "",
 			SSID:     ssidBytes,
-			BSSID:    string(bssid.Value().([]byte)),
+			BSSID:    bssid.Value().(string),
 			Strength: strength.Value().(uint8),
 			Secured:  flagsVal&0x00000001 != 0,
 			HasWps:   flagsVal&0x00000002 != 0,
