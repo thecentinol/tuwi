@@ -110,6 +110,7 @@ func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
 }
 
 // this gets the actual APs + details (ssid, strength, etc)
+// for available WiFi networks
 func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 	accessPoints, err := GetAccessPoints(c)
 	if err != nil {
@@ -122,6 +123,11 @@ func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 		ap := c.conn.Object(baseServiceName, accessPointPath)
 
 		ssid, err := ap.GetProperty(accessPointSsid)
+		if err != nil {
+			return nil, err
+		}
+
+		bssid, err := ap.GetProperty(accessPointBssid)
 		if err != nil {
 			return nil, err
 		}
@@ -141,6 +147,7 @@ func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 		networks = append(networks, models.AccessPoint{
 			Hidden:   ssidBytes == "",
 			SSID:     ssidBytes,
+			BSSID:    string(bssid.Value().([]byte)),
 			Strength: strength.Value().(uint8),
 			Secured:  flagsVal&0x00000001 != 0,
 			HasWps:   flagsVal&0x00000002 != 0,
