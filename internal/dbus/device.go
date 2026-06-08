@@ -157,6 +157,71 @@ func GetNetworks(c *Client) ([]models.AccessPoint, error) {
 	return networks, nil
 }
 
+func GetSavedNetworks(c *Client) ([]models.AccessPoint, error) {
+	settings := c.conn.Object(baseServiceName, settingsBaseObjPath)
+	call := settings.Call(listConnections, 0)
+	if call.Err != nil {
+		return nil, call.Err
+	}
+
+	var connPaths []dbus.ObjectPath
+	if err := call.Store(&connPaths); err != nil {
+		return nil, err
+	}
+
+	var savedNetworks []models.AccessPoint
+
+	// this is used for cross-referencing to get more details,
+	// about the network that we cant get from settings. Such as Strength.
+	networks, err := GetNetworks(c)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, path := range connPaths {
+		conn := c.conn.Object(baseServiceName, path)
+		pathCall := conn.Call(getSettings, 0)
+
+		// this is the response shape for calling GetSettings,
+		// as seen in ...Settings.Connection in the docs
+		var settings map[string]map[string]dbus.Variant
+		if err := pathCall.Store(&settings); err != nil {
+			return nil, err
+		}
+
+		// filter out non-WiFi connections
+		if settings["connection"]["type"].Value().(string) != "802-11-wireless" {
+			continue
+		}
+
+		// now we can get the SSID & other details
+		// NOTE: strength is not available here
+		ssid := string(settings["802-11-wireless"]["ssid"].Value().([]byte))
+		_, secured := settings["802-11-wireless-security"] // checking if key exists
+		// get the full slice of bssids to compare the
+		bssids := settings["802-11-wireless"]["seen-bssids"].Value().([]string)
+
+		var strength uint8
+		for _, network := range networks {
+			for _, bssid := range bssids {
+				if network.BSSID == bssid {
+					strength = network.Strength
+				}
+			}
+		}
+
+		savedNetworks = append(savedNetworks, models.AccessPoint{
+			Hidden:   ssid == "",
+			SSID:     ssid,
+			BSSID:    bssids[0],
+			Strength: strength,
+			Secured:  secured,
+		})
+	}
+
+	return savedNetworks, nil
+}
+
 func GetActiveNetwork(c *Client) (*models.AccessPoint, error) {
 	var activeNetwork models.AccessPoint
 
