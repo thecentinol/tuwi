@@ -41,9 +41,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "1":
-			m.focus = 1
+			m.focus = 0
 		case "2":
-			m.focus = 2
+			m.focus = 1
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -51,8 +51,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.sizeComponents()
 	}
 
-	m.savedWifiNetworks.focused = m.focus == 1
-	m.availableWifiNetworks.focused = m.focus == 2
+	m.savedWifiNetworks.focused = m.focus == 0
+	m.availableWifiNetworks.focused = m.focus == 1
 
 	return m, nil
 }
