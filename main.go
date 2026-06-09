@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
+	tea "charm.land/bubbletea/v2"
+	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/ui"
 	"log"
-	"tuwi/internal/dbus"
 )
 
 func main() {
@@ -13,21 +15,8 @@ func main() {
 	}
 	defer client.Close()
 
-	devices, err := dbus.GetDevices(client)
-	if err != nil {
-		log.Fatalf("Error fetching devices: %v", err)
-	}
-
-	fmt.Printf("\nFound %d networks:\n", len(devices))
-	for _, devs := range devices {
-		fmt.Printf("Devices: %v\n", devs)
-	}
-
-	aps, err := dbus.GetAccessPoints(client)
-	if err != nil {
-		log.Fatalf("Error fetch access points: &v", err)
-	}
-	for _, v := range aps {
-		fmt.Printf("Access Point: %v", v)
+	p := tea.NewProgram(ui.Model{Client: client})
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
 	}
 }
