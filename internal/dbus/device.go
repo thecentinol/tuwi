@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-type NetworkManager struct {
-	client *Client
-}
-
 func GetDevices(c *Client) ([]dbus.ObjectPath, error) {
 	nm := c.conn.Object(baseServiceName, baseObjPath)
 	call := nm.Call(baseServiceName+".GetDevices", 0)
