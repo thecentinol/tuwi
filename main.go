@@ -15,7 +15,7 @@ func main() {
 	}
 	defer client.Close()
 
-	p := tea.NewProgram(ui.Model{Client: client})
+	p := tea.NewProgram(ui.NewModel(client))
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
