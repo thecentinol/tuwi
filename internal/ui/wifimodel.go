@@ -20,24 +20,15 @@ type (
 	availableWifiMsg []models.AccessPoint
 )
 
-var (
-	focusedBorderStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("238"))
-
-	blurredBorderStyle = lipgloss.NewStyle().
-				Border(lipgloss.HiddenBorder())
-)
-
 func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	return w, nil
 }
 
 func (w WifiListModel) View() tea.View {
 	content := ""
-	borderColor := lipgloss.Color("238")
+	borderColor := base
 	if w.focused {
-		borderColor = lipgloss.Green
+		borderColor = focused
 	}
 
 	style := lipgloss.NewStyle().
