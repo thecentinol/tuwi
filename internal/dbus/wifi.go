@@ -229,7 +229,7 @@ func GetActiveNetwork(c *Client) (*models.AccessPoint, error) {
 
 	devicePath, err := GetWifiDevice(c)
 	if err != nil {
-		return nil, err // NOTE: is return type correct
+		return nil, err
 	}
 	device := c.conn.Object(baseServiceName, devicePath)
 	active, err := device.GetProperty(activeAccessPoint)
