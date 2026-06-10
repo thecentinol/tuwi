@@ -1,4 +1,4 @@
-package models
+package wifi
 
 type AccessPoint struct {
 	Hidden   bool
