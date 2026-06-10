@@ -9,23 +9,20 @@ import (
 )
 
 type keymap struct {
-	focus1, focus2, up, down, quit key.Binding
+	focus1, focus2, up, down, scan, quit key.Binding
 }
 
-// this will render both known and unknown wifi-networks/bt-devices
 type Model struct {
-	Client                *dbus.Client
-	width                 int
-	height                int
-	focus                 int // which component is focused/active
-	help                  help.Model
-	keymap                keymap
-	savedWifiNetworks     WifiListModel
-	availableWifiNetworks WifiListModel
+	Client *dbus.Client
+	width  int
+	height int
+	focus  int // which component is focused/active
+	help   help.Model
+	keymap keymap
+	wifi   WifiModel
 
 	// TODO: implement the following:
-	// knownBt       BtListModel
-	// availableBt   BtListModel
+	// bluetooth BtModel
 	// passwdModal   bool
 }
 
@@ -33,6 +30,9 @@ func NewModel(client *dbus.Client) Model {
 	return Model{
 		Client: client,
 		help:   help.New(),
+		wifi: WifiModel{
+			client: client,
+		},
 		keymap: keymap{
 			focus1: key.NewBinding(
 				key.WithKeys("1"),
@@ -48,6 +48,10 @@ func NewModel(client *dbus.Client) Model {
 				key.WithKeys("down", "j"),
 				key.WithHelp("↓/j", "move down"),
 			),
+			scan: key.NewBinding(
+				key.WithKeys("s"),
+				key.WithHelp("s", "scan"),
+			),
 			quit: key.NewBinding(
 				key.WithKeys("ctrl+c", "q"),
 				key.WithHelp("q", "quit"),
@@ -58,64 +62,71 @@ func NewModel(client *dbus.Client) Model {
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		fetchSavedNetworks(m.Client),
-		fetchAvailableWifiNetworks(m.Client),
+		m.wifi.Init(),
 	)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
-	case savedWifiMsg:
-		m.savedWifiNetworks.networks = msg
-		return m, nil
-	case availableWifiMsg:
-		m.availableWifiNetworks.networks = msg
-		return m, nil
+
 	case tea.KeyPressMsg:
 		switch {
+
 		case key.Matches(msg, m.keymap.focus1):
 			m.focus = 0
+
 		case key.Matches(msg, m.keymap.focus2):
 			m.focus = 1
+
 		case key.Matches(msg, m.keymap.up), key.Matches(msg, m.keymap.down):
+
 			switch m.focus {
+
 			case 0:
-				m.savedWifiNetworks, _ = m.savedWifiNetworks.Update(msg)
+				var cmd tea.Cmd
+				m.wifi.savedList, cmd = m.wifi.savedList.Update(msg)
+				cmds = append(cmds, cmd)
+
 			case 1:
-				m.availableWifiNetworks, _ = m.availableWifiNetworks.Update(msg)
+				var cmd tea.Cmd
+				m.wifi.availableList, cmd = m.wifi.availableList.Update(msg)
+				cmds = append(cmds, cmd)
 			}
+
 		case key.Matches(msg, m.keymap.quit):
 			return m, tea.Quit
 		}
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.sizeComponents()
 	}
 
-	m.savedWifiNetworks.focused = m.focus == 0
-	m.availableWifiNetworks.focused = m.focus == 1
+	m.wifi.savedList.focused = m.focus == 0
+	m.wifi.availableList.focused = m.focus == 1
 
-	return m, nil
+	var cmd tea.Cmd
+	m.wifi, cmd = m.wifi.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() tea.View {
 	help := m.help.ShortHelpView([]key.Binding{
 		m.keymap.up,
 		m.keymap.down,
+		m.keymap.scan,
 		m.keymap.quit,
 	})
-
-	top := lipgloss.JoinHorizontal(
-		lipgloss.Top,
-		m.savedWifiNetworks.View().Content,
-		m.availableWifiNetworks.View().Content,
-	)
 
 	v := tea.NewView(
 		lipgloss.JoinVertical(
 			lipgloss.Left,
-			top,
+			m.wifi.View().Content,
 			help,
 		),
 	)
@@ -127,8 +138,8 @@ func (m *Model) sizeComponents() {
 	halfWidth := m.width / 2
 	// halfHeight := m.height / 2
 
-	m.savedWifiNetworks.width = halfWidth
-	m.savedWifiNetworks.height = m.height - 2
-	m.availableWifiNetworks.width = halfWidth
-	m.availableWifiNetworks.height = m.height - 2
+	m.wifi.savedList.width = halfWidth
+	m.wifi.savedList.height = m.height - 2
+	m.wifi.availableList.width = halfWidth
+	m.wifi.availableList.height = m.height - 2
 }

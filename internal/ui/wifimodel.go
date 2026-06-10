@@ -8,58 +8,54 @@ import (
 )
 
 type (
-	WifiListModel struct {
-		width    int
-		height   int
-		focused  bool
-		networks []models.AccessPoint
-		cursor   int
+	WifiModel struct {
+		client *dbus.Client
+
+		savedList     WifiListModel
+		availableList WifiListModel
+
+		scanning bool // TODO: implement me!
 	}
 
 	savedWifiMsg     []models.AccessPoint
 	availableWifiMsg []models.AccessPoint
 )
 
-func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "up", "k":
-			if w.cursor > 0 {
-				w.cursor--
-			}
-		case "down", "j":
-			if w.cursor < len(w.networks)-1 {
-				w.cursor++
-			}
-		}
-	}
-
-	return w, nil
+func (w WifiModel) Init() tea.Cmd {
+	return tea.Batch(
+		fetchAvailableWifiNetworks(w.client),
+		fetchSavedNetworks(w.client),
+	)
 }
 
-func (w WifiListModel) View() tea.View {
-	content := ""
-	borderColor := base
-	if w.focused {
-		borderColor = focused
-	}
+func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
+	var cmds []tea.Cmd
 
-	style := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(borderColor).
-		Width(w.width).
-		Height(w.height)
+	switch msg := msg.(type) {
 
-	for i, v := range w.networks {
-		if i == w.cursor && w.focused {
-			content += focusedLine.Render(v.SSID) + "\n"
-		} else {
-			content += v.SSID + "\n"
+	case savedWifiMsg:
+		w.savedList.networks = msg
+	case availableWifiMsg:
+		w.availableList.networks = msg
+
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "s":
+			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
 		}
 	}
 
-	return tea.NewView(style.Render(content))
+	return w, tea.Batch(cmds...)
+}
+
+func (w WifiModel) View() tea.View {
+	return tea.NewView(
+		lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			w.savedList.View().Content,
+			w.availableList.View().Content,
+		),
+	)
 }
 
 func fetchSavedNetworks(c *dbus.Client) tea.Cmd {
