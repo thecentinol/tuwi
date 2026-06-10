@@ -77,6 +77,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.focus = 0
 		case key.Matches(msg, m.keymap.focus2):
 			m.focus = 1
+		case key.Matches(msg, m.keymap.up), key.Matches(msg, m.keymap.down):
+			switch m.focus {
+			case 0:
+				m.savedWifiNetworks, _ = m.savedWifiNetworks.Update(msg)
+			case 1:
+				m.availableWifiNetworks, _ = m.availableWifiNetworks.Update(msg)
+			}
 		case key.Matches(msg, m.keymap.quit):
 			return m, tea.Quit
 		}

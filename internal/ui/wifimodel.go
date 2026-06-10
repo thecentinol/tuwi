@@ -21,6 +21,20 @@ type (
 )
 
 func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "up", "k":
+			if w.cursor > 0 {
+				w.cursor--
+			}
+		case "down", "j":
+			if w.cursor < len(w.networks)-1 {
+				w.cursor++
+			}
+		}
+	}
+
 	return w, nil
 }
 
@@ -38,10 +52,10 @@ func (w WifiListModel) View() tea.View {
 		Height(w.height)
 
 	for i, v := range w.networks {
-		if i == w.cursor {
-			content += "> " + v.SSID + "\n"
+		if i == w.cursor && w.focused {
+			content += focusedLine.Render(v.SSID) + "\n"
 		} else {
-			content += "  " + v.SSID + "\n"
+			content += v.SSID + "\n"
 		}
 	}
 
