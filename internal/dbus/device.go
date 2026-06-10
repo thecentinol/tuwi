@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/godbus/dbus/v5"
 	"github.com/thecentinol/tuwi/internal/models"
-	"log"
 	"time"
 )
 
@@ -24,7 +23,7 @@ func GetDevices(c *Client) ([]dbus.ObjectPath, error) {
 func GetWifiDevice(c *Client) (dbus.ObjectPath, error) {
 	devices, err := GetDevices(c)
 	if err != nil {
-		log.Fatalf("Error fetching devices: %v", err)
+		return "", err
 	}
 
 	// finding the wifi device
