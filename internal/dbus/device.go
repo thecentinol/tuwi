@@ -60,6 +60,7 @@ func RequestScan(c *Client) error {
 
 	// channel for listening to LastScan property
 	ch := make(chan *dbus.Signal, 1)
+	// the channel does get closed in main.go
 	c.conn.Signal(ch) // register the channel to receive all signal msgs
 
 	c.conn.AddMatchSignal(
