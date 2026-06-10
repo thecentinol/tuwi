@@ -59,7 +59,6 @@ func RequestScan(c *Client) error {
 
 	// channel for listening to LastScan property
 	ch := make(chan *dbus.Signal, 1)
-	// the channel does get closed in main.go
 	c.conn.Signal(ch) // register the channel to receive all signal msgs
 
 	c.conn.AddMatchSignal(
@@ -74,6 +73,13 @@ func RequestScan(c *Client) error {
 	case <-time.After(10 * time.Second):
 		return fmt.Errorf("scan timed out")
 	}
+
+	c.conn.RemoveMatchSignal(
+		dbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
+		dbus.WithMatchMember("PropertiesChanged"),
+		dbus.WithMatchObjectPath(devicePath),
+	)
+	c.conn.RemoveSignal(ch) // deregister the channel
 	return nil
 }
 
