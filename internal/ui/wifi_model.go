@@ -4,7 +4,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
-	"github.com/thecentinol/tuwi/internal/models"
+	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type (
@@ -17,8 +17,8 @@ type (
 		scanning bool // TODO: implement me!
 	}
 
-	savedWifiMsg     []models.AccessPoint
-	availableWifiMsg []models.AccessPoint
+	savedWifiMsg     []wifi.AccessPoint
+	availableWifiMsg []wifi.AccessPoint
 )
 
 func (w WifiModel) Init() tea.Cmd {

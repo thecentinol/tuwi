@@ -3,7 +3,7 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/thecentinol/tuwi/internal/models"
+	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type (
@@ -12,7 +12,7 @@ type (
 		height  int
 		focused bool
 
-		networks []models.AccessPoint
+		networks []wifi.AccessPoint
 
 		cursor int
 	}
