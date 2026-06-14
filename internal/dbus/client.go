@@ -5,7 +5,7 @@ import (
 )
 
 type Client struct {
-	conn *dbus.Conn
+	Conn *dbus.Conn
 }
 
 func NewClient() (*Client, error) {
@@ -13,12 +13,12 @@ func NewClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{conn: conn}, nil
+	return &Client{Conn: conn}, nil
 }
 
 func (c *Client) Close() error {
-	if c.conn != nil {
-		return c.conn.Close()
+	if c.Conn != nil {
+		return c.Conn.Close()
 	}
 	return nil
 }

@@ -1,34 +1,34 @@
 package dbus
 
 const (
-	baseServiceName = "org.freedesktop.NetworkManager"
-	baseObjPath     = "/org/freedesktop/NetworkManager"
+	BaseServiceName = "org.freedesktop.NetworkManager"
+	BaseObjPath     = "/org/freedesktop/NetworkManager"
 
-	deviceType = baseServiceName + ".Device.DeviceType"
+	DeviceType = BaseServiceName + ".Device.DeviceType"
 
 	// settings
-	settingsBaseObjPath     = baseObjPath + "/Settings"
-	settingsBaseServiceName = baseServiceName + ".Settings"
-	listConnections         = settingsBaseServiceName + ".ListConnections"
+	SettingsBaseObjPath     = BaseObjPath + "/Settings"
+	SettingsBaseServiceName = BaseServiceName + ".Settings"
+	ListConnections         = SettingsBaseServiceName + ".ListConnections"
 
 	// settings connection
-	settConnection = settingsBaseServiceName + ".Connection"
-	getSettings    = settConnection + ".GetSettings"
+	SettConnection = SettingsBaseServiceName + ".Connection"
+	GetSettings    = SettConnection + ".GetSettings"
 
 	// wireless
-	deviceWireless    = baseServiceName + ".Device.Wireless"
-	activeAccessPoint = baseServiceName + ".Device.Wireless.ActiveAccessPoint"
+	DeviceWireless    = BaseServiceName + ".Device.Wireless"
+	ActiveAccessPoint = BaseServiceName + ".Device.Wireless.ActiveAccessPoint"
 
 	// wired
-	deviceWired = baseServiceName + ".Device.Wired"
+	DeviceWired = BaseServiceName + ".Device.Wired"
 
 	// access point
-	accessPointFlags    = baseServiceName + ".AccessPoint.Flags"
-	accessPointWpaFlags = baseServiceName + ".AccessPoint.WpaFlags"
-	accessPointRsnFlags = baseServiceName + ".AccessPoint.RsnFlags"
-	accessPointSsid     = baseServiceName + ".AccessPoint.Ssid"
-	accessPointFreq     = baseServiceName + ".AccessPoint.Frequency"
-	accessPointBssid    = baseServiceName + ".AccessPoint.HwAddress"
-	accessPointMode     = baseServiceName + ".AccessPoint.Mode"
-	accessPointStrength = baseServiceName + ".AccessPoint.Strength"
+	AccessPointFlags    = BaseServiceName + ".AccessPoint.Flags"
+	AccessPointWpaFlags = BaseServiceName + ".AccessPoint.WpaFlags"
+	AccessPointRsnFlags = BaseServiceName + ".AccessPoint.RsnFlags"
+	AccessPointSsid     = BaseServiceName + ".AccessPoint.Ssid"
+	AccessPointFreq     = BaseServiceName + ".AccessPoint.Frequency"
+	AccessPointBssid    = BaseServiceName + ".AccessPoint.HwAddress"
+	AccessPointMode     = BaseServiceName + ".AccessPoint.Mode"
+	AccessPointStrength = BaseServiceName + ".AccessPoint.Strength"
 )

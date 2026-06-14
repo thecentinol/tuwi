@@ -60,7 +60,7 @@ func (w WifiModel) View() tea.View {
 
 func fetchSavedNetworks(c *dbus.Client) tea.Cmd {
 	return func() tea.Msg {
-		networks, err := dbus.GetSavedNetworks(c)
+		networks, err := wifi.GetSavedNetworks(c)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func fetchSavedNetworks(c *dbus.Client) tea.Cmd {
 
 func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
 	return func() tea.Msg {
-		networks, err := dbus.GetNetworks(c)
+		networks, err := wifi.GetAvailableNetworks(c)
 		if err != nil {
 			return err
 		}

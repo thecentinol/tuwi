@@ -3,13 +3,12 @@ package dbus
 import (
 	"fmt"
 	"github.com/godbus/dbus/v5"
-	"github.com/thecentinol/tuwi/internal/wifi"
 	"time"
 )
 
 func GetDevices(c *Client) ([]dbus.ObjectPath, error) {
-	nm := c.conn.Object(baseServiceName, baseObjPath)
-	call := nm.Call(baseServiceName+".GetDevices", 0)
+	nm := c.Conn.Object(BaseServiceName, BaseObjPath)
+	call := nm.Call(BaseServiceName+".GetDevices", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
@@ -28,8 +27,8 @@ func GetWifiDevice(c *Client) (dbus.ObjectPath, error) {
 
 	// finding the wifi device
 	for _, v := range devices {
-		device := c.conn.Object(baseServiceName, v)
-		variant, err := device.GetProperty(deviceType)
+		device := c.Conn.Object(BaseServiceName, v)
+		variant, err := device.GetProperty(DeviceType)
 		if err != nil {
 			return "", err
 		}
@@ -48,20 +47,20 @@ func RequestScan(c *Client) error {
 		return err
 	}
 
-	device := c.conn.Object(
-		baseServiceName,
+	device := c.Conn.Object(
+		BaseServiceName,
 		devicePath,
 	)
-	call := device.Call(deviceWireless+".RequestScan", 0, map[string]dbus.Variant{})
+	call := device.Call(DeviceWireless+".RequestScan", 0, map[string]dbus.Variant{})
 	if call.Err != nil {
 		return call.Err
 	}
 
 	// channel for listening to LastScan property
 	ch := make(chan *dbus.Signal, 1)
-	c.conn.Signal(ch) // register the channel to receive all signal msgs
+	c.Conn.Signal(ch) // register the channel to receive all signal msgs
 
-	c.conn.AddMatchSignal(
+	c.Conn.AddMatchSignal(
 		dbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 		dbus.WithMatchMember("PropertiesChanged"),
 		dbus.WithMatchObjectPath(devicePath),
@@ -74,12 +73,12 @@ func RequestScan(c *Client) error {
 		return fmt.Errorf("scan timed out")
 	}
 
-	c.conn.RemoveMatchSignal(
+	c.Conn.RemoveMatchSignal(
 		dbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 		dbus.WithMatchMember("PropertiesChanged"),
 		dbus.WithMatchObjectPath(devicePath),
 	)
-	c.conn.RemoveSignal(ch) // deregister the channel
+	c.Conn.RemoveSignal(ch) // deregister the channel
 	return nil
 }
 
@@ -94,12 +93,12 @@ func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
 		return nil, err
 	}
 
-	nm := c.conn.Object(
-		baseServiceName,
+	nm := c.Conn.Object(
+		BaseServiceName,
 		devicePath,
 	)
 
-	call := nm.Call(deviceWireless+".GetAllAccessPoints", 0)
+	call := nm.Call(DeviceWireless+".GetAllAccessPoints", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
@@ -109,159 +108,4 @@ func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
 		return nil, err
 	}
 	return accessPoints, nil
-}
-
-// this gets the actual APs + details (ssid, strength, etc)
-// for available WiFi networks
-func GetNetworks(c *Client) ([]wifi.AccessPoint, error) {
-	accessPoints, err := GetAccessPoints(c)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get access points: %v", err)
-	}
-
-	var networks []wifi.AccessPoint
-
-	for _, accessPointPath := range accessPoints {
-		ap := c.conn.Object(baseServiceName, accessPointPath)
-
-		ssid, err := ap.GetProperty(accessPointSsid)
-		if err != nil {
-			return nil, err
-		}
-
-		bssid, err := ap.GetProperty(accessPointBssid)
-		if err != nil {
-			return nil, err
-		}
-
-		strength, err := ap.GetProperty(accessPointStrength)
-		if err != nil {
-			return nil, err
-		}
-
-		flags, err := ap.GetProperty(accessPointFlags)
-		if err != nil {
-			return nil, err
-		}
-
-		ssidBytes := string(ssid.Value().([]byte))
-		flagsVal := flags.Value().(uint32)
-		networks = append(networks, wifi.AccessPoint{
-			Hidden:   ssidBytes == "",
-			SSID:     ssidBytes,
-			BSSID:    bssid.Value().(string),
-			Strength: strength.Value().(uint8),
-			Secured:  flagsVal&0x00000001 != 0,
-			HasWps:   flagsVal&0x00000002 != 0,
-		})
-	}
-
-	return networks, nil
-}
-
-func GetSavedNetworks(c *Client) ([]wifi.AccessPoint, error) {
-	settings := c.conn.Object(baseServiceName, settingsBaseObjPath)
-	call := settings.Call(listConnections, 0)
-	if call.Err != nil {
-		return nil, call.Err
-	}
-
-	var connPaths []dbus.ObjectPath
-	if err := call.Store(&connPaths); err != nil {
-		return nil, err
-	}
-
-	var savedNetworks []wifi.AccessPoint
-
-	// this is used for cross-referencing to get more details,
-	// about the network that we cant get from settings. Such as Strength.
-	networks, err := GetNetworks(c)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, path := range connPaths {
-		conn := c.conn.Object(baseServiceName, path)
-		pathCall := conn.Call(getSettings, 0)
-
-		// this is the response shape for calling GetSettings,
-		// as seen in ...Settings.Connection in the docs
-		var settings map[string]map[string]dbus.Variant
-		if err := pathCall.Store(&settings); err != nil {
-			return nil, err
-		}
-
-		// filter out non-WiFi connections
-		if settings["connection"]["type"].Value().(string) != "802-11-wireless" {
-			continue
-		}
-
-		// now we can get the SSID & other details
-		// NOTE: strength is not available here
-		ssid := string(settings["802-11-wireless"]["ssid"].Value().([]byte))
-		_, secured := settings["802-11-wireless-security"] // checking if key exists
-		// get the full slice of bssids to compare the
-		bssids := settings["802-11-wireless"]["seen-bssids"].Value().([]string)
-
-		var strength uint8
-		for _, network := range networks {
-			for _, bssid := range bssids {
-				if network.BSSID == bssid {
-					strength = network.Strength
-				}
-			}
-		}
-
-		savedNetworks = append(savedNetworks, wifi.AccessPoint{
-			Hidden:   ssid == "",
-			SSID:     ssid,
-			BSSID:    bssids[0],
-			Strength: strength,
-			Secured:  secured,
-		})
-	}
-
-	return savedNetworks, nil
-}
-
-func GetActiveNetwork(c *Client) (*wifi.AccessPoint, error) {
-	var activeNetwork wifi.AccessPoint
-
-	devicePath, err := GetWifiDevice(c)
-	if err != nil {
-		return nil, err
-	}
-	device := c.conn.Object(baseServiceName, devicePath)
-	active, err := device.GetProperty(activeAccessPoint)
-	if err != nil {
-		return nil, err
-	}
-	activePath := active.Value().(dbus.ObjectPath)
-	apObject := c.conn.Object(baseServiceName, activePath)
-
-	ssid, err := apObject.GetProperty(accessPointSsid)
-	if err != nil {
-		return nil, err
-	}
-
-	strength, err := apObject.GetProperty(accessPointStrength)
-	if err != nil {
-		return nil, err
-	}
-
-	flags, err := apObject.GetProperty(accessPointFlags)
-	if err != nil {
-		return nil, err
-	}
-
-	ssidBytes := string(ssid.Value().([]byte))
-	flagsVal := flags.Value().(uint32)
-	activeNetwork = wifi.AccessPoint{
-		SSID:     ssidBytes,
-		Strength: strength.Value().(uint8),
-		Secured:  flagsVal&0x00000001 != 0,
-		HasWps:   flagsVal&0x00000002 != 0,
-	}
-
-	return &activeNetwork, nil
 }
