@@ -24,7 +24,6 @@ type (
 func (w WifiModel) Init() tea.Cmd {
 	return tea.Batch(
 		fetchAvailableWifiNetworks(w.client),
-		fetchSavedNetworks(w.client),
 	)
 }
 
@@ -37,6 +36,7 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 		w.savedList.networks = msg
 	case availableWifiMsg:
 		w.availableList.networks = msg
+		return w, fetchSavedNetworks(w.client, []wifi.AccessPoint(msg))
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -58,17 +58,18 @@ func (w WifiModel) View() tea.View {
 	)
 }
 
-func fetchSavedNetworks(c *dbus.Client) tea.Cmd {
+func fetchSavedNetworks(c *dbus.Client, available []wifi.AccessPoint) tea.Cmd {
 	return func() tea.Msg {
-		networks, err := wifi.GetSavedNetworks(c)
+		saved, err := wifi.GetSavedNetworks(c, available)
 		if err != nil {
 			return err
 		}
-		return savedWifiMsg(networks)
+		return savedWifiMsg(saved)
 	}
 }
 
 func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
+	var w WifiModel
 	return func() tea.Msg {
 		networks, err := wifi.GetAvailableNetworks(c)
 		if err != nil {

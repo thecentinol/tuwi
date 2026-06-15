@@ -55,7 +55,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
 	return networks, nil
 }
 
-func GetSavedNetworks(c *dbus.Client) ([]AccessPoint, error) {
+func GetSavedNetworks(c *dbus.Client, available []AccessPoint) ([]AccessPoint, error) {
 	settings := c.Conn.Object(dbus.BaseServiceName, dbus.SettingsBaseObjPath)
 	call := settings.Call(dbus.ListConnections, 0)
 	if call.Err != nil {
@@ -68,13 +68,6 @@ func GetSavedNetworks(c *dbus.Client) ([]AccessPoint, error) {
 	}
 
 	var savedNetworks []AccessPoint
-
-	// this is used for cross-referencing to get more details,
-	// about the network that we cant get from settings. Such as Strength.
-	networks, err := GetAvailableNetworks(c)
-	if err != nil {
-		return nil, err
-	}
 
 	for _, path := range connPaths {
 		conn := c.Conn.Object(dbus.BaseServiceName, path)
@@ -100,7 +93,7 @@ func GetSavedNetworks(c *dbus.Client) ([]AccessPoint, error) {
 		bssids := settings["802-11-wireless"]["seen-bssids"].Value().([]string)
 
 		var strength uint8
-		for _, network := range networks {
+		for _, network := range available {
 			for _, bssid := range bssids {
 				if network.BSSID == bssid {
 					strength = network.Strength
