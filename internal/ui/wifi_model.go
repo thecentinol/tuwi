@@ -14,7 +14,7 @@ type (
 		savedList     WifiListModel
 		availableList WifiListModel
 
-		scanning bool // TODO: implement me!
+		scanning bool
 	}
 
 	savedWifiMsg     []wifi.AccessPoint
@@ -35,12 +35,14 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 	case savedWifiMsg:
 		w.savedList.networks = msg
 	case availableWifiMsg:
+		w.scanning = false
 		w.availableList.networks = msg
 		return w, fetchSavedNetworks(w.client, []wifi.AccessPoint(msg))
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "s":
+			w.scanning = true
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
 		}
 	}
@@ -71,6 +73,7 @@ func fetchSavedNetworks(c *dbus.Client, available []wifi.AccessPoint) tea.Cmd {
 func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
 	var w WifiModel
 	return func() tea.Msg {
+		w.scanning = true
 		networks, err := wifi.GetAvailableNetworks(c)
 		if err != nil {
 			return err
