@@ -31,7 +31,9 @@ func NewModel(client *dbus.Client) Model {
 		Client: client,
 		help:   help.New(),
 		wifi: WifiModel{
-			client: client,
+			client:        client,
+			savedList:     NewSavedList(client),
+			availableList: NewAvailableList(client),
 		},
 		keymap: keymap{
 			focus1: key.NewBinding(
@@ -39,18 +41,6 @@ func NewModel(client *dbus.Client) Model {
 			),
 			focus2: key.NewBinding(
 				key.WithKeys("2"),
-			),
-			up: key.NewBinding(
-				key.WithKeys("up", "k"),
-				key.WithHelp("↑/k", "move up"),
-			),
-			down: key.NewBinding(
-				key.WithKeys("down", "j"),
-				key.WithHelp("↓/j", "move down"),
-			),
-			scan: key.NewBinding(
-				key.WithKeys("s"),
-				key.WithHelp("s", "scan"),
 			),
 			quit: key.NewBinding(
 				key.WithKeys("ctrl+c", "q"),
@@ -73,32 +63,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		switch {
-
 		case key.Matches(msg, m.keymap.focus1):
 			m.focus = 0
-
 		case key.Matches(msg, m.keymap.focus2):
 			m.focus = 1
-
-		case key.Matches(msg, m.keymap.up), key.Matches(msg, m.keymap.down):
-
-			switch m.focus {
-
-			case 0:
-				var cmd tea.Cmd
-				m.wifi.savedList, cmd = m.wifi.savedList.Update(msg)
-				cmds = append(cmds, cmd)
-
-			case 1:
-				var cmd tea.Cmd
-				m.wifi.availableList, cmd = m.wifi.availableList.Update(msg)
-				cmds = append(cmds, cmd)
-			}
-
 		case key.Matches(msg, m.keymap.quit):
 			return m, tea.Quit
 		}
-
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -116,12 +87,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() tea.View {
-	help := m.help.ShortHelpView([]key.Binding{
-		m.keymap.up,
-		m.keymap.down,
-		m.keymap.scan,
-		m.keymap.quit,
-	})
+	help := m.wifi.HelpView()
 
 	v := tea.NewView(
 		lipgloss.JoinVertical(

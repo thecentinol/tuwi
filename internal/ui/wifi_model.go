@@ -43,14 +43,15 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 	case error:
 		w.scanning = false
 		w.err = msg
-
-	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "s":
-			w.scanning = true
-			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
-		}
 	}
+
+	var cmd tea.Cmd
+	if w.savedList.focused {
+		w.savedList, cmd = w.savedList.Update(msg)
+	} else {
+		w.availableList, cmd = w.availableList.Update(msg)
+	}
+	cmds = append(cmds, cmd)
 
 	return w, tea.Batch(cmds...)
 }
@@ -65,6 +66,13 @@ func (w WifiModel) View() tea.View {
 	)
 }
 
+func (w WifiModel) HelpView() string {
+	if w.savedList.focused {
+		return w.savedList.HelpView()
+	}
+	return w.availableList.HelpView()
+}
+
 func fetchSavedNetworks(c *dbus.Client, available []wifi.AccessPoint) tea.Cmd {
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(c, available)
@@ -76,11 +84,7 @@ func fetchSavedNetworks(c *dbus.Client, available []wifi.AccessPoint) tea.Cmd {
 }
 
 func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
-	var w WifiModel
-
 	return func() tea.Msg {
-		w.scanning = true
-
 		networks, err := wifi.GetAvailableNetworks(c)
 		if err != nil {
 			return err
