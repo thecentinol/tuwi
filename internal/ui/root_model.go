@@ -104,16 +104,18 @@ func (m Model) View() tea.View {
 func (m *Model) sizeComponents() {
 	halfWidth := m.width / 2
 	// halfHeight := m.height / 2
+	helpHeight := 1
+	tableH := m.height - helpHeight - 2
 
 	m.wifi.savedList.width = halfWidth
-	m.wifi.savedList.height = m.height - 2
-	m.wifi.savedList.table.SetWidth(m.wifi.savedList.width)
-	m.wifi.savedList.table.SetHeight(m.wifi.savedList.height)
+	m.wifi.savedList.height = m.height - helpHeight
+	m.wifi.savedList.table.SetWidth(halfWidth)
+	m.wifi.savedList.table.SetHeight(tableH)
 
 	m.wifi.availableList.width = halfWidth
-	m.wifi.availableList.height = m.height - 2
-	m.wifi.availableList.table.SetWidth(m.wifi.availableList.width)
-	m.wifi.availableList.table.SetHeight(m.wifi.availableList.height)
+	m.wifi.availableList.height = m.height - helpHeight
+	m.wifi.availableList.table.SetWidth(halfWidth)
+	m.wifi.availableList.table.SetHeight(tableH)
 
 	// set the width of the columns for the wifi tables
 	ssidW := int(float64(halfWidth) * 0.5)
