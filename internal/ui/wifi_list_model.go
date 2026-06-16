@@ -3,11 +3,12 @@ package ui
 import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
-	"strings"
 )
 
 type WifiKeymap struct {
@@ -26,15 +27,22 @@ type WifiListModel struct {
 	height   int
 	focused  bool
 	networks []wifi.AccessPoint
+	table    comp.TableModel
 	help     help.Model
 	keymap   WifiKeymap
-	cursor   int
 }
 
 func NewSavedList(c *dbus.Client) WifiListModel {
 	return WifiListModel{
 		client: c,
 		help:   help.New(),
+		table: comp.NewTable(
+			[]table.Column{
+				// columns are set in root Model.sizeComponents()
+				// so the widths can be calculated
+			},
+			[]table.Row{},
+		),
 		keymap: WifiKeymap{
 			up: key.NewBinding(
 				key.WithKeys("up", "k"),
@@ -73,6 +81,13 @@ func NewAvailableList(c *dbus.Client) WifiListModel {
 	return WifiListModel{
 		client: c,
 		help:   help.New(),
+		table: comp.NewTable(
+			[]table.Column{
+				// columns ase set in root Model.sizeComponents()
+				// so the widths can be calculated
+			},
+			[]table.Row{},
+		),
 		keymap: WifiKeymap{
 			up: key.NewBinding(
 				key.WithKeys("up", "k"),
@@ -111,27 +126,18 @@ func NewAvailableList(c *dbus.Client) WifiListModel {
 
 func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	var cmds []tea.Cmd
+	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-
 	case tea.KeyPressMsg:
-
 		switch {
-
-		case key.Matches(msg, w.keymap.up):
-			if w.cursor > 0 {
-				w.cursor--
-			}
-
-		case key.Matches(msg, w.keymap.down):
-			if w.cursor < len(w.networks)-1 {
-				w.cursor++
-			}
-
 		case key.Matches(msg, w.keymap.scan):
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
 		}
 	}
+
+	w.table, cmd = w.table.Update(msg)
+	cmds = append(cmds, cmd)
 
 	return w, tea.Batch(cmds...)
 }
@@ -148,17 +154,7 @@ func (w WifiListModel) View() tea.View {
 		Width(w.width).
 		Height(w.height)
 
-	var sb strings.Builder
-	for i, v := range w.networks {
-		if i == w.cursor && w.focused {
-			sb.WriteString(focusedLine.Render(v.SSID))
-		} else {
-			sb.WriteString(v.SSID)
-		}
-		sb.WriteString("\n")
-	}
-
-	return tea.NewView(style.Render(sb.String()))
+	return tea.NewView(style.Render(w.table.View().Content))
 }
 
 func (w WifiListModel) HelpView() string {
