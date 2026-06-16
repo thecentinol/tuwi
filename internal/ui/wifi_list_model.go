@@ -12,8 +12,6 @@ import (
 )
 
 type WifiKeymap struct {
-	up          key.Binding
-	down        key.Binding
 	connect     key.Binding
 	forget      key.Binding
 	edit        key.Binding
@@ -44,14 +42,6 @@ func NewSavedList(c *dbus.Client) WifiListModel {
 			[]table.Row{},
 		),
 		keymap: WifiKeymap{
-			up: key.NewBinding(
-				key.WithKeys("up", "k"),
-				key.WithHelp("↑/k", "up"),
-			),
-			down: key.NewBinding(
-				key.WithKeys("down", "j"),
-				key.WithHelp("↓/j", "down"),
-			),
 			connect: key.NewBinding(
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
@@ -89,14 +79,6 @@ func NewAvailableList(c *dbus.Client) WifiListModel {
 			[]table.Row{},
 		),
 		keymap: WifiKeymap{
-			up: key.NewBinding(
-				key.WithKeys("up", "k"),
-				key.WithHelp("↑/k", "up"),
-			),
-			down: key.NewBinding(
-				key.WithKeys("down", "j"),
-				key.WithHelp("↓/j", "down"),
-			),
 			connect: key.NewBinding(
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
