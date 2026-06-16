@@ -140,13 +140,16 @@ func (w WifiListModel) View() tea.View {
 }
 
 func (w WifiListModel) HelpView() string {
-	return w.help.ShortHelpView([]key.Binding{
-		w.keymap.up,
-		w.keymap.down,
+	// append the wifi keybinds help view to the tables help.
+	// table first because it has the up/down bindings.
+	bindings := append(
+		w.table.HelpView(),
 		w.keymap.connect,
 		w.keymap.forget,
 		w.keymap.edit,
 		w.keymap.autoConnect,
 		w.keymap.scan,
-	})
+	)
+
+	return w.help.ShortHelpView(bindings)
 }
