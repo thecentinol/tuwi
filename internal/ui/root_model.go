@@ -10,14 +10,14 @@ import (
 )
 
 type keymap struct {
-	focus1, focus2, up, down, scan, quit key.Binding
+	focus1, focus2, quit key.Binding
 }
 
 type Model struct {
 	Client *dbus.Client
 	width  int
 	height int
-	focus  int // which component is focused/active
+	focus  int
 	help   help.Model
 	keymap keymap
 	wifi   WifiModel
