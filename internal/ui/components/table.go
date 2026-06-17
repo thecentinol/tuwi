@@ -112,3 +112,7 @@ func (t TableModel) HelpView() []key.Binding {
 		t.keys.bottom,
 	}
 }
+
+func (t *TableModel) Cursor() int {
+	return t.table.Cursor()
+}
