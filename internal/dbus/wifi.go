@@ -41,12 +41,7 @@ func GetWifiDevice(c *Client) (dbus.ObjectPath, error) {
 	return "", fmt.Errorf("No wifi device found")
 }
 
-func RequestScan(c *Client) error {
-	devicePath, err := GetWifiDevice(c)
-	if err != nil {
-		return err
-	}
-
+func RequestScan(c *Client, devicePath dbus.ObjectPath) error {
 	device := c.Conn.Object(
 		BaseServiceName,
 		devicePath,
@@ -83,16 +78,7 @@ func RequestScan(c *Client) error {
 }
 
 // this gets the raw paths for the access points
-func GetAccessPoints(c *Client) ([]dbus.ObjectPath, error) {
-	devicePath, err := GetWifiDevice(c)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := RequestScan(c); err != nil {
-		return nil, err
-	}
-
+func GetAccessPoints(c *Client, devicePath dbus.ObjectPath) ([]dbus.ObjectPath, error) {
 	nm := c.Conn.Object(
 		BaseServiceName,
 		devicePath,
