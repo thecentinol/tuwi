@@ -1,4 +1,3 @@
-// This file
 package wifi
 
 import (
@@ -10,7 +9,16 @@ import (
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
 func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
-	accessPoints, err := dbus.GetAccessPoints(c)
+	wifiDevicePath, err := dbus.GetWifiDevice(c)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get access points: %v", err)
+	}
+
+	if err := dbus.RequestScan(c, wifiDevicePath); err != nil {
+		return nil, err
+	}
+
+	accessPoints, err := dbus.GetAccessPoints(c, wifiDevicePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get access points: %v", err)
 	}
@@ -43,12 +51,14 @@ func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
 		ssidBytes := string(ssid.Value().([]byte))
 		flagsVal := flags.Value().(uint32)
 		networks = append(networks, AccessPoint{
-			Hidden:   ssidBytes == "",
-			SSID:     ssidBytes,
-			BSSID:    bssid.Value().(string),
-			Strength: strength.Value().(uint8),
-			Secured:  flagsVal&0x00000001 != 0,
-			HasWps:   flagsVal&0x00000002 != 0,
+			Hidden:     ssidBytes == "",
+			SSID:       ssidBytes,
+			BSSID:      bssid.Value().(string),
+			Strength:   strength.Value().(uint8),
+			Secured:    flagsVal&0x00000001 != 0,
+			HasWps:     flagsVal&0x00000002 != 0,
+			DevicePath: wifiDevicePath,
+			APPath:     accessPointPath,
 		})
 	}
 
