@@ -153,3 +153,12 @@ func (w WifiListModel) HelpView() string {
 
 	return w.help.ShortHelpView(bindings)
 }
+
+func (w *WifiListModel) SelectedNetwork() *wifi.AccessPoint {
+	idx := w.table.Cursor()
+
+	if idx < 0 || idx >= len(w.networks) {
+		return nil
+	}
+	return &w.networks[idx]
+}
