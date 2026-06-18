@@ -5,13 +5,18 @@ import (
 )
 
 type AccessPoint struct {
-	Hidden   bool
-	SSID     string
-	BSSID    string // AKA HwAddress
-	Strength uint8
-	Secured  bool // derived from privacy flag
-	HasWps   bool
+	SSID           string
+	BSSID          string // AKA HwAddress
+	ConnectionUUID string
+	SecurityType   string // wpa-psk, wpa-eap, none
 
 	DevicePath godbus.ObjectPath
 	APPath     godbus.ObjectPath
+
+	Strength uint8
+
+	IsSaved bool
+	Secured bool
+	Hidden  bool
+	HasWps  bool
 }
