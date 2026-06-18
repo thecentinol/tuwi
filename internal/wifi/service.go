@@ -98,10 +98,22 @@ func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.
 
 		// now we can get the SSID & other details
 		// NOTE: strength is not available here
-		ssid := string(settings["802-11-wireless"]["ssid"].Value().([]byte))
+		var ssid string
+		if v, ok := settings["802-11-wireless"]["ssid"]; ok {
+			if b, ok := v.Value().([]byte); ok {
+				ssid = string(b)
+			}
+		}
+
 		_, secured := settings["802-11-wireless-security"] // checking if key exists
+		secured = secured && settings["802-11-wireless-security"]["key-mgmt"].Value() != ""
 		// get the full slice of bssids to compare the
-		bssids := settings["802-11-wireless"]["seen-bssids"].Value().([]string)
+		var bssids []string
+		if v, ok := settings["802-11-wireless"]["seen-bssids"]; ok {
+			if arr, ok := v.Value().([]string); ok {
+				bssids = arr
+			}
+		}
 
 		var strength uint8
 		for _, network := range available {
@@ -112,10 +124,14 @@ func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.
 			}
 		}
 
+		var bssid string
+		if len(bssids) > 0 {
+			bssid = bssids[0]
+		}
 		savedNetworks = append(savedNetworks, models.AccessPoint{
 			Hidden:   ssid == "",
 			SSID:     ssid,
-			BSSID:    bssids[0],
+			BSSID:    bssid,
 			Strength: strength,
 			Secured:  secured,
 		})
