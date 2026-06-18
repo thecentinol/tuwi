@@ -71,73 +71,95 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 }
 
 func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.AccessPoint, error) {
-	settings := c.Conn.Object(dbus.BaseServiceName, dbus.SettingsBaseObjPath)
-	call := settings.Call(dbus.ListConnections, 0)
-	if call.Err != nil {
-		return nil, call.Err
+	visibleAPs := make(map[string]models.AccessPoint)
+	for _, ap := range available {
+		if ap.SSID != "" {
+			visibleAPs[ap.SSID] = ap
+		}
 	}
 
+	settingsObj := c.Conn.Object(dbus.BaseServiceName, dbus.SettingsBaseObjPath)
+
 	var connPaths []godbus.ObjectPath
-	if err := call.Store(&connPaths); err != nil {
-		return nil, err
+	err := settingsObj.Call(dbus.ListConnections, 0).Store(&connPaths)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list connections: %w", err)
 	}
 
 	var savedNetworks []models.AccessPoint
 
 	for _, path := range connPaths {
 		conn := c.Conn.Object(dbus.BaseServiceName, path)
-		pathCall := conn.Call(dbus.GetSettings, 0)
 
 		// this is the response shape for calling GetSettings,
 		// as seen in ...Settings.Connection in the docs
 		var settings map[string]map[string]godbus.Variant
-		if err := pathCall.Store(&settings); err != nil {
-			return nil, err
+		err := conn.Call(dbus.GetSettings, 0).Store(&settings)
+		if err != nil {
+			// TODO: log error
+			continue
 		}
 
 		// filter out non-WiFi connections
-		if settings["connection"]["type"].Value().(string) != "802-11-wireless" {
+		connBlock, ok := settings["connection"]
+		if !ok || connBlock["type"].Value().(string) != "802-11-wireless" {
 			continue
 		}
 
 		// now we can get the SSID & other details
 		// NOTE: strength is not available here
+		var uuid string
+		if v, ok := connBlock["uuid"]; ok {
+			uuid = v.Value().(string)
+		}
+
 		var ssid string
-		if v, ok := settings["802-11-wireless"]["ssid"]; ok {
-			if b, ok := v.Value().([]byte); ok {
-				ssid = string(b)
-			}
-		}
-
-		_, secured := settings["802-11-wireless-security"] // checking if key exists
-		secured = secured && settings["802-11-wireless-security"]["key-mgmt"].Value() != ""
-		// get the full slice of bssids to compare the
-		var bssids []string
-		if v, ok := settings["802-11-wireless"]["seen-bssids"]; ok {
-			if arr, ok := v.Value().([]string); ok {
-				bssids = arr
-			}
-		}
-
-		var strength uint8
-		for _, network := range available {
-			for _, bssid := range bssids {
-				if network.BSSID == bssid {
-					strength = network.Strength
+		if wirelessBlock, ok := settings["802-11-wireless"]; ok {
+			if ssidVal, ok := wirelessBlock["ssid"]; ok {
+				if ssidBytes, ok := ssidVal.Value().([]byte); ok {
+					ssid = string(ssidBytes)
 				}
 			}
 		}
 
-		var bssid string
-		if len(bssids) > 0 {
-			bssid = bssids[0]
+		if ssid == "" {
+			continue
 		}
+
+		_, secured := settings["802-11-wireless-security"]
+		var secType string = "none"
+		if secured {
+			if keyMgmtVal, ok := settings["802-11-wireless-security"]["key-mgmt"]; ok {
+				secType = keyMgmtVal.Value().(string)
+			}
+		}
+
+		var strength uint8 = 0
+		var bssid string = ""
+		var activeAPPath godbus.ObjectPath
+		var devicePath godbus.ObjectPath
+
+		if activeScan, isNearby := visibleAPs[ssid]; isNearby {
+			strength = activeScan.Strength
+			bssid = activeScan.BSSID
+			activeAPPath = activeScan.APPath
+			devicePath = activeScan.DevicePath
+		}
+
 		savedNetworks = append(savedNetworks, models.AccessPoint{
-			Hidden:   ssid == "",
-			SSID:     ssid,
-			BSSID:    bssid,
+			SSID:           ssid,
+			BSSID:          bssid,
+			ConnectionUUID: uuid,
+			SecurityType:   secType,
+
+			DevicePath: devicePath,
+			APPath:     activeAPPath,
+
 			Strength: strength,
-			Secured:  secured,
+
+			IsSaved: true,
+			Secured: secured,
+			Hidden:  false,
 		})
 	}
 
