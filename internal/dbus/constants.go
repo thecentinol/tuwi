@@ -18,6 +18,7 @@ const (
 	// wireless
 	DeviceWireless    = BaseServiceName + ".Device.Wireless"
 	ActiveAccessPoint = BaseServiceName + ".Device.Wireless.ActiveAccessPoint"
+	AddAndConnect     = BaseServiceName + ".AddAndActivateConnection2"
 
 	// wired
 	DeviceWired = BaseServiceName + ".Device.Wired"
