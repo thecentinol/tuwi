@@ -181,3 +181,21 @@ func GetActiveNetwork(c *dbus.Client) (*models.AccessPoint, error) {
 
 	return &activeNetwork, nil
 }
+
+func ConnectToAvailableSecured(
+	client *dbus.Client,
+	network *models.AccessPoint,
+	password string,
+) error {
+	err := dbus.AddAndActivateConnection(
+		client,
+		*network,
+		password,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
