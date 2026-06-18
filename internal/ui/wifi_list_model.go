@@ -7,8 +7,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/models"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type WifiKeymap struct {
@@ -24,7 +24,7 @@ type WifiListModel struct {
 	width    int
 	height   int
 	focused  bool
-	networks []wifi.AccessPoint
+	networks []models.AccessPoint
 	table    comp.TableModel
 	help     help.Model
 	keymap   WifiKeymap
@@ -154,7 +154,7 @@ func (w WifiListModel) HelpView() string {
 	return w.help.ShortHelpView(bindings)
 }
 
-func (w *WifiListModel) SelectedNetwork() *wifi.AccessPoint {
+func (w *WifiListModel) SelectedNetwork() *models.AccessPoint {
 	idx := w.table.Cursor()
 
 	if idx < 0 || idx >= len(w.networks) {

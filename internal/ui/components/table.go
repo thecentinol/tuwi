@@ -6,7 +6,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"fmt"
-	"github.com/thecentinol/tuwi/internal/wifi"
+	"github.com/thecentinol/tuwi/internal/models"
 )
 
 type TableModel struct {
@@ -92,7 +92,7 @@ func (t *TableModel) View() tea.View {
 	return tea.NewView(t.table.View())
 }
 
-func AccessPointsToRows(networks []wifi.AccessPoint) []table.Row {
+func AccessPointsToRows(networks []models.AccessPoint) []table.Row {
 	rows := make([]table.Row, 0, len(networks))
 	for _, ap := range networks {
 		rows = append(rows, table.Row{

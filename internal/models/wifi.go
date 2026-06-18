@@ -1,4 +1,4 @@
-package wifi
+package models
 
 import (
 	godbus "github.com/godbus/dbus/v5"

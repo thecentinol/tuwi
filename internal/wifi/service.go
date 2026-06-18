@@ -4,11 +4,12 @@ import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/models"
 )
 
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
-func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
+func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 	wifiDevicePath, err := dbus.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get access points: %v", err)
@@ -23,7 +24,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
 		return nil, fmt.Errorf("Failed to get access points: %v", err)
 	}
 
-	var networks []AccessPoint
+	var networks []models.AccessPoint
 
 	for _, accessPointPath := range accessPoints {
 		ap := c.Conn.Object(dbus.BaseServiceName, accessPointPath)
@@ -50,7 +51,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
 
 		ssidBytes := string(ssid.Value().([]byte))
 		flagsVal := flags.Value().(uint32)
-		networks = append(networks, AccessPoint{
+		networks = append(networks, models.AccessPoint{
 			Hidden:     ssidBytes == "",
 			SSID:       ssidBytes,
 			BSSID:      bssid.Value().(string),
@@ -65,7 +66,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]AccessPoint, error) {
 	return networks, nil
 }
 
-func GetSavedNetworks(c *dbus.Client, available []AccessPoint) ([]AccessPoint, error) {
+func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.AccessPoint, error) {
 	settings := c.Conn.Object(dbus.BaseServiceName, dbus.SettingsBaseObjPath)
 	call := settings.Call(dbus.ListConnections, 0)
 	if call.Err != nil {
@@ -77,7 +78,7 @@ func GetSavedNetworks(c *dbus.Client, available []AccessPoint) ([]AccessPoint, e
 		return nil, err
 	}
 
-	var savedNetworks []AccessPoint
+	var savedNetworks []models.AccessPoint
 
 	for _, path := range connPaths {
 		conn := c.Conn.Object(dbus.BaseServiceName, path)
@@ -111,7 +112,7 @@ func GetSavedNetworks(c *dbus.Client, available []AccessPoint) ([]AccessPoint, e
 			}
 		}
 
-		savedNetworks = append(savedNetworks, AccessPoint{
+		savedNetworks = append(savedNetworks, models.AccessPoint{
 			Hidden:   ssid == "",
 			SSID:     ssid,
 			BSSID:    bssids[0],
@@ -123,8 +124,8 @@ func GetSavedNetworks(c *dbus.Client, available []AccessPoint) ([]AccessPoint, e
 	return savedNetworks, nil
 }
 
-func GetActiveNetwork(c *dbus.Client) (*AccessPoint, error) {
-	var activeNetwork AccessPoint
+func GetActiveNetwork(c *dbus.Client) (*models.AccessPoint, error) {
+	var activeNetwork models.AccessPoint
 
 	devicePath, err := dbus.GetWifiDevice(c)
 	if err != nil {
@@ -155,7 +156,7 @@ func GetActiveNetwork(c *dbus.Client) (*AccessPoint, error) {
 
 	ssidBytes := string(ssid.Value().([]byte))
 	flagsVal := flags.Value().(uint32)
-	activeNetwork = AccessPoint{
+	activeNetwork = models.AccessPoint{
 		SSID:     ssidBytes,
 		Strength: strength.Value().(uint8),
 		Secured:  flagsVal&0x00000001 != 0,

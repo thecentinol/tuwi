@@ -4,6 +4,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/models"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
@@ -19,8 +20,8 @@ type (
 		err      error
 	}
 
-	savedWifiMsg     []wifi.AccessPoint
-	availableWifiMsg []wifi.AccessPoint
+	savedWifiMsg     []models.AccessPoint
+	availableWifiMsg []models.AccessPoint
 )
 
 func (w WifiModel) Init() tea.Cmd {
@@ -45,7 +46,7 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 
 		rows := comp.AccessPointsToRows(msg)
 		w.availableList.table.SetRows(rows)
-		return w, fetchSavedNetworks(w.client, []wifi.AccessPoint(msg))
+		return w, fetchSavedNetworks(w.client, []models.AccessPoint(msg))
 
 	case error:
 		w.scanning = false
@@ -80,7 +81,7 @@ func (w WifiModel) HelpView() string {
 	return w.availableList.HelpView()
 }
 
-func fetchSavedNetworks(c *dbus.Client, available []wifi.AccessPoint) tea.Cmd {
+func fetchSavedNetworks(c *dbus.Client, available []models.AccessPoint) tea.Cmd {
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(c, available)
 		if err != nil {
