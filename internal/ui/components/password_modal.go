@@ -100,10 +100,10 @@ func (p PasswordModel) View() tea.View {
 		BorderForeground(lipgloss.Green).
 		Width(p.Width)
 
-	input := lipgloss.JoinVertical(
-		lipgloss.Top,
+	input := lipgloss.JoinHorizontal(
+		lipgloss.Left,
 		p.Input.View(),
-		"escape = quit",
+		passwordIcon(p.Input.EchoMode == textinput.EchoPassword),
 	)
 
 	v := tea.NewView(container.Render(input))
@@ -135,4 +135,15 @@ func handlePasswordClose() tea.Cmd {
 			Password:  "",
 		}
 	}
+}
+
+func passwordIcon(hidden bool) string {
+	icon := lipgloss.NewStyle().
+		Foreground(lipgloss.Green).
+		Render("◉")
+
+	if hidden {
+		return "○"
+	}
+	return icon
 }

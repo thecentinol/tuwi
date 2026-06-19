@@ -189,8 +189,9 @@ func (m *Model) sizeComponents() {
 
 	// Password Modal
 	modalWidth := m.width / 3
-	m.passwordModal.Input.SetWidth(modalWidth)
+	iconWidth := 2
 	m.passwordModal.Width = modalWidth
+	m.passwordModal.Input.SetWidth(modalWidth - iconWidth - 4)
 
 	// get height and width of the modal
 	renderedModal := m.passwordModal.View().Content
