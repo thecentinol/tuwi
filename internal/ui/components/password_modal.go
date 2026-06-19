@@ -1,6 +1,7 @@
 package components
 
 import (
+	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -17,6 +18,7 @@ type PasswordModel struct {
 	Input    textinput.Model
 	password string
 	keys     passwordKeymap
+	help     help.Model
 
 	X       int // x-coordinate for layering in root model
 	Y       int // y-coordinate for layering in root model
@@ -48,12 +50,15 @@ func NewPasswordModal() PasswordModel {
 		keys: passwordKeymap{
 			togglePassword: key.NewBinding(
 				key.WithKeys("ctrl+t"),
+				key.WithHelp("ctrl+t", "Toggle Password"),
 			),
 			submit: key.NewBinding(
 				key.WithKeys("enter"),
+				key.WithHelp("enter", "connect"),
 			),
 			cancel: key.NewBinding(
 				key.WithKeys("esc"),
+				key.WithHelp("esc", "cancel"),
 			),
 		},
 	}
@@ -103,6 +108,15 @@ func (p PasswordModel) View() tea.View {
 
 	v := tea.NewView(container.Render(input))
 	return v
+}
+
+func (p PasswordModel) HelpView() []key.Binding {
+	help := []key.Binding{
+		p.keys.togglePassword,
+		p.keys.submit,
+		p.keys.cancel,
+	}
+	return help
 }
 
 func handlePasswordSubmit(password string) tea.Cmd {
