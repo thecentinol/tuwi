@@ -29,9 +29,16 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 	for _, accessPointPath := range accessPoints {
 		ap := c.Conn.Object(dbus.BaseServiceName, accessPointPath)
 
-		rawSsid, err := ap.GetProperty(dbus.AccessPointSsid)
+		ssidBytes, err := ap.GetProperty(dbus.AccessPointSsid)
 		if err != nil {
 			return nil, err
+		}
+		rawSsid := ssidBytes.Value().([]byte)
+		hidden := len(rawSsid) == 0
+
+		ssid := string(rawSsid)
+		if hidden {
+			ssid = "<hidden>"
 		}
 
 		bssid, err := ap.GetProperty(dbus.AccessPointBssid)
@@ -77,10 +84,6 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 			secType = "open"
 		}
 
-		ssid := string(rawSsid.Value().([]byte))
-		if len(ssid) == 0 {
-			ssid = "<hidden>"
-		}
 		networks = append(networks, models.AccessPoint{
 			SSID:         ssid,
 			BSSID:        bssid.Value().(string),
@@ -93,7 +96,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 
 			IsSaved: false,
 			Secured: secType != "open",
-			Hidden:  len(ssid) == 0,
+			Hidden:  hidden,
 			HasWps:  flags&0x00000002 != 0,
 		})
 	}
