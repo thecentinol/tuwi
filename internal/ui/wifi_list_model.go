@@ -121,6 +121,10 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 		switch {
 		case key.Matches(msg, w.keymap.connect):
 			selected := w.SelectedNetwork()
+			if selected == nil {
+				break
+			}
+
 			if selected.Secured {
 				return w, func() tea.Msg {
 					return showPasswordModalMsg{network: selected}
