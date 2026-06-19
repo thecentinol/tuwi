@@ -44,16 +44,44 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 			return nil, err
 		}
 
-		flags, err := ap.GetProperty(dbus.AccessPointFlags)
+		flagsRaw, err := ap.GetProperty(dbus.AccessPointFlags)
+		if err != nil {
+			return nil, err
+		}
+		wpaFlags, err := ap.GetProperty(dbus.AccessPointWpaFlags)
+		if err != nil {
+			return nil, err
+		}
+		rsnFlags, err := ap.GetProperty(dbus.AccessPointRsnFlags)
 		if err != nil {
 			return nil, err
 		}
 
+		flags := flagsRaw.Value().(uint32)
+		wpa := wpaFlags.Value().(uint32)
+		rsn := rsnFlags.Value().(uint32)
+
+		var secType string
+		switch {
+		case rsn&dbus.NmSecMgmtSae != 0:
+			secType = "sae" // WPA3
+		case rsn&dbus.NmSecMgmtPsk != 0:
+			secType = "wpa-psk" // WPA2
+		case wpa&dbus.NmSecMgmtPsk != 0:
+			secType = "wpa-psk" // WPA
+		case rsn&dbus.NmSecMgmt8021 != 0 || wpa&dbus.NmSecMgmt8021 != 0:
+			secType = "wpa-eap"
+		case flags&dbus.NmApFlagsPrivacy != 0:
+			secType = "wep"
+		default:
+			secType = "open"
+		}
+
 		ssid := string(rawSsid.Value().([]byte))
-		flagsVal := flags.Value().(uint32)
 		networks = append(networks, models.AccessPoint{
-			SSID:  ssid,
-			BSSID: bssid.Value().(string),
+			SSID:         ssid,
+			BSSID:        bssid.Value().(string),
+			SecurityType: secType,
 
 			DevicePath: wifiDevicePath,
 			APPath:     accessPointPath,
@@ -61,9 +89,9 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 			Strength: strength.Value().(uint8),
 
 			IsSaved: false,
-			Secured: flagsVal&0x00000001 != 0,
+			Secured: secType != "open",
 			Hidden:  len(ssid) == 0,
-			HasWps:  flagsVal&0x00000002 != 0,
+			HasWps:  flags&0x00000002 != 0,
 		})
 	}
 
