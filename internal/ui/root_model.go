@@ -172,19 +172,19 @@ func (m *Model) sizeComponents() {
 	m.wifi.availableList.table.SetHeight(tableH)
 
 	// set the width of the columns for the wifi tables
-	ssidW := int(float64(halfWidth) * 0.5)
-	securedW := int(float64(halfWidth) * 0.25)
-	strengthW := int(float64(halfWidth) * 0.25)
+	colWidth := int(float64(halfWidth) * 0.25)
 
 	m.wifi.savedList.table.SetColumns([]table.Column{
-		{Title: "SSID", Width: ssidW},
-		{Title: "Secured", Width: securedW},
-		{Title: "Strength", Width: strengthW - 10},
+		{Title: "SSID", Width: colWidth},
+		{Title: "Security", Width: colWidth},
+		{Title: "Hidden", Width: colWidth},
+		{Title: "Strength", Width: colWidth - 10},
 	})
 	m.wifi.availableList.table.SetColumns([]table.Column{
-		{Title: "SSID", Width: ssidW},
-		{Title: "Secured", Width: securedW},
-		{Title: "Strength", Width: strengthW - 10},
+		{Title: "SSID", Width: colWidth},
+		{Title: "Security", Width: colWidth},
+		{Title: "Hidden", Width: colWidth},
+		{Title: "Strength", Width: colWidth - 10},
 	})
 
 	// Password Modal

@@ -5,8 +5,8 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"fmt"
 	"github.com/thecentinol/tuwi/internal/models"
+	"strconv"
 )
 
 type TableModel struct {
@@ -97,8 +97,9 @@ func AccessPointsToRows(networks []models.AccessPoint) []table.Row {
 	for _, ap := range networks {
 		rows = append(rows, table.Row{
 			ap.SSID,
-			fmt.Sprintf("%v", ap.Secured),
-			fmt.Sprintf("%d\n", ap.Strength),
+			ap.SecurityType,
+			strconv.FormatBool(ap.Hidden),
+			strconv.FormatInt(int64(ap.Strength), 10),
 		})
 	}
 	return rows
