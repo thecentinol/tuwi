@@ -12,7 +12,9 @@ import (
 )
 
 type keymap struct {
-	focus1, focus2, quit key.Binding
+	focus1,
+	focus2,
+	quit key.Binding
 }
 
 type Model struct {
@@ -70,6 +72,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 
@@ -108,17 +111,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.showPasswordModal {
-		var cmd tea.Cmd
+		m.focus = 99
 		m.passwordModal, cmd = m.passwordModal.Update(msg)
 		cmds = append(cmds, cmd)
+	} else {
+		m.wifi.savedList.focused = m.focus == 0
+		m.wifi.availableList.focused = m.focus == 1
+
+		m.wifi, cmd = m.wifi.Update(msg)
+		cmds = append(cmds, cmd)
 	}
-
-	m.wifi.savedList.focused = m.focus == 0
-	m.wifi.availableList.focused = m.focus == 1
-
-	var cmd tea.Cmd
-	m.wifi, cmd = m.wifi.Update(msg)
-	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
