@@ -14,12 +14,14 @@ type passwordKeymap struct {
 }
 
 type PasswordModel struct {
-	height   int
-	width    int
-	input    textinput.Model
+	Input    textinput.Model
 	password string
 	keys     passwordKeymap
-	focused  bool
+
+	X       int // x-coordinate for layering in root model
+	Y       int // y-coordinate for layering in root model
+	Width   int
+	Focused bool
 }
 
 type PasswordResultMsg struct {
@@ -32,7 +34,7 @@ func NewPasswordModal() PasswordModel {
 	i.Placeholder = "Enter Password"
 	i.SetVirtualCursor(false)
 	i.Focus()
-	i.SetWidth(20)
+	// i.SetWidth(20)
 	i.EchoMode = textinput.EchoPassword
 
 	s := i.Styles()
@@ -42,7 +44,7 @@ func NewPasswordModal() PasswordModel {
 	i.SetStyles(s)
 
 	return PasswordModel{
-		input: i,
+		Input: i,
 		keys: passwordKeymap{
 			togglePassword: key.NewBinding(
 				key.WithKeys("ctrl+t"),
@@ -68,22 +70,22 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, p.keys.togglePassword):
-			if p.input.EchoMode == textinput.EchoPassword {
-				p.input.EchoMode = textinput.EchoNormal
+			if p.Input.EchoMode == textinput.EchoPassword {
+				p.Input.EchoMode = textinput.EchoNormal
 			} else {
-				p.input.EchoMode = textinput.EchoPassword
+				p.Input.EchoMode = textinput.EchoPassword
 			}
 		case key.Matches(msg, p.keys.submit):
-			password := p.input.Value()
-			p.input.Reset()
+			password := p.Input.Value()
+			p.Input.Reset()
 			return p, handlePasswordSubmit(password)
 		case key.Matches(msg, p.keys.cancel):
-			p.input.Reset()
+			p.Input.Reset()
 			return p, handlePasswordClose()
 		}
 	}
 
-	p.input, cmd = p.input.Update(msg)
+	p.Input, cmd = p.Input.Update(msg)
 	return p, cmd
 }
 
@@ -91,11 +93,11 @@ func (p PasswordModel) View() tea.View {
 	container := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Green).
-		Width(20)
+		Width(p.Width)
 
 	input := lipgloss.JoinVertical(
 		lipgloss.Top,
-		p.input.View(),
+		p.Input.View(),
 		"escape = quit",
 	)
 
