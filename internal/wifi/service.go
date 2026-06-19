@@ -78,6 +78,9 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 		}
 
 		ssid := string(rawSsid.Value().([]byte))
+		if len(ssid) == 0 {
+			ssid = "<hidden>"
+		}
 		networks = append(networks, models.AccessPoint{
 			SSID:         ssid,
 			BSSID:        bssid.Value().(string),
