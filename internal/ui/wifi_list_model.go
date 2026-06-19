@@ -169,7 +169,7 @@ func (w WifiListModel) View() tea.View {
 	return tea.NewView(style.Render(w.table.View().Content))
 }
 
-func (w WifiListModel) HelpView() string {
+func (w WifiListModel) HelpView() []key.Binding {
 	// append the wifi keybinds help view to the tables help.
 	// table first because it has the up/down bindings.
 	bindings := append(
@@ -181,7 +181,7 @@ func (w WifiListModel) HelpView() string {
 		w.keymap.scan,
 	)
 
-	return w.help.ShortHelpView(bindings)
+	return bindings
 }
 
 func (w *WifiListModel) SelectedNetwork() *models.AccessPoint {

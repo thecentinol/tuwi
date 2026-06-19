@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -74,7 +75,7 @@ func (w WifiModel) View() tea.View {
 	)
 }
 
-func (w WifiModel) HelpView() string {
+func (w WifiModel) HelpView() []key.Binding {
 	if w.savedList.focused {
 		return w.savedList.HelpView()
 	}

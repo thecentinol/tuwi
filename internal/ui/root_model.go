@@ -127,7 +127,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() tea.View {
 	var view tea.View
 	wifiView := m.wifi.View().Content
-	helpView := m.wifi.HelpView()
+	helpView := m.HelpView()
 	passwordView := m.passwordModal.View().Content
 
 	base := lipgloss.NewLayer(
@@ -200,4 +200,17 @@ func (m *Model) sizeComponents() {
 	// calculate X and Y coordinates
 	m.passwordModal.X = (m.width / 2) - (getModalWidth / 2)
 	m.passwordModal.Y = (m.height / 2) - (getModalHeight / 2)
+}
+
+func (m Model) HelpView() string {
+	var help []key.Binding
+
+	if m.showPasswordModal {
+		help = append(help, m.passwordModal.HelpView()...)
+	} else {
+		help = append(help, m.wifi.HelpView()...)
+	}
+
+	help = append(help, m.keymap.quit)
+	return m.help.ShortHelpView(help)
 }
