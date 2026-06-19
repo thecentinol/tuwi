@@ -111,7 +111,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if m.showPasswordModal {
-		m.focus = 99
 		m.passwordModal, cmd = m.passwordModal.Update(msg)
 		cmds = append(cmds, cmd)
 	} else {
@@ -126,28 +125,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() tea.View {
+	var view tea.View
 	wifiView := m.wifi.View().Content
 	helpView := m.wifi.HelpView()
+	passwordView := m.passwordModal.View().Content
 
-	content := lipgloss.JoinVertical(
-		lipgloss.Left,
-		wifiView,
-		helpView,
-	)
+	base := lipgloss.NewLayer(
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			wifiView,
+			helpView,
+		),
+	).Z(0)
+
+	layers := []*lipgloss.Layer{base}
 
 	if m.showPasswordModal {
-		content = lipgloss.Place(
-			m.width,
-			m.height,
-			lipgloss.Center,
-			lipgloss.Center,
-			m.passwordModal.View().Content,
-		)
+		passwordModal := lipgloss.NewLayer(passwordView).
+			Z(1).
+			X(m.passwordModal.X).
+			Y(m.passwordModal.Y)
+
+		layers = append(layers, passwordModal)
 	}
 
-	v := tea.NewView(content)
-	v.AltScreen = true
-	return v
+	comp := lipgloss.NewCompositor(layers...)
+	view.SetContent(comp.Render())
+	view.AltScreen = true
+	return view
 }
 
 func (m *Model) sizeComponents() {
@@ -181,4 +186,18 @@ func (m *Model) sizeComponents() {
 		{Title: "Secured", Width: securedW},
 		{Title: "Strength", Width: strengthW - 10},
 	})
+
+	// Password Modal
+	modalWidth := m.width / 3
+	m.passwordModal.Input.SetWidth(modalWidth)
+	m.passwordModal.Width = modalWidth
+
+	// get height and width of the modal
+	renderedModal := m.passwordModal.View().Content
+	getModalHeight := lipgloss.Height(renderedModal)
+	getModalWidth := lipgloss.Width(renderedModal)
+
+	// calculate X and Y coordinates
+	m.passwordModal.X = (m.width / 2) - (getModalWidth / 2)
+	m.passwordModal.Y = (m.height / 2) - (getModalHeight / 2)
 }
