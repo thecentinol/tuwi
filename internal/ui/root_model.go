@@ -7,6 +7,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/models"
+	comp "github.com/thecentinol/tuwi/internal/ui/components"
 )
 
 type keymap struct {
@@ -14,17 +16,25 @@ type keymap struct {
 }
 
 type Model struct {
-	Client *dbus.Client
-	width  int
-	height int
-	focus  int
-	help   help.Model
-	keymap keymap
-	wifi   WifiModel
+	Client            *dbus.Client
+	width             int
+	height            int
+	focus             int
+	help              help.Model
+	keymap            keymap
+	wifi              WifiModel
+	passwordModal     comp.PasswordModel
+	showPasswordModal bool
+	selectedNetwork   *models.AccessPoint
 
 	// TODO: implement the following:
 	// bluetooth BtModel
 	// passwdModal   bool
+}
+
+type wifiConnectReqMsg struct {
+	network  *models.AccessPoint
+	password string
 }
 
 func NewModel(client *dbus.Client) Model {
@@ -36,6 +46,7 @@ func NewModel(client *dbus.Client) Model {
 			savedList:     NewSavedList(client),
 			availableList: NewAvailableList(client),
 		},
+		passwordModal: comp.NewPasswordModal(),
 		keymap: keymap{
 			focus1: key.NewBinding(
 				key.WithKeys("1"),
@@ -75,6 +86,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.sizeComponents()
+
+	case showPasswordModalMsg:
+		m.showPasswordModal = true
+		m.selectedNetwork = msg.network
+		return m, m.passwordModal.Init()
+
+	case comp.PasswordResultMsg:
+		m.showPasswordModal = false
+
+		if msg.Cancelled {
+			return m, nil
+		}
+
+		return m, func() tea.Msg {
+			return wifiConnectReqMsg{
+				network:  m.selectedNetwork,
+				password: msg.Password,
+			}
+		}
+	}
+
+	if m.showPasswordModal {
+		var cmd tea.Cmd
+		m.passwordModal, cmd = m.passwordModal.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	m.wifi.savedList.focused = m.focus == 0
@@ -88,15 +124,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() tea.View {
-	help := m.wifi.HelpView()
+	wifiView := m.wifi.View().Content
+	helpView := m.wifi.HelpView()
 
-	v := tea.NewView(
-		lipgloss.JoinVertical(
-			lipgloss.Left,
-			m.wifi.View().Content,
-			help,
-		),
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		wifiView,
+		helpView,
 	)
+
+	if m.showPasswordModal {
+		content = lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			m.passwordModal.View().Content,
+		)
+	}
+
+	v := tea.NewView(content)
 	v.AltScreen = true
 	return v
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/models"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/wifi"
+	"log"
 )
 
 type WifiKeymap struct {
@@ -28,6 +30,10 @@ type WifiListModel struct {
 	table    comp.TableModel
 	help     help.Model
 	keymap   WifiKeymap
+}
+
+type showPasswordModalMsg struct {
+	network *models.AccessPoint
 }
 
 func NewSavedList(c *dbus.Client) WifiListModel {
@@ -113,8 +119,28 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
+		case key.Matches(msg, w.keymap.connect):
+			selected := w.SelectedNetwork()
+			if selected.Secured {
+				return w, func() tea.Msg {
+					return showPasswordModalMsg{network: selected}
+				}
+			}
+
 		case key.Matches(msg, w.keymap.scan):
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
+		}
+
+	case wifiConnectReqMsg:
+		err := wifi.ConnectToAvailableSecured(
+			w.client,
+			msg.network,
+			msg.password,
+		)
+		log.Printf("Connection req sent with password: %v", err)
+
+		if err != nil {
+			log.Printf("Error connecting to network: %v", err)
 		}
 	}
 

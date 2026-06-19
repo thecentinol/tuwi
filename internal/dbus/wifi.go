@@ -111,7 +111,6 @@ func AddAndActivateConnection(
 		"connection": {
 			"id":   godbus.MakeVariant(network.SSID),
 			"type": godbus.MakeVariant("802-11-wireless"),
-			"uuid": godbus.MakeVariant(network.ConnectionUUID),
 		},
 		"802-11-wireless": {
 			"ssid":     godbus.MakeVariant([]byte(network.SSID)),
