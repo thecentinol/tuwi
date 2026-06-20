@@ -7,6 +7,25 @@ import (
 	"github.com/thecentinol/tuwi/internal/models"
 )
 
+func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
+	var secType string
+	switch {
+	case rsnFlags&dbus.NmSecMgmtSae != 0:
+		secType = "sae" // WPA3
+	case rsnFlags&dbus.NmSecMgmtPsk != 0:
+		secType = "wpa-psk" // WPA2
+	case wpaFlags&dbus.NmSecMgmtPsk != 0:
+		secType = "wpa-psk" // WPA
+	case rsnFlags&dbus.NmSecMgmt8021 != 0 || wpaFlags&dbus.NmSecMgmt8021 != 0:
+		secType = "wpa-eap"
+	case flags&dbus.NmApFlagsPrivacy != 0:
+		secType = "wep"
+	default:
+		secType = "open"
+	}
+	return secType
+}
+
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
 func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
@@ -67,27 +86,12 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 		flags := flagsRaw.Value().(uint32)
 		wpa := wpaFlags.Value().(uint32)
 		rsn := rsnFlags.Value().(uint32)
-
-		var secType string
-		switch {
-		case rsn&dbus.NmSecMgmtSae != 0:
-			secType = "sae" // WPA3
-		case rsn&dbus.NmSecMgmtPsk != 0:
-			secType = "wpa-psk" // WPA2
-		case wpa&dbus.NmSecMgmtPsk != 0:
-			secType = "wpa-psk" // WPA
-		case rsn&dbus.NmSecMgmt8021 != 0 || wpa&dbus.NmSecMgmt8021 != 0:
-			secType = "wpa-eap"
-		case flags&dbus.NmApFlagsPrivacy != 0:
-			secType = "wep"
-		default:
-			secType = "open"
-		}
+		securityType := determineSecurityType(flags, wpa, rsn)
 
 		networks = append(networks, models.AccessPoint{
 			SSID:         ssid,
 			BSSID:        bssid.Value().(string),
-			SecurityType: secType,
+			SecurityType: securityType,
 
 			DevicePath: wifiDevicePath,
 			APPath:     accessPointPath,
@@ -95,7 +99,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 			Strength: strength.Value().(uint8),
 
 			IsSaved: false,
-			Secured: secType != "open",
+			Secured: securityType != "open",
 			Hidden:  hidden,
 			HasWps:  flags&0x00000002 != 0,
 		})
