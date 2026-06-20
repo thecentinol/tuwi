@@ -11,6 +11,7 @@ import (
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
 	"log"
+	"strconv"
 )
 
 type WifiKeymap struct {
@@ -191,4 +192,17 @@ func (w *WifiListModel) SelectedNetwork() *models.AccessPoint {
 		return nil
 	}
 	return &w.networks[idx]
+}
+
+func AccessPointsToRows(networks []models.AccessPoint) []table.Row {
+	rows := make([]table.Row, 0, len(networks))
+	for _, ap := range networks {
+		rows = append(rows, table.Row{
+			ap.SSID,
+			ap.SecurityType,
+			strconv.FormatBool(ap.Hidden),
+			strconv.FormatInt(int64(ap.Strength), 10),
+		})
+	}
+	return rows
 }

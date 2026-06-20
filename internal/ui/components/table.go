@@ -5,8 +5,7 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"github.com/thecentinol/tuwi/internal/models"
-	"strconv"
+	"charm.land/lipgloss/v2"
 )
 
 type TableModel struct {
@@ -23,11 +22,21 @@ type keymap struct {
 }
 
 func NewTable(cols []table.Column, rows []table.Row) TableModel {
+	t := table.New(
+		table.WithColumns(cols),
+		table.WithRows(rows),
+	)
+
+	s := table.DefaultStyles()
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Black).
+		Background(lipgloss.Green)
+	s.Header = s.Header.
+		Background(lipgloss.Color("238"))
+	t.SetStyles(s)
+
 	return TableModel{
-		table: table.New(
-			table.WithColumns(cols),
-			table.WithRows(rows),
-		),
+		table: t,
 		keys: keymap{
 			up: key.NewBinding(
 				key.WithKeys("up", "k"),
@@ -90,19 +99,6 @@ func (t *TableModel) Update(msg tea.Msg) (TableModel, tea.Cmd) {
 
 func (t *TableModel) View() tea.View {
 	return tea.NewView(t.table.View())
-}
-
-func AccessPointsToRows(networks []models.AccessPoint) []table.Row {
-	rows := make([]table.Row, 0, len(networks))
-	for _, ap := range networks {
-		rows = append(rows, table.Row{
-			ap.SSID,
-			ap.SecurityType,
-			strconv.FormatBool(ap.Hidden),
-			strconv.FormatInt(int64(ap.Strength), 10),
-		})
-	}
-	return rows
 }
 
 func (t TableModel) HelpView() []key.Binding {

@@ -6,7 +6,6 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/models"
-	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
@@ -39,13 +38,13 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 	case savedWifiMsg:
 		w.savedList.networks = msg
 
-		rows := comp.AccessPointsToRows(msg)
+		rows := AccessPointsToRows(msg)
 		w.savedList.table.SetRows(rows)
 	case availableWifiMsg:
 		w.scanning = false
 		w.availableList.networks = msg
 
-		rows := comp.AccessPointsToRows(msg)
+		rows := AccessPointsToRows(msg)
 		w.availableList.table.SetRows(rows)
 		return w, fetchSavedNetworks(w.client, []models.AccessPoint(msg))
 
