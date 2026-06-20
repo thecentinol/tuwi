@@ -10,14 +10,24 @@ import (
 func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	var secType string
 	switch {
+	case rsnFlags&dbus.NmSecMgmtSae != 0 && wpaFlags&dbus.NmSecMgmtPsk != 0:
+		secType = "WPA2/WPA3"
 	case rsnFlags&dbus.NmSecMgmtSae != 0:
-		secType = "sae" // WPA3
+		secType = "WPA3"
 	case rsnFlags&dbus.NmSecMgmtPsk != 0:
-		secType = "wpa-psk" // WPA2
+		secType = "WPA2"
 	case wpaFlags&dbus.NmSecMgmtPsk != 0:
-		secType = "wpa-psk" // WPA
-	case rsnFlags&dbus.NmSecMgmt8021 != 0 || wpaFlags&dbus.NmSecMgmt8021 != 0:
-		secType = "wpa-eap"
+		secType = "WPA"
+	case wpaFlags&dbus.NmSecMgmt8021 != 0:
+		secType = "WPA-ENT"
+	case rsnFlags&dbus.NmSecMgmt8021 != 0:
+		secType = "WPA2-ENT"
+	case rsnFlags&dbus.NmSecMgmtSuiteB192 != 0:
+		secType = "WPA3-ENT"
+	case rsnFlags&dbus.NmSecMgmtOwe != 0:
+		secType = "OWE"
+	case rsnFlags&dbus.NmSecMgmtOweTm != 0:
+		secType = "OWE-TM"
 	case flags&dbus.NmApFlagsPrivacy != 0:
 		secType = "wep"
 	default:

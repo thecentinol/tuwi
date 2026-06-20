@@ -38,17 +38,18 @@ const (
 // Access Point Flags, WpaFlags, RsnFlags //
 // //////////////////////////////////////////
 const (
-	// Flags
+	// AP Flags
 	NmApFlagsNone    = 0x00000000
 	NmApFlagsPrivacy = 0x00000001
 	NmApFlagsWps     = 0x00000002
 	NmApFlagsWpsPbc  = 0x00000004
 	NmApFlagsWpsPin  = 0x00000008
 
-	// Wpa + Rsn
-	NmSecMgmtPsk   = 0x00000100
-	NmSecMgmt8021  = 0x00000200
-	NmSecMgmtSae   = 0x00000400
-	NmSecMgmtOwe   = 0x00000800
-	NmSecMgmtOweTm = 0x00001000
+	// AP Security Flags
+	NmSecMgmtPsk       = 0x00000100
+	NmSecMgmt8021      = 0x00000200
+	NmSecMgmtSae       = 0x00000400
+	NmSecMgmtOwe       = 0x00000800
+	NmSecMgmtOweTm     = 0x00001000
+	NmSecMgmtSuiteB192 = 0x00002000 // WPA3 Enterprise Suite-B
 )
