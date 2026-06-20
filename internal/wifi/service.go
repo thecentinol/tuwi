@@ -26,6 +26,13 @@ func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	return secType
 }
 
+func isHidden(ssidBytes []byte) (bool, string) {
+	if len(ssidBytes) == 0 {
+		return true, "<hidden>"
+	}
+	return false, string(ssidBytes)
+}
+
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
 func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
@@ -53,12 +60,8 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 			return nil, err
 		}
 		rawSsid := ssidBytes.Value().([]byte)
-		hidden := len(rawSsid) == 0
 
-		ssid := string(rawSsid)
-		if hidden {
-			ssid = "<hidden>"
-		}
+		hidden, ssid := isHidden(rawSsid)
 
 		bssid, err := ap.GetProperty(dbus.AccessPointBssid)
 		if err != nil {
