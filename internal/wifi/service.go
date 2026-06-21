@@ -30,8 +30,10 @@ func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 		secType = "OWE-TM"
 	case flags&dbus.NmApFlagsPrivacy != 0:
 		secType = "wep"
-	default:
+	case flags == dbus.NmApFlagsNone:
 		secType = "open"
+	default:
+		secType = "unknown"
 	}
 	return secType
 }
