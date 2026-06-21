@@ -33,3 +33,24 @@ func TestDetermineSecurityType(t *testing.T) {
 		})
 	}
 }
+func FuzzDetermineSecurityType(f *testing.F) {
+	f.Add(uint32(0), uint32(0), uint32(0))
+	f.Add(uint32(0), uint32(0), uint32(dbus.NmSecMgmtSae))
+
+	f.Fuzz(func(t *testing.T, flags, wpa, rsn uint32) {
+		result := determineSecurityType(flags, wpa, rsn)
+		if result == "" {
+			t.Error("should never return empty string")
+		}
+
+		if result == "unknown" {
+			t.Logf("unknown combination: flags=%d, wpa=%d, rsn=%d", flags, wpa, rsn)
+		}
+
+		if flags == 0 && wpa == 0 && rsn == 0 {
+			if result != "open" {
+				t.Errorf("no flags set but got %q, want open", result)
+			}
+		}
+	})
+}
