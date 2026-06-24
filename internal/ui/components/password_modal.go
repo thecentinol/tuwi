@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/thecentinol/tuwi/internal/events"
 )
 
 type passwordKeymap struct {
@@ -24,11 +25,6 @@ type PasswordModel struct {
 	Y       int // y-coordinate for layering in root model
 	Width   int
 	Focused bool
-}
-
-type PasswordResultMsg struct {
-	Cancelled bool
-	Password  string
 }
 
 func NewPasswordModal() PasswordModel {
@@ -121,7 +117,7 @@ func (p PasswordModel) HelpView() []key.Binding {
 
 func handlePasswordSubmit(password string) tea.Cmd {
 	return func() tea.Msg {
-		return PasswordResultMsg{
+		return events.PasswordResultMsg{
 			Cancelled: false,
 			Password:  password,
 		}
@@ -130,7 +126,7 @@ func handlePasswordSubmit(password string) tea.Cmd {
 
 func handlePasswordClose() tea.Cmd {
 	return func() tea.Msg {
-		return PasswordResultMsg{
+		return events.PasswordResultMsg{
 			Cancelled: true,
 			Password:  "",
 		}

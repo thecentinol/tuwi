@@ -5,24 +5,20 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/models"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
-type (
-	WifiModel struct {
-		client *dbus.Client
+type WifiModel struct {
+	client *dbus.Client
 
-		savedList     WifiListModel
-		availableList WifiListModel
+	savedList     WifiListModel
+	availableList WifiListModel
 
-		scanning bool
-		err      error
-	}
-
-	savedWifiMsg     []models.AccessPoint
-	availableWifiMsg []models.AccessPoint
-)
+	scanning bool
+	err      error
+}
 
 func (w WifiModel) Init() tea.Cmd {
 	return tea.Batch(
@@ -35,18 +31,18 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
-	case savedWifiMsg:
-		w.savedList.networks = msg
+	case events.SavedWifiMsg:
+		w.savedList.networks = msg.Networks
 
-		rows := AccessPointsToRows(msg)
+		rows := AccessPointsToRows(msg.Networks)
 		w.savedList.table.SetRows(rows)
-	case availableWifiMsg:
+	case events.AvailableWifiMsg:
 		w.scanning = false
-		w.availableList.networks = msg
+		w.availableList.networks = msg.Networks
 
-		rows := AccessPointsToRows(msg)
+		rows := AccessPointsToRows(msg.Networks)
 		w.availableList.table.SetRows(rows)
-		return w, fetchSavedNetworks(w.client, []models.AccessPoint(msg))
+		return w, fetchSavedNetworks(w.client, []models.AccessPoint(msg.Networks))
 
 	case error:
 		w.scanning = false
@@ -87,7 +83,7 @@ func fetchSavedNetworks(c *dbus.Client, available []models.AccessPoint) tea.Cmd 
 		if err != nil {
 			return err
 		}
-		return savedWifiMsg(saved)
+		return events.SavedWifiMsg{Networks: saved}
 	}
 }
 
@@ -97,6 +93,6 @@ func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
 		if err != nil {
 			return err
 		}
-		return availableWifiMsg(networks)
+		return events.AvailableWifiMsg{Networks: networks}
 	}
 }

@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/models"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
@@ -31,10 +32,6 @@ type WifiListModel struct {
 	table    comp.TableModel
 	help     help.Model
 	keymap   WifiKeymap
-}
-
-type showPasswordModalMsg struct {
-	network *models.AccessPoint
 }
 
 func NewSavedList(c *dbus.Client) WifiListModel {
@@ -128,7 +125,7 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 
 			if selected.Secured {
 				return w, func() tea.Msg {
-					return showPasswordModalMsg{network: selected}
+					return events.ShowPasswordModalMsg{Network: selected}
 				}
 			}
 
@@ -136,11 +133,11 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
 		}
 
-	case wifiConnectReqMsg:
+	case events.WifiConnectReqMsg:
 		err := wifi.ConnectToAvailableSecured(
 			w.client,
-			msg.network,
-			msg.password,
+			msg.Network,
+			msg.Password,
 		)
 		log.Printf("Connection req sent with password: %v", err)
 

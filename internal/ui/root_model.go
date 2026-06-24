@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/models"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 )
@@ -28,15 +29,6 @@ type Model struct {
 	passwordModal     comp.PasswordModel
 	showPasswordModal bool
 	selectedNetwork   *models.AccessPoint
-
-	// TODO: implement the following:
-	// bluetooth BtModel
-	// passwdModal   bool
-}
-
-type wifiConnectReqMsg struct {
-	network  *models.AccessPoint
-	password string
 }
 
 func NewModel(client *dbus.Client) Model {
@@ -90,12 +82,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.sizeComponents()
 
-	case showPasswordModalMsg:
+	case events.ShowPasswordModalMsg:
 		m.showPasswordModal = true
-		m.selectedNetwork = msg.network
+		m.selectedNetwork = msg.Network
 		return m, m.passwordModal.Init()
 
-	case comp.PasswordResultMsg:
+	case events.PasswordResultMsg:
 		m.showPasswordModal = false
 
 		if msg.Cancelled {
@@ -103,9 +95,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, func() tea.Msg {
-			return wifiConnectReqMsg{
-				network:  m.selectedNetwork,
-				password: msg.Password,
+			return events.WifiConnectReqMsg{
+				Network:  m.selectedNetwork,
+				Password: msg.Password,
 			}
 		}
 	}
