@@ -6,7 +6,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
@@ -42,7 +42,7 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 
 		rows := AccessPointsToRows(msg.Networks)
 		w.availableList.table.SetRows(rows)
-		return w, fetchSavedNetworks(w.client, []models.AccessPoint(msg.Networks))
+		return w, fetchSavedNetworks(w.client, []nm.AccessPoint(msg.Networks))
 
 	case error:
 		w.scanning = false
@@ -77,7 +77,7 @@ func (w WifiModel) HelpView() []key.Binding {
 	return w.availableList.HelpView()
 }
 
-func fetchSavedNetworks(c *dbus.Client, available []models.AccessPoint) tea.Cmd {
+func fetchSavedNetworks(c *dbus.Client, available []nm.AccessPoint) tea.Cmd {
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(c, available)
 		if err != nil {

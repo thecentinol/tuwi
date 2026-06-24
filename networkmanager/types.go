@@ -1,8 +1,6 @@
-package models
+package networkmanager
 
-import (
-	godbus "github.com/godbus/dbus/v5"
-)
+import godbus "github.com/godbus/dbus/v5"
 
 type AccessPoint struct {
 	SSID           string

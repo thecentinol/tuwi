@@ -8,7 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 )
 
@@ -28,7 +28,7 @@ type Model struct {
 	wifi              WifiModel
 	passwordModal     comp.PasswordModel
 	showPasswordModal bool
-	selectedNetwork   *models.AccessPoint
+	selectedNetwork   *nm.AccessPoint
 }
 
 func NewModel(client *dbus.Client) Model {

@@ -4,33 +4,33 @@ import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
 	"github.com/thecentinol/tuwi/internal/dbus"
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
 func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	var secType string
 	switch {
-	case rsnFlags&dbus.NmSecMgmtSae != 0 && wpaFlags&dbus.NmSecMgmtPsk != 0:
+	case rsnFlags&nm.NmSecMgmtSae != 0 && wpaFlags&nm.NmSecMgmtPsk != 0:
 		secType = "WPA2/WPA3"
-	case rsnFlags&dbus.NmSecMgmtSae != 0:
+	case rsnFlags&nm.NmSecMgmtSae != 0:
 		secType = "WPA3"
-	case rsnFlags&dbus.NmSecMgmtPsk != 0:
+	case rsnFlags&nm.NmSecMgmtPsk != 0:
 		secType = "WPA2"
-	case wpaFlags&dbus.NmSecMgmtPsk != 0:
+	case wpaFlags&nm.NmSecMgmtPsk != 0:
 		secType = "WPA"
-	case wpaFlags&dbus.NmSecMgmt8021 != 0:
+	case wpaFlags&nm.NmSecMgmt8021 != 0:
 		secType = "WPA-ENT"
-	case rsnFlags&dbus.NmSecMgmt8021 != 0:
+	case rsnFlags&nm.NmSecMgmt8021 != 0:
 		secType = "WPA2-ENT"
-	case rsnFlags&dbus.NmSecMgmtSuiteB192 != 0:
+	case rsnFlags&nm.NmSecMgmtSuiteB192 != 0:
 		secType = "WPA3-ENT"
-	case rsnFlags&dbus.NmSecMgmtOwe != 0:
+	case rsnFlags&nm.NmSecMgmtOwe != 0:
 		secType = "OWE"
-	case rsnFlags&dbus.NmSecMgmtOweTm != 0:
+	case rsnFlags&nm.NmSecMgmtOweTm != 0:
 		secType = "OWE-TM"
-	case flags&dbus.NmApFlagsPrivacy != 0:
+	case flags&nm.NmApFlagsPrivacy != 0:
 		secType = "wep"
-	case flags == dbus.NmApFlagsNone:
+	case flags == nm.NmApFlagsNone:
 		secType = "open"
 	default:
 		secType = "unknown"
@@ -47,27 +47,27 @@ func isHidden(ssidBytes []byte) (bool, string) {
 
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
-func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
-	wifiDevicePath, err := dbus.GetWifiDevice(c)
+func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
+	wifiDevicePath, err := GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get access points: %v", err)
 	}
 
-	if err := dbus.RequestScan(c, wifiDevicePath); err != nil {
+	if err := RequestScan(c, wifiDevicePath); err != nil {
 		return nil, err
 	}
 
-	accessPoints, err := dbus.GetAccessPoints(c, wifiDevicePath)
+	accessPoints, err := GetAccessPoints(c, wifiDevicePath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get access points: %v", err)
 	}
 
-	var networks []models.AccessPoint
+	var networks []nm.AccessPoint
 
 	for _, accessPointPath := range accessPoints {
-		ap := c.Conn.Object(dbus.BaseServiceName, accessPointPath)
+		ap := c.Conn.Object(nm.BaseServiceName, accessPointPath)
 
-		ssidBytes, err := ap.GetProperty(dbus.AccessPointSsid)
+		ssidBytes, err := ap.GetProperty(nm.AccessPointSsid)
 		if err != nil {
 			return nil, err
 		}
@@ -75,25 +75,25 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 
 		hidden, ssid := isHidden(rawSsid)
 
-		bssid, err := ap.GetProperty(dbus.AccessPointBssid)
+		bssid, err := ap.GetProperty(nm.AccessPointBssid)
 		if err != nil {
 			return nil, err
 		}
 
-		strength, err := ap.GetProperty(dbus.AccessPointStrength)
+		strength, err := ap.GetProperty(nm.AccessPointStrength)
 		if err != nil {
 			return nil, err
 		}
 
-		flagsRaw, err := ap.GetProperty(dbus.AccessPointFlags)
+		flagsRaw, err := ap.GetProperty(nm.AccessPointFlags)
 		if err != nil {
 			return nil, err
 		}
-		wpaFlags, err := ap.GetProperty(dbus.AccessPointWpaFlags)
+		wpaFlags, err := ap.GetProperty(nm.AccessPointWpaFlags)
 		if err != nil {
 			return nil, err
 		}
-		rsnFlags, err := ap.GetProperty(dbus.AccessPointRsnFlags)
+		rsnFlags, err := ap.GetProperty(nm.AccessPointRsnFlags)
 		if err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 		rsn := rsnFlags.Value().(uint32)
 		securityType := determineSecurityType(flags, wpa, rsn)
 
-		networks = append(networks, models.AccessPoint{
+		networks = append(networks, nm.AccessPoint{
 			SSID:         ssid,
 			BSSID:        bssid.Value().(string),
 			SecurityType: securityType,
@@ -123,31 +123,31 @@ func GetAvailableNetworks(c *dbus.Client) ([]models.AccessPoint, error) {
 	return networks, nil
 }
 
-func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.AccessPoint, error) {
-	visibleAPs := make(map[string]models.AccessPoint)
+func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPoint, error) {
+	visibleAPs := make(map[string]nm.AccessPoint)
 	for _, ap := range available {
 		if ap.SSID != "" {
 			visibleAPs[ap.SSID] = ap
 		}
 	}
 
-	settingsObj := c.Conn.Object(dbus.BaseServiceName, dbus.SettingsBaseObjPath)
+	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
 
 	var connPaths []godbus.ObjectPath
-	err := settingsObj.Call(dbus.ListConnections, 0).Store(&connPaths)
+	err := settingsObj.Call(nm.ListConnections, 0).Store(&connPaths)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list connections: %w", err)
 	}
 
-	var savedNetworks []models.AccessPoint
+	var savedNetworks []nm.AccessPoint
 
 	for _, path := range connPaths {
-		conn := c.Conn.Object(dbus.BaseServiceName, path)
+		conn := c.Conn.Object(nm.BaseServiceName, path)
 
 		// this is the response shape for calling GetSettings,
 		// as seen in ...Settings.Connection in the docs
 		var settings map[string]map[string]godbus.Variant
-		err := conn.Call(dbus.GetSettings, 0).Store(&settings)
+		err := conn.Call(nm.GetSettings, 0).Store(&settings)
 		if err != nil {
 			// TODO: log error
 			continue
@@ -199,7 +199,7 @@ func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.
 			devicePath = activeScan.DevicePath
 		}
 
-		savedNetworks = append(savedNetworks, models.AccessPoint{
+		savedNetworks = append(savedNetworks, nm.AccessPoint{
 			SSID:           ssid,
 			BSSID:          bssid,
 			ConnectionUUID: uuid,
@@ -219,39 +219,39 @@ func GetSavedNetworks(c *dbus.Client, available []models.AccessPoint) ([]models.
 	return savedNetworks, nil
 }
 
-func GetActiveNetwork(c *dbus.Client) (*models.AccessPoint, error) {
-	var activeNetwork models.AccessPoint
+func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
+	var activeNetwork nm.AccessPoint
 
-	devicePath, err := dbus.GetWifiDevice(c)
+	devicePath, err := GetWifiDevice(c)
 	if err != nil {
 		return nil, err
 	}
-	device := c.Conn.Object(dbus.BaseServiceName, devicePath)
-	active, err := device.GetProperty(dbus.ActiveAccessPoint)
+	device := c.Conn.Object(nm.BaseServiceName, devicePath)
+	active, err := device.GetProperty(nm.ActiveAccessPoint)
 	if err != nil {
 		return nil, err
 	}
 	activePath := active.Value().(godbus.ObjectPath)
-	apObject := c.Conn.Object(dbus.BaseServiceName, activePath)
+	apObject := c.Conn.Object(nm.BaseServiceName, activePath)
 
-	ssid, err := apObject.GetProperty(dbus.AccessPointSsid)
+	ssid, err := apObject.GetProperty(nm.AccessPointSsid)
 	if err != nil {
 		return nil, err
 	}
 
-	strength, err := apObject.GetProperty(dbus.AccessPointStrength)
+	strength, err := apObject.GetProperty(nm.AccessPointStrength)
 	if err != nil {
 		return nil, err
 	}
 
-	flags, err := apObject.GetProperty(dbus.AccessPointFlags)
+	flags, err := apObject.GetProperty(nm.AccessPointFlags)
 	if err != nil {
 		return nil, err
 	}
 
 	ssidBytes := string(ssid.Value().([]byte))
 	flagsVal := flags.Value().(uint32)
-	activeNetwork = models.AccessPoint{
+	activeNetwork = nm.AccessPoint{
 		SSID:     ssidBytes,
 		Strength: strength.Value().(uint8),
 		Secured:  flagsVal&0x00000001 != 0,
@@ -263,10 +263,10 @@ func GetActiveNetwork(c *dbus.Client) (*models.AccessPoint, error) {
 
 func ConnectToAvailableSecured(
 	client *dbus.Client,
-	network *models.AccessPoint,
+	network *nm.AccessPoint,
 	password string,
 ) error {
-	err := dbus.AddAndActivateConnection(
+	err := AddAndActivateConnection(
 		client,
 		*network,
 		password,

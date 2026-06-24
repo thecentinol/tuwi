@@ -1,11 +1,11 @@
 package events
 
 import (
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
 type ShowPasswordModalMsg struct {
-	Network *models.AccessPoint
+	Network *nm.AccessPoint
 }
 
 type PasswordResultMsg struct {

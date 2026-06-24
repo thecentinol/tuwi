@@ -1,4 +1,4 @@
-package dbus
+package networkmanager
 
 const (
 	BaseServiceName = "org.freedesktop.NetworkManager"

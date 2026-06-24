@@ -1,12 +1,12 @@
 package events
 
 import (
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
-type SavedWifiMsg struct{ Networks []models.AccessPoint }
-type AvailableWifiMsg struct{ Networks []models.AccessPoint }
+type SavedWifiMsg struct{ Networks []nm.AccessPoint }
+type AvailableWifiMsg struct{ Networks []nm.AccessPoint }
 type WifiConnectReqMsg struct {
-	Network  *models.AccessPoint
+	Network  *nm.AccessPoint
 	Password string
 }

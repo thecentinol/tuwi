@@ -8,7 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/models"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
 	"log"
@@ -28,7 +28,7 @@ type WifiListModel struct {
 	width    int
 	height   int
 	focused  bool
-	networks []models.AccessPoint
+	networks []nm.AccessPoint
 	table    comp.TableModel
 	help     help.Model
 	keymap   WifiKeymap
@@ -182,7 +182,7 @@ func (w WifiListModel) HelpView() []key.Binding {
 	return bindings
 }
 
-func (w *WifiListModel) SelectedNetwork() *models.AccessPoint {
+func (w *WifiListModel) SelectedNetwork() *nm.AccessPoint {
 	idx := w.table.Cursor()
 
 	if idx < 0 || idx >= len(w.networks) {
@@ -191,7 +191,7 @@ func (w *WifiListModel) SelectedNetwork() *models.AccessPoint {
 	return &w.networks[idx]
 }
 
-func AccessPointsToRows(networks []models.AccessPoint) []table.Row {
+func AccessPointsToRows(networks []nm.AccessPoint) []table.Row {
 	rows := make([]table.Row, 0, len(networks))
 	for _, ap := range networks {
 		rows = append(rows, table.Row{
