@@ -1,15 +1,16 @@
-package dbus
+package wifi
 
 import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
-	"github.com/thecentinol/tuwi/internal/models"
+	"github.com/thecentinol/tuwi/internal/dbus"
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"time"
 )
 
-func GetDevices(c *Client) ([]godbus.ObjectPath, error) {
-	nm := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := nm.Call(BaseServiceName+".GetDevices", 0)
+func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
+	nm := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+	call := nm.Call(nm.BaseServiceName+".GetDevices", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
@@ -20,7 +21,7 @@ func GetDevices(c *Client) ([]godbus.ObjectPath, error) {
 	return devices, nil
 }
 
-func GetWifiDevice(c *Client) (godbus.ObjectPath, error) {
+func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 	devices, err := GetDevices(c)
 	if err != nil {
 		return "", err
@@ -28,8 +29,8 @@ func GetWifiDevice(c *Client) (godbus.ObjectPath, error) {
 
 	// finding the wifi device
 	for _, v := range devices {
-		device := c.Conn.Object(BaseServiceName, v)
-		variant, err := device.GetProperty(DeviceType)
+		device := c.Conn.Object(nm.BaseServiceName, v)
+		variant, err := device.GetProperty(nm.DeviceType)
 		if err != nil {
 			return "", err
 		}
@@ -42,12 +43,12 @@ func GetWifiDevice(c *Client) (godbus.ObjectPath, error) {
 	return "", fmt.Errorf("No wifi device found")
 }
 
-func RequestScan(c *Client, devicePath godbus.ObjectPath) error {
+func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	device := c.Conn.Object(
-		BaseServiceName,
+		nm.BaseServiceName,
 		devicePath,
 	)
-	call := device.Call(DeviceWireless+".RequestScan", 0, map[string]godbus.Variant{})
+	call := device.Call(nm.DeviceWireless+".RequestScan", 0, map[string]godbus.Variant{})
 	if call.Err != nil {
 		return call.Err
 	}
@@ -79,13 +80,13 @@ func RequestScan(c *Client, devicePath godbus.ObjectPath) error {
 }
 
 // this gets the raw paths for the access points
-func GetAccessPoints(c *Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPath, error) {
+func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPath, error) {
 	nm := c.Conn.Object(
-		BaseServiceName,
+		nm.BaseServiceName,
 		devicePath,
 	)
 
-	call := nm.Call(DeviceWireless+".GetAllAccessPoints", 0)
+	call := nm.Call(nm.DeviceWireless+".GetAllAccessPoints", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
@@ -98,8 +99,8 @@ func GetAccessPoints(c *Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPa
 }
 
 func AddAndActivateConnection(
-	c *Client,
-	network models.AccessPoint,
+	c *dbus.Client,
+	network nm.AccessPoint,
 	password string,
 ) error {
 	// keyMgmt := network.SecurityType
@@ -131,8 +132,8 @@ func AddAndActivateConnection(
 
 	options := map[string]godbus.Variant{}
 
-	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(AddAndConnect, 0, settings, network.DevicePath, network.APPath, options)
+	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+	call := obj.Call(nm.AddAndConnect, 0, settings, network.DevicePath, network.APPath, options)
 	if call.Err != nil {
 		return call.Err
 	}
