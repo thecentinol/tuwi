@@ -9,8 +9,8 @@ import (
 )
 
 func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
-	nm := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
-	call := nm.Call(nm.BaseServiceName+".GetDevices", 0)
+	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+	call := obj.Call(nm.BaseServiceName+".GetDevices", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
@@ -81,12 +81,12 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 
 // this gets the raw paths for the access points
 func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPath, error) {
-	nm := c.Conn.Object(
+	obj := c.Conn.Object(
 		nm.BaseServiceName,
 		devicePath,
 	)
 
-	call := nm.Call(nm.DeviceWireless+".GetAllAccessPoints", 0)
+	call := obj.Call(nm.DeviceWireless+".GetAllAccessPoints", 0)
 	if call.Err != nil {
 		return nil, call.Err
 	}
