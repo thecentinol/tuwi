@@ -11,7 +11,7 @@ import (
 func main() {
 	client, err := dbus.NewClient()
 	if err != nil {
-		log.Fatalf("Initialization failed: %v", err)
+		log.Fatal(err)
 	}
 	defer client.Close()
 
