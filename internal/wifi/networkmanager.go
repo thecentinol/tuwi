@@ -63,6 +63,15 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 		godbus.WithMatchObjectPath(devicePath),
 	)
 
+	defer func() {
+		c.Conn.RemoveMatchSignal(
+			godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
+			godbus.WithMatchMember("PropertiesChanged"),
+			godbus.WithMatchObjectPath(devicePath),
+		)
+		c.Conn.RemoveSignal(ch) // deregister the channel
+	}()
+
 	select {
 	case <-ch:
 		// scan complete, continue
@@ -70,12 +79,6 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 		return fmt.Errorf("scan timed out")
 	}
 
-	c.Conn.RemoveMatchSignal(
-		godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
-		godbus.WithMatchMember("PropertiesChanged"),
-		godbus.WithMatchObjectPath(devicePath),
-	)
-	c.Conn.RemoveSignal(ch) // deregister the channel
 	return nil
 }
 
