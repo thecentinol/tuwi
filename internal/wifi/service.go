@@ -5,6 +5,7 @@ import (
 	godbus "github.com/godbus/dbus/v5"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+	"log"
 )
 
 func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
@@ -50,16 +51,16 @@ func isHidden(ssidBytes []byte) (bool, string) {
 func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 	wifiDevicePath, err := GetWifiDevice(c)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get access points: %v", err)
+		return nil, fmt.Errorf("GetAvailableNetworks: GetWifiDevice: %w", err)
 	}
 
 	if err := RequestScan(c, wifiDevicePath); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetAvailableNetworks: RequestScan: %w", err)
 	}
 
 	accessPoints, err := GetAccessPoints(c, wifiDevicePath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get access points: %v", err)
+		return nil, fmt.Errorf("GetAvailableNetworks: error getting access points: %w", err)
 	}
 
 	var networks []nm.AccessPoint
@@ -69,7 +70,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 
 		ssidBytes, err := ap.GetProperty(nm.AccessPointSsid)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointSsid property: %w", err)
 		}
 		rawSsid := ssidBytes.Value().([]byte)
 
@@ -77,25 +78,25 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 
 		bssid, err := ap.GetProperty(nm.AccessPointBssid)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointBssid property: %w", err)
 		}
 
 		strength, err := ap.GetProperty(nm.AccessPointStrength)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointStrength property: %w", err)
 		}
 
 		flagsRaw, err := ap.GetProperty(nm.AccessPointFlags)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointFlags property: %w", err)
 		}
 		wpaFlags, err := ap.GetProperty(nm.AccessPointWpaFlags)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointWpaFlags property: %w", err)
 		}
 		rsnFlags, err := ap.GetProperty(nm.AccessPointRsnFlags)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointRsnFlags property: %w", err)
 		}
 
 		flags := flagsRaw.Value().(uint32)
@@ -136,7 +137,7 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 	var connPaths []godbus.ObjectPath
 	err := settingsObj.Call(nm.ListConnections, 0).Store(&connPaths)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to list connections: %w", err)
+		return nil, fmt.Errorf("GetSavedNetworks: list connections: %w", err)
 	}
 
 	var savedNetworks []nm.AccessPoint
@@ -149,7 +150,7 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 		var settings map[string]map[string]godbus.Variant
 		err := conn.Call(nm.GetSettings, 0).Store(&settings)
 		if err != nil {
-			// TODO: log error
+			log.Printf("GetSavedNetworks: failed to get settings for connection: %s: %v", path, err)
 			continue
 		}
 
@@ -224,29 +225,29 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 
 	devicePath, err := GetWifiDevice(c)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetActiveNetwork: GetWifiDevice: %w", err)
 	}
 	device := c.Conn.Object(nm.BaseServiceName, devicePath)
 	active, err := device.GetProperty(nm.ActiveAccessPoint)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetActiveNetwork: ActiveAccessPoint property: %w", err)
 	}
 	activePath := active.Value().(godbus.ObjectPath)
 	apObject := c.Conn.Object(nm.BaseServiceName, activePath)
 
 	ssid, err := apObject.GetProperty(nm.AccessPointSsid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetActiveNetwork: ActivePointSsid property: %w", err)
 	}
 
 	strength, err := apObject.GetProperty(nm.AccessPointStrength)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetActiveNetwork: AccessPointStrength property: %w", err)
 	}
 
 	flags, err := apObject.GetProperty(nm.AccessPointFlags)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetActiveNetwork: AccessPointFlags property: %w", err)
 	}
 
 	ssidBytes := string(ssid.Value().([]byte))
@@ -273,7 +274,7 @@ func ConnectToAvailableSecured(
 	)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("ConnectToAvailableSecured: AddAndActivateConnection: %w", err)
 	}
 
 	return nil
