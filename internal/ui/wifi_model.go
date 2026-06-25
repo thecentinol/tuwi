@@ -42,11 +42,12 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 
 		rows := AccessPointsToRows(msg.Networks)
 		w.availableList.table.SetRows(rows)
-		return w, fetchSavedNetworks(w.client, []nm.AccessPoint(msg.Networks))
+		cmds = append(cmds, fetchSavedNetworks(w.client, msg.Networks))
 
 	case error:
 		w.scanning = false
 		w.err = msg
+		return w, events.ShowError(msg)
 	}
 
 	var cmd tea.Cmd
@@ -81,7 +82,7 @@ func fetchSavedNetworks(c *dbus.Client, available []nm.AccessPoint) tea.Cmd {
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(c, available)
 		if err != nil {
-			return err
+			return events.ShowError(err)
 		}
 		return events.SavedWifiMsg{Networks: saved}
 	}
@@ -91,7 +92,7 @@ func fetchAvailableWifiNetworks(c *dbus.Client) tea.Cmd {
 	return func() tea.Msg {
 		networks, err := wifi.GetAvailableNetworks(c)
 		if err != nil {
-			return err
+			return events.ShowError(err)
 		}
 		return events.AvailableWifiMsg{Networks: networks}
 	}
