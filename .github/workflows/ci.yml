@@ -1,0 +1,22 @@
+name: Continuous Integration
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+    pull_request:
+
+jobs:
+    unit-tests:
+        name: Run unit tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version: 1.26.x
+            - name: Test code
+              run: go test ./...
