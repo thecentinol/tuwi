@@ -19,16 +19,19 @@ type keymap struct {
 }
 
 type Model struct {
-	Client            *dbus.Client
-	width             int
-	height            int
-	focus             int
-	help              help.Model
-	keymap            keymap
-	wifi              WifiModel
+	Client *dbus.Client
+	width  int
+	height int
+	focus  int
+	help   help.Model
+	keymap keymap
+
+	wifi WifiModel
 	passwordModal     comp.PasswordModel
 	showPasswordModal bool
 	selectedNetwork   *nm.AccessPoint
+	errorModal     comp.ErrorModel
+	showErrorModal bool
 }
 
 func NewModel(client *dbus.Client) Model {
@@ -41,6 +44,7 @@ func NewModel(client *dbus.Client) Model {
 			availableList: NewAvailableList(client),
 		},
 		passwordModal: comp.NewPasswordModal(),
+		errorModal:    comp.NewErrorModal(),
 		keymap: keymap{
 			focus1: key.NewBinding(
 				key.WithKeys("1"),
@@ -100,12 +104,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				Password: msg.Password,
 			}
 		}
+	case events.ShowErrorMsg:
+		m.errorModal.SetText(msg.Err.Error())
+		m.showErrorModal = true
+		m.errorModal.Width = m.width / 3
+		m.errorModal.MaxHeight = m.height / 5
+		m.errorModal.X = (m.width / 2) - (m.errorModal.Width / 2)
+		m.errorModal.Y = (m.height / 2) - (m.errorModal.Height / 2)
+		return m, m.errorModal.Init()
+
+	case events.DismissErrorMsg:
+		m.showErrorModal = false
 	}
 
-	if m.showPasswordModal {
+	switch {
+	case m.showPasswordModal:
 		m.passwordModal, cmd = m.passwordModal.Update(msg)
 		cmds = append(cmds, cmd)
-	} else {
+	case m.showErrorModal:
+		m.errorModal, cmd = m.errorModal.Update(msg)
+		cmds = append(cmds, cmd)
+
+	default:
 		m.wifi.savedList.focused = m.focus == 0
 		m.wifi.availableList.focused = m.focus == 1
 
@@ -121,6 +141,7 @@ func (m Model) View() tea.View {
 	wifiView := m.wifi.View().Content
 	helpView := m.HelpView()
 	passwordView := m.passwordModal.View().Content
+	errorModalView := m.errorModal.View().Content
 
 	base := lipgloss.NewLayer(
 		lipgloss.JoinVertical(
@@ -132,13 +153,22 @@ func (m Model) View() tea.View {
 
 	layers := []*lipgloss.Layer{base}
 
-	if m.showPasswordModal {
+	if m.showPasswordModal && !m.showErrorModal {
 		passwordModal := lipgloss.NewLayer(passwordView).
 			Z(1).
 			X(m.passwordModal.X).
 			Y(m.passwordModal.Y)
 
 		layers = append(layers, passwordModal)
+	}
+
+	if m.showErrorModal && !m.showPasswordModal {
+		errorModal := lipgloss.NewLayer(errorModalView).
+			Z(1).
+			X(m.errorModal.X).
+			Y(m.errorModal.Y)
+
+		layers = append(layers, errorModal)
 	}
 
 	comp := lipgloss.NewCompositor(layers...)
@@ -179,20 +209,21 @@ func (m *Model) sizeComponents() {
 		{Title: "Strength", Width: colWidth - 10},
 	})
 
-	// Password Modal
 	modalWidth := m.width / 3
+
+	// Password Modal
 	iconWidth := 2
 	m.passwordModal.Width = modalWidth
 	m.passwordModal.Input.SetWidth(modalWidth - iconWidth - 4)
 
-	// get height and width of the modal
-	renderedModal := m.passwordModal.View().Content
-	getModalHeight := lipgloss.Height(renderedModal)
-	getModalWidth := lipgloss.Width(renderedModal)
+	// get height and width of password modal
+	renderedPasswordModal := m.passwordModal.View().Content
+	getPasswordModalHeight := lipgloss.Height(renderedPasswordModal)
+	getPasswordModalWidth := lipgloss.Width(renderedPasswordModal)
 
-	// calculate X and Y coordinates
-	m.passwordModal.X = (m.width / 2) - (getModalWidth / 2)
-	m.passwordModal.Y = (m.height / 2) - (getModalHeight / 2)
+	// calculate X and Y coordinates of password modal
+	m.passwordModal.X = (m.width / 2) - (getPasswordModalWidth / 2)
+	m.passwordModal.Y = (m.height / 2) - (getPasswordModalHeight / 2)
 }
 
 func (m Model) HelpView() string {
