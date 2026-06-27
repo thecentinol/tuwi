@@ -8,8 +8,9 @@ type AccessPoint struct {
 	ConnectionUUID string
 	SecurityType   string // wpa-psk, wpa-eap, none
 
-	DevicePath godbus.ObjectPath
-	APPath     godbus.ObjectPath
+	ConnectionPath godbus.ObjectPath
+	DevicePath     godbus.ObjectPath
+	APPath         godbus.ObjectPath
 
 	Strength uint8
 

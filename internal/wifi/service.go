@@ -206,8 +206,9 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 			ConnectionUUID: uuid,
 			SecurityType:   secType,
 
-			DevicePath: devicePath,
-			APPath:     activeAPPath,
+			ConnectionPath: path,
+			DevicePath:     devicePath,
+			APPath:         activeAPPath,
 
 			Strength: strength,
 
