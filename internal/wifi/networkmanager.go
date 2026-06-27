@@ -146,3 +146,70 @@ func AddAndActivateConnection(
 	}
 	return nil
 }
+
+func ActivateConnection(c *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
+	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+	call := obj.Call(nm.ActivateConnection, 0, network.ConnectionPath, network.DevicePath, network.APPath)
+	if call.Err != nil {
+		return "", fmt.Errorf("ActivateConnection: %w", call.Err)
+	}
+
+	var activeConnection godbus.ObjectPath
+	if err := call.Store(&activeConnection); err != nil {
+		return "", fmt.Errorf("ActivateConnection: store: %w", err)
+	}
+
+	ch := make(chan *godbus.Signal, 1)
+	c.Conn.Signal(ch)
+
+	// Listen to NMActiveConnectionState:
+	// https://networkmanager.dev/docs/libnm/latest/libnm-nm-dbus-interface.html#NMActiveConnectionState
+	// for changes to the state of the connection so we can
+	// act on the signal received.
+	c.Conn.AddMatchSignal(
+		godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
+		godbus.WithMatchMember("PropertiesChanged"),
+		godbus.WithMatchObjectPath(activeConnection),
+	)
+
+	defer func() {
+		c.Conn.RemoveMatchSignal(
+			godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
+			godbus.WithMatchMember("PropertiesChanged"),
+			godbus.WithMatchObjectPath(activeConnection),
+		)
+		c.Conn.RemoveSignal(ch)
+	}()
+
+	for {
+		select {
+		case sig := <-ch:
+
+			iface := sig.Body[0].(string)
+			if iface != nm.BaseServiceName+".Connection.Active" {
+				continue
+			}
+
+			props := sig.Body[1].(map[string]godbus.Variant)
+			stateVar, ok := props["State"]
+			if !ok {
+				continue
+			}
+
+			state := stateVar.Value().(uint32)
+
+			switch state {
+			case 1:
+				continue
+			case 2:
+				return activeConnection, nil
+			case 3:
+				continue
+			case 4:
+				return "", fmt.Errorf("ActivateConnection: connection failed")
+			}
+		case <-time.After(10 * time.Second):
+			return "", fmt.Errorf("ActivateConnection: timed out waiting for connection activation")
+		}
+	}
+}

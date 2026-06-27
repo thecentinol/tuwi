@@ -263,6 +263,16 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	return &activeNetwork, nil
 }
 
+func ConnectToSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
+	obj, err := ActivateConnection(client, network)
+
+	if err != nil {
+		return "", fmt.Errorf("ConnectToSaved: %w", err)
+	}
+
+	return obj, nil
+}
+
 func ConnectToAvailableSecured(
 	client *dbus.Client,
 	network *nm.AccessPoint,
