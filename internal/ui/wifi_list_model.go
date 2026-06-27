@@ -117,16 +117,7 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, w.keymap.connect):
-			selected := w.SelectedNetwork()
-			if selected == nil {
-				break
-			}
-
-			if selected.Secured {
-				return w, func() tea.Msg {
-					return events.ShowPasswordModalMsg{Network: selected}
-				}
-			}
+			w.ChooseConnection()
 
 		case key.Matches(msg, w.keymap.scan):
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
@@ -187,6 +178,27 @@ func (w *WifiListModel) SelectedNetwork() *nm.AccessPoint {
 		return nil
 	}
 	return &w.networks[idx]
+}
+
+func (w *WifiListModel) ChooseConnection() (WifiListModel, tea.Cmd) {
+	selected := w.SelectedNetwork()
+	switch {
+	// Connect to saved network.
+	case selected.IsSaved:
+		wifi.ConnectToSaved(w.client, *selected)
+
+	// Connect to available network that is not open.
+	case selected.Secured && !selected.IsSaved:
+		return *w, func() tea.Msg {
+			return events.ShowPasswordModalMsg{Network: selected}
+		}
+
+	// Connect to available network that is open.
+	case !selected.IsSaved && !selected.Secured && selected.SecurityType == "open":
+		// TODO: connect to open.
+	}
+
+	return *w, nil
 }
 
 func AccessPointsToRows(networks []nm.AccessPoint) []table.Row {
