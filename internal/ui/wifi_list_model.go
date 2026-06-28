@@ -11,7 +11,6 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/wifi"
-	"log"
 	"strconv"
 )
 
@@ -139,10 +138,9 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 			msg.Network,
 			msg.Password,
 		)
-		log.Printf("Connection req sent with password: %v", err)
 
 		if err != nil {
-			log.Printf("Error connecting to network: %v", err)
+			return w, events.ShowError(err)
 		}
 	}
 

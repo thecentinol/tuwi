@@ -12,11 +12,11 @@ func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
 	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
 	call := obj.Call(nm.BaseServiceName+".GetDevices", 0)
 	if call.Err != nil {
-		return nil, call.Err
+		return nil, fmt.Errorf("GetDevices: %w", call.Err)
 	}
 	var devices []godbus.ObjectPath
 	if err := call.Store(&devices); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetDevices store: %w", err)
 	}
 	return devices, nil
 }
@@ -24,7 +24,7 @@ func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
 func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 	devices, err := GetDevices(c)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("GetWifiDevice: %w", err)
 	}
 
 	// finding the wifi device
@@ -32,7 +32,7 @@ func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 		device := c.Conn.Object(nm.BaseServiceName, v)
 		variant, err := device.GetProperty(nm.DeviceType)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("GetWifiDevice: failed to get DeviceType property %w", err)
 		}
 		if deviceTypeVal, ok := variant.Value().(uint32); ok {
 			if deviceTypeVal == 2 {
@@ -40,7 +40,7 @@ func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("No wifi device found")
+	return "", fmt.Errorf("GetWifiDevice: no wifi device found")
 }
 
 func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
@@ -50,7 +50,7 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	)
 	call := device.Call(nm.DeviceWireless+".RequestScan", 0, map[string]godbus.Variant{})
 	if call.Err != nil {
-		return call.Err
+		return fmt.Errorf("RequestScan: %w", call.Err)
 	}
 
 	// channel for listening to LastScan property
@@ -76,7 +76,7 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	case <-ch:
 		// scan complete, continue
 	case <-time.After(10 * time.Second):
-		return fmt.Errorf("scan timed out")
+		return fmt.Errorf("RequestScan: timed out waiting for scan completion")
 	}
 
 	return nil
@@ -91,12 +91,12 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 
 	call := obj.Call(nm.DeviceWireless+".GetAllAccessPoints", 0)
 	if call.Err != nil {
-		return nil, call.Err
+		return nil, fmt.Errorf("GetAccessPoints: %w", call.Err)
 	}
 
 	var accessPoints []godbus.ObjectPath
 	if err := call.Store(&accessPoints); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetAccessPoints store: %w", err)
 	}
 	return accessPoints, nil
 }
@@ -106,11 +106,6 @@ func AddAndActivateConnection(
 	network nm.AccessPoint,
 	password string,
 ) error {
-	// keyMgmt := network.SecurityType
-	// if len(keyMgmt) > 0 {
-	// } else {
-	//     keyMgmt = "wpa-psk"
-	// }
 	settings := map[string]map[string]godbus.Variant{
 		"connection": {
 			"id":   godbus.MakeVariant(network.SSID),
@@ -138,7 +133,7 @@ func AddAndActivateConnection(
 	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
 	call := obj.Call(nm.AddAndConnect, 0, settings, network.DevicePath, network.APPath, options)
 	if call.Err != nil {
-		return call.Err
+		return fmt.Errorf("AddAndActivateConnection: %w", call.Err)
 	}
 
 	// these variables are the responses from calling
@@ -147,7 +142,7 @@ func AddAndActivateConnection(
 	var activeConnPath godbus.ObjectPath
 	var result map[string]godbus.Variant
 	if err := call.Store(&connPath, &activeConnPath, &result); err != nil {
-		return err
+		return fmt.Errorf("AddAndActivateConnection store: %w", err)
 	}
 	return nil
 }
