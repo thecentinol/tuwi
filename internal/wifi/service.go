@@ -290,3 +290,15 @@ func ConnectToAvailableSecured(
 
 	return nil
 }
+
+func Disconnect(client *dbus.Client) error {
+	ACs, err := ActiveConnections(client)
+	if err != nil {
+		return fmt.Errorf("Disconnect: ActiveConnections: %w", err)
+	}
+	err = DeactivateConnection(client, ACs)
+	if err != nil {
+		return fmt.Errorf("Disconnect: DeactivateConnection: %w", err)
+	}
+	return nil
+}
