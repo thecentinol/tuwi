@@ -15,11 +15,12 @@ import (
 )
 
 type WifiKeymap struct {
-	connect     key.Binding
-	forget      key.Binding
-	edit        key.Binding
-	autoConnect key.Binding
-	scan        key.Binding
+	connect,
+	disconnect,
+	forget,
+	edit,
+	autoConnect,
+	scan key.Binding
 }
 
 type WifiListModel struct {
@@ -49,9 +50,13 @@ func NewSavedList(c *dbus.Client) WifiListModel {
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
 			),
-			forget: key.NewBinding(
+			disconnect: key.NewBinding(
 				key.WithKeys("d"),
-				key.WithHelp("d", "forget"),
+				key.WithHelp("d", "disconnect"),
+			),
+			forget: key.NewBinding(
+				key.WithKeys("f"),
+				key.WithHelp("f", "forget"),
 			),
 			edit: key.NewBinding(
 				key.WithKeys("e"),
@@ -86,6 +91,11 @@ func NewAvailableList(c *dbus.Client) WifiListModel {
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
 			),
+			disconnect: key.NewBinding(
+				key.WithKeys(""),
+				key.WithHelp("", ""),
+				key.WithDisabled(),
+			),
 			scan: key.NewBinding(
 				key.WithKeys("s"),
 				key.WithHelp("s", "scan"),
@@ -117,15 +127,13 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, w.keymap.connect):
-			selected := w.SelectedNetwork()
-			if selected == nil {
-				break
-			}
+			_, cmd := w.ChooseConnection()
+			cmds = append(cmds, cmd)
 
-			if selected.Secured {
-				return w, func() tea.Msg {
-					return events.ShowPasswordModalMsg{Network: selected}
-				}
+		case key.Matches(msg, w.keymap.disconnect):
+			err := wifi.Disconnect(w.client)
+			if err != nil {
+				return w, events.ShowError(err)
 			}
 
 		case key.Matches(msg, w.keymap.scan):
@@ -133,7 +141,7 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 		}
 
 	case events.WifiConnectReqMsg:
-		err := wifi.ConnectToAvailableSecured(
+		err := wifi.ConnectSecured(
 			w.client,
 			msg.Network,
 			msg.Password,
@@ -171,6 +179,7 @@ func (w WifiListModel) HelpView() []key.Binding {
 	bindings := append(
 		w.table.HelpView(),
 		w.keymap.connect,
+		w.keymap.disconnect,
 		w.keymap.forget,
 		w.keymap.edit,
 		w.keymap.autoConnect,
@@ -187,6 +196,33 @@ func (w *WifiListModel) SelectedNetwork() *nm.AccessPoint {
 		return nil
 	}
 	return &w.networks[idx]
+}
+
+func (w *WifiListModel) ChooseConnection() (WifiListModel, tea.Cmd) {
+	selected := w.SelectedNetwork()
+	switch {
+	// Connect to saved network.
+	case selected.IsSaved:
+		_, err := wifi.ConnectSaved(w.client, *selected)
+		if err != nil {
+			return *w, events.ShowError(err)
+		}
+
+	// Connect to available network that is not open.
+	case selected.Secured && !selected.IsSaved:
+		return *w, func() tea.Msg {
+			return events.ShowPasswordModalMsg{Network: selected}
+		}
+
+	// Connect to available network that is open.
+	case !selected.IsSaved && !selected.Secured && selected.SecurityType == "open":
+		err := wifi.ConnectOpen(w.client, selected)
+		if err != nil {
+			return *w, events.ShowError(err)
+		}
+	}
+
+	return *w, nil
 }
 
 func AccessPointsToRows(networks []nm.AccessPoint) []table.Row {

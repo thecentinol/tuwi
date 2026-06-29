@@ -31,7 +31,7 @@ func determineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 		secType = "OWE-TM"
 	case flags&nm.NmApFlagsPrivacy != 0:
 		secType = "wep"
-	case flags == nm.NmApFlagsNone:
+	case flags&nm.NmApFlagsPrivacy == 0 && wpaFlags == 0 && rsnFlags == 0:
 		secType = "open"
 	default:
 		secType = "unknown"
@@ -206,8 +206,9 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 			ConnectionUUID: uuid,
 			SecurityType:   secType,
 
-			DevicePath: devicePath,
-			APPath:     activeAPPath,
+			ConnectionPath: path,
+			DevicePath:     devicePath,
+			APPath:         activeAPPath,
 
 			Strength: strength,
 
@@ -262,7 +263,17 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	return &activeNetwork, nil
 }
 
-func ConnectToAvailableSecured(
+func ConnectSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
+	obj, err := ActivateConnection(client, network)
+
+	if err != nil {
+		return "", fmt.Errorf("ConnectSaved: %w", err)
+	}
+
+	return obj, nil
+}
+
+func ConnectSecured(
 	client *dbus.Client,
 	network *nm.AccessPoint,
 	password string,
@@ -274,8 +285,37 @@ func ConnectToAvailableSecured(
 	)
 
 	if err != nil {
-		return fmt.Errorf("ConnectToAvailableSecured: AddAndActivateConnection: %w", err)
+		return fmt.Errorf("ConnectSecured: AddAndActivateConnection: %w", err)
 	}
 
+	return nil
+}
+
+func ConnectOpen(
+	client *dbus.Client,
+	network *nm.AccessPoint,
+) error {
+	err := AddAndActivateConnection(
+		client,
+		*network,
+		"",
+	)
+
+	if err != nil {
+		return fmt.Errorf("ConnectOpen: AddAndActivateConnection: %w", err)
+	}
+
+	return nil
+}
+
+func Disconnect(client *dbus.Client) error {
+	ACs, err := ActiveConnections(client)
+	if err != nil {
+		return fmt.Errorf("Disconnect: ActiveConnections: %w", err)
+	}
+	err = DeactivateConnection(client, ACs)
+	if err != nil {
+		return fmt.Errorf("Disconnect: DeactivateConnection: %w", err)
+	}
 	return nil
 }

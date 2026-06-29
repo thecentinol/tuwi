@@ -6,6 +6,8 @@ import (
 )
 
 func TestDetermineSecurityType(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		flags uint32
@@ -22,11 +24,14 @@ func TestDetermineSecurityType(t *testing.T) {
 		{name: "OWE Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOwe, want: "OWE"},
 		{name: "OWE Transition Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOweTm, want: "OWE-TM"},
 		{name: "WPA2_WPA3 Network", flags: 0, wpa: nm.NmSecMgmtPsk, rsn: nm.NmSecMgmtSae, want: "WPA2/WPA3"},
-		{name: "Open Network", flags: 0, wpa: 0, rsn: nm.NmApFlagsNone, want: "open"},
+		{name: "Open Network with WPS", flags: nm.NmApFlagsWps, wpa: 0, rsn: 0, want: "open"},
+		{name: "Open Network no flags", flags: nm.NmApFlagsNone, wpa: 0, rsn: 0, want: "open"},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := determineSecurityType(tc.flags, tc.wpa, tc.rsn)
 			if got != tc.want {
 				t.Errorf("got %q, want %q", got, tc.want)
@@ -54,4 +59,43 @@ func FuzzDetermineSecurityType(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestIsHidden(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		bytes    []byte
+		wantBool bool
+		wantStr  string
+	}{
+		{name: "Hidden Network - nil", bytes: nil, wantBool: true, wantStr: "<hidden>"},
+		{name: "Hidden Network - empty", bytes: []byte{}, wantBool: true, wantStr: "<hidden>"},
+		{name: "Visible Network", bytes: []byte("HomeWifi"), wantBool: false, wantStr: "HomeWifi"},
+
+		{name: "Visible 1 character ssid", bytes: []byte{65}, wantBool: false, wantStr: "A"},
+		{name: "Visible with spacing", bytes: []byte("Home Wifi"), wantBool: false, wantStr: "Home Wifi"},
+		{name: "Visible special characters 1", bytes: []byte("Café_WiFi"), wantBool: false, wantStr: "Café_WiFi"},
+		{name: "Visible special characters 2", bytes: []byte("@Café_WiFi"), wantBool: false, wantStr: "@Café_WiFi"},
+		{name: "Max length SSID", bytes: []byte("12345678901234567890123456789012"), wantBool: false, wantStr: "12345678901234567890123456789012"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			gotBool, gotStr := isHidden(tc.bytes)
+			if gotStr != tc.wantStr || gotBool != tc.wantBool {
+				t.Errorf(
+					"isHidden(%v) = (%v, %q), want (%v, %q)",
+					tc.bytes,
+					gotBool,
+					gotStr,
+					tc.wantBool,
+					tc.wantStr,
+				)
+			}
+		})
+	}
 }
