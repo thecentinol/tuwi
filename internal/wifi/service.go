@@ -49,18 +49,18 @@ func isHidden(ssidBytes []byte) (bool, string) {
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
 func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
-	wifiDevicePath, err := GetWifiDevice(c)
+	wifiDevicePath, err := nm.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableNetworks: GetWifiDevice: %w", err)
 	}
 
-	if err := RequestScan(c, wifiDevicePath); err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: RequestScan: %w", err)
+	if err := nm.Scan(c, wifiDevicePath); err != nil {
+		return nil, fmt.Errorf("GetAvailableNetworks: Scan: %w", err)
 	}
 
-	accessPoints, err := GetAccessPoints(c, wifiDevicePath)
+	accessPoints, err := nm.GetAccessPoints(c, wifiDevicePath)
 	if err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: error getting access points: %w", err)
+		return nil, fmt.Errorf("GetAvailableNetworks: GetAccessPoints: %w", err)
 	}
 
 	var networks []nm.AccessPoint
@@ -68,7 +68,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 	for _, accessPointPath := range accessPoints {
 		ap := c.Conn.Object(nm.BaseServiceName, accessPointPath)
 
-		ssidBytes, err := ap.GetProperty(nm.Ssid)
+		ssidBytes, err := ap.GetProperty(nm.ApSsid)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointSsid property: %w", err)
 		}
@@ -76,25 +76,25 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 
 		hidden, ssid := isHidden(rawSsid)
 
-		bssid, err := ap.GetProperty(nm.HwAddressAp)
+		bssid, err := ap.GetProperty(nm.ApHwAddress)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointBssid property: %w", err)
 		}
 
-		strength, err := ap.GetProperty(nm.Strength)
+		strength, err := ap.GetProperty(nm.ApStrength)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointStrength property: %w", err)
 		}
 
-		flagsRaw, err := ap.GetProperty(nm.FlagsAp)
+		flagsRaw, err := ap.GetProperty(nm.ApFlags)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointFlags property: %w", err)
 		}
-		wpaFlags, err := ap.GetProperty(nm.WpaFlags)
+		wpaFlags, err := ap.GetProperty(nm.ApWpaFlags)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointWpaFlags property: %w", err)
 		}
-		rsnFlags, err := ap.GetProperty(nm.RsnFlags)
+		rsnFlags, err := ap.GetProperty(nm.ApRsnFlags)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointRsnFlags property: %w", err)
 		}
@@ -135,7 +135,7 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
 
 	var connPaths []godbus.ObjectPath
-	err := settingsObj.Call(nm.ListConnections, 0).Store(&connPaths)
+	err := settingsObj.Call(nm.CspmListConnections, 0).Store(&connPaths)
 	if err != nil {
 		return nil, fmt.Errorf("GetSavedNetworks: list connections: %w", err)
 	}
@@ -148,7 +148,7 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 		// this is the response shape for calling GetSettings,
 		// as seen in ...Settings.Connection in the docs
 		var settings map[string]map[string]godbus.Variant
-		err := conn.Call(nm.GetSettings, 0).Store(&settings)
+		err := conn.Call(nm.CspGetSettings, 0).Store(&settings)
 		if err != nil {
 			log.Printf("GetSavedNetworks: failed to get settings for connection: %s: %v", path, err)
 			continue
@@ -224,29 +224,29 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	var activeNetwork nm.AccessPoint
 
-	devicePath, err := GetWifiDevice(c)
+	devicePath, err := nm.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: GetWifiDevice: %w", err)
 	}
 	device := c.Conn.Object(nm.BaseServiceName, devicePath)
-	active, err := device.GetProperty(nm.ActiveAccessPoint)
+	active, err := device.GetProperty(nm.WirelessActiveAccessPoint)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: ActiveAccessPoint property: %w", err)
 	}
 	activePath := active.Value().(godbus.ObjectPath)
 	apObject := c.Conn.Object(nm.BaseServiceName, activePath)
 
-	ssid, err := apObject.GetProperty(nm.Ssid)
+	ssid, err := apObject.GetProperty(nm.ApSsid)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: ActivePointSsid property: %w", err)
 	}
 
-	strength, err := apObject.GetProperty(nm.Strength)
+	strength, err := apObject.GetProperty(nm.ApStrength)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: AccessPointStrength property: %w", err)
 	}
 
-	flags, err := apObject.GetProperty(nm.FlagsAp)
+	flags, err := apObject.GetProperty(nm.ApFlags)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: AccessPointFlags property: %w", err)
 	}
@@ -264,7 +264,7 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 }
 
 func ConnectSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
-	obj, err := ActivateConnection(client, network)
+	obj, err := nm.ActivateConnection(client, network)
 
 	if err != nil {
 		return "", fmt.Errorf("ConnectSaved: %w", err)
@@ -278,7 +278,7 @@ func ConnectSecured(
 	network *nm.AccessPoint,
 	password string,
 ) error {
-	err := AddAndActivateConnection(
+	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		password,
@@ -295,7 +295,7 @@ func ConnectOpen(
 	client *dbus.Client,
 	network *nm.AccessPoint,
 ) error {
-	err := AddAndActivateConnection(
+	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		"",
@@ -309,11 +309,11 @@ func ConnectOpen(
 }
 
 func Disconnect(client *dbus.Client) error {
-	ACs, err := ActiveConnections(client)
+	ACs, err := nm.GetActiveConnections(client)
 	if err != nil {
-		return fmt.Errorf("Disconnect: ActiveConnections: %w", err)
+		return fmt.Errorf("Disconnect: GetActiveConnections: %w", err)
 	}
-	err = DeactivateConnection(client, ACs)
+	err = nm.DeactivateConnection(client, ACs)
 	if err != nil {
 		return fmt.Errorf("Disconnect: DeactivateConnection: %w", err)
 	}
