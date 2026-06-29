@@ -24,7 +24,8 @@ func TestDetermineSecurityType(t *testing.T) {
 		{name: "OWE Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOwe, want: "OWE"},
 		{name: "OWE Transition Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOweTm, want: "OWE-TM"},
 		{name: "WPA2_WPA3 Network", flags: 0, wpa: nm.NmSecMgmtPsk, rsn: nm.NmSecMgmtSae, want: "WPA2/WPA3"},
-		{name: "Open Network", flags: 0, wpa: 0, rsn: nm.NmApFlagsNone, want: "open"},
+		{name: "Open Network with WPS", flags: nm.NmApFlagsWps, wpa: 0, rsn: 0, want: "open"},
+		{name: "Open Network no flags", flags: nm.NmApFlagsNone, wpa: 0, rsn: 0, want: "open"},
 	}
 
 	for _, tc := range tests {
