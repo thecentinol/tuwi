@@ -101,24 +101,15 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 	return accessPoints, nil
 }
 
-func AddAndActivateConnection(
-	c *dbus.Client,
-	network nm.AccessPoint,
-	password string,
-) error {
+func baseSettings(network nm.AccessPoint) map[string]map[string]godbus.Variant {
 	settings := map[string]map[string]godbus.Variant{
 		"connection": {
 			"id":   godbus.MakeVariant(network.SSID),
 			"type": godbus.MakeVariant("802-11-wireless"),
 		},
 		"802-11-wireless": {
-			"ssid":     godbus.MakeVariant([]byte(network.SSID)),
-			"security": godbus.MakeVariant("802-11-wireless-security"),
-			"hidden":   godbus.MakeVariant(network.Hidden),
-		},
-		"802-11-wireless-security": {
-			"key-mgmt": godbus.MakeVariant(network.SecurityType),
-			"psk":      godbus.MakeVariant(password),
+			"ssid":   godbus.MakeVariant([]byte(network.SSID)),
+			"hidden": godbus.MakeVariant(network.Hidden),
 		},
 		"ipv4": {
 			"method": godbus.MakeVariant("auto"),
@@ -126,6 +117,30 @@ func AddAndActivateConnection(
 		"ipv6": {
 			"method": godbus.MakeVariant("auto"),
 		},
+	}
+	return settings
+}
+
+func securitySettings(
+	network nm.AccessPoint,
+	password string,
+) map[string]godbus.Variant {
+	settings := map[string]godbus.Variant{
+		"key-mgmt": godbus.MakeVariant(network.SecurityType),
+		"psk":      godbus.MakeVariant(password),
+	}
+	return settings
+}
+
+func AddAndActivateConnection(
+	c *dbus.Client,
+	network nm.AccessPoint,
+	password string,
+) error {
+	settings := baseSettings(network)
+	if network.Secured {
+		settings["802-11-wireless"]["security"] = godbus.MakeVariant("802-11-wireless-security")
+		settings["802-11-wireless-security"] = securitySettings(network, password)
 	}
 
 	options := map[string]godbus.Variant{}

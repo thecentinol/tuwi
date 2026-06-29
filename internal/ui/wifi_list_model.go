@@ -127,7 +127,8 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, w.keymap.connect):
-			w.ChooseConnection()
+			_, cmd := w.ChooseConnection()
+			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, w.keymap.disconnect):
 			err := wifi.Disconnect(w.client)
@@ -140,7 +141,7 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 		}
 
 	case events.WifiConnectReqMsg:
-		err := wifi.ConnectToAvailableSecured(
+		err := wifi.ConnectSecured(
 			w.client,
 			msg.Network,
 			msg.Password,
@@ -202,7 +203,10 @@ func (w *WifiListModel) ChooseConnection() (WifiListModel, tea.Cmd) {
 	switch {
 	// Connect to saved network.
 	case selected.IsSaved:
-		wifi.ConnectToSaved(w.client, *selected)
+		_, err := wifi.ConnectSaved(w.client, *selected)
+		if err != nil {
+			return *w, events.ShowError(err)
+		}
 
 	// Connect to available network that is not open.
 	case selected.Secured && !selected.IsSaved:
@@ -212,7 +216,10 @@ func (w *WifiListModel) ChooseConnection() (WifiListModel, tea.Cmd) {
 
 	// Connect to available network that is open.
 	case !selected.IsSaved && !selected.Secured && selected.SecurityType == "open":
-		// TODO: connect to open.
+		err := wifi.ConnectOpen(w.client, selected)
+		if err != nil {
+			return *w, events.ShowError(err)
+		}
 	}
 
 	return *w, nil
