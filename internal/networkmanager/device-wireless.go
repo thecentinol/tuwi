@@ -13,7 +13,7 @@ func Scan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 		BaseServiceName,
 		devicePath,
 	)
-	call := device.Call(RequestScan, 0, map[string]godbus.Variant{})
+	call := device.Call(WirelessRequestScan, 0, map[string]godbus.Variant{})
 	if call.Err != nil {
 		return fmt.Errorf("Scan: %w", call.Err)
 	}
@@ -54,7 +54,7 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 		devicePath,
 	)
 
-	call := obj.Call(GetAllAccessPoints, 0)
+	call := obj.Call(WirelessGetAllAccessPoints, 0)
 	if call.Err != nil {
 		return nil, fmt.Errorf("GetAccessPoints: %w", call.Err)
 	}
@@ -68,7 +68,7 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 
 func ActivateConnection(c *dbus.Client, network AccessPoint) (godbus.ObjectPath, error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(ActivateConnectionConnMan, 0, network.ConnectionPath, network.DevicePath, network.APPath)
+	call := obj.Call(CmActivateConnection, 0, network.ConnectionPath, network.DevicePath, network.APPath)
 	if call.Err != nil {
 		return "", fmt.Errorf("ActivateConnection: %w", call.Err)
 	}
@@ -140,7 +140,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 	for _, activePath := range activeConnections {
 		conn := c.Conn.Object(BaseServiceName, activePath)
 
-		typeVariant, err := conn.GetProperty(TypeActiveConnection)
+		typeVariant, err := conn.GetProperty(ActConType)
 		if err != nil {
 			return fmt.Errorf("DeactivateConnection: Type property: %w", err)
 		}
@@ -149,7 +149,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 			return fmt.Errorf("DeactivateConnection: unexpected type for Type property")
 		}
 
-		stateVariant, err := conn.GetProperty(StateActiveConnection)
+		stateVariant, err := conn.GetProperty(ActConState)
 		if err != nil {
 			return fmt.Errorf("DeactivateConnection: State property: %w", err)
 		}
@@ -169,7 +169,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 		return fmt.Errorf("DeactivateConnection: active connection not found")
 	}
 
-	call := obj.Call(DeactivateConnectionConnMan, 0, activeConnection)
+	call := obj.Call(CmDeactivateConnection, 0, activeConnection)
 	if call.Err != nil {
 		return fmt.Errorf("DeactivateConnection: %w", call.Err)
 	}

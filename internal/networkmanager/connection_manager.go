@@ -9,7 +9,7 @@ import (
 
 func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(GetAllDevices, 0)
+	call := obj.Call(CmGetAllDevices, 0)
 	if call.Err != nil {
 		return nil, fmt.Errorf("GetDevices: %w", call.Err)
 	}
@@ -65,7 +65,7 @@ func AddAndActivateConnection(
 	options := map[string]godbus.Variant{}
 
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(AddAndActivateConnection2, 0, settings, network.DevicePath, network.APPath, options)
+	call := obj.Call(CmAddAndActivateConnection2, 0, settings, network.DevicePath, network.APPath, options)
 	if call.Err != nil {
 		return fmt.Errorf("AddAndActivateConnection: %w", call.Err)
 	}
@@ -83,7 +83,7 @@ func AddAndActivateConnection(
 
 func GetActiveConnections(c *dbus.Client) ([]godbus.ObjectPath, error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	variant, err := obj.GetProperty(ActiveConnections)
+	variant, err := obj.GetProperty(CmActiveConnections)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveConnections: %w", err)
 	}
