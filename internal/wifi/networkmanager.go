@@ -48,7 +48,7 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 		nm.BaseServiceName,
 		devicePath,
 	)
-	call := device.Call(nm.DeviceWireless+".RequestScan", 0, map[string]godbus.Variant{})
+	call := device.Call(nm.RequestScan, 0, map[string]godbus.Variant{})
 	if call.Err != nil {
 		return fmt.Errorf("RequestScan: %w", call.Err)
 	}
@@ -89,7 +89,7 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 		devicePath,
 	)
 
-	call := obj.Call(nm.DeviceWireless+".GetAllAccessPoints", 0)
+	call := obj.Call(nm.GetAllAccessPoints, 0)
 	if call.Err != nil {
 		return nil, fmt.Errorf("GetAccessPoints: %w", call.Err)
 	}
@@ -146,7 +146,7 @@ func AddAndActivateConnection(
 	options := map[string]godbus.Variant{}
 
 	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
-	call := obj.Call(nm.AddAndConnect, 0, settings, network.DevicePath, network.APPath, options)
+	call := obj.Call(nm.AddAndActivateConnection2, 0, settings, network.DevicePath, network.APPath, options)
 	if call.Err != nil {
 		return fmt.Errorf("AddAndActivateConnection: %w", call.Err)
 	}
@@ -251,7 +251,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 	for _, activePath := range activeConnections {
 		conn := c.Conn.Object(nm.BaseServiceName, activePath)
 
-		typeVariant, err := conn.GetProperty(nm.ConnectionActiveType)
+		typeVariant, err := conn.GetProperty(nm.TypeActiveConnection)
 		if err != nil {
 			return fmt.Errorf("DeactivateConnection: Type property: %w", err)
 		}
@@ -260,7 +260,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 			return fmt.Errorf("DeactivateConnection: unexpected type for Type property")
 		}
 
-		stateVariant, err := conn.GetProperty(nm.ConnectionActiveState)
+		stateVariant, err := conn.GetProperty(nm.StateActiveConnection)
 		if err != nil {
 			return fmt.Errorf("DeactivateConnection: State property: %w", err)
 		}

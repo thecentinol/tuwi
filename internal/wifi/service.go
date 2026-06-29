@@ -68,7 +68,7 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 	for _, accessPointPath := range accessPoints {
 		ap := c.Conn.Object(nm.BaseServiceName, accessPointPath)
 
-		ssidBytes, err := ap.GetProperty(nm.AccessPointSsid)
+		ssidBytes, err := ap.GetProperty(nm.Ssid)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointSsid property: %w", err)
 		}
@@ -76,25 +76,25 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 
 		hidden, ssid := isHidden(rawSsid)
 
-		bssid, err := ap.GetProperty(nm.AccessPointBssid)
+		bssid, err := ap.GetProperty(nm.HwAddressAp)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointBssid property: %w", err)
 		}
 
-		strength, err := ap.GetProperty(nm.AccessPointStrength)
+		strength, err := ap.GetProperty(nm.Strength)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointStrength property: %w", err)
 		}
 
-		flagsRaw, err := ap.GetProperty(nm.AccessPointFlags)
+		flagsRaw, err := ap.GetProperty(nm.FlagsAp)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointFlags property: %w", err)
 		}
-		wpaFlags, err := ap.GetProperty(nm.AccessPointWpaFlags)
+		wpaFlags, err := ap.GetProperty(nm.WpaFlags)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointWpaFlags property: %w", err)
 		}
-		rsnFlags, err := ap.GetProperty(nm.AccessPointRsnFlags)
+		rsnFlags, err := ap.GetProperty(nm.RsnFlags)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointRsnFlags property: %w", err)
 		}
@@ -236,17 +236,17 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	activePath := active.Value().(godbus.ObjectPath)
 	apObject := c.Conn.Object(nm.BaseServiceName, activePath)
 
-	ssid, err := apObject.GetProperty(nm.AccessPointSsid)
+	ssid, err := apObject.GetProperty(nm.Ssid)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: ActivePointSsid property: %w", err)
 	}
 
-	strength, err := apObject.GetProperty(nm.AccessPointStrength)
+	strength, err := apObject.GetProperty(nm.Strength)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: AccessPointStrength property: %w", err)
 	}
 
-	flags, err := apObject.GetProperty(nm.AccessPointFlags)
+	flags, err := apObject.GetProperty(nm.FlagsAp)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: AccessPointFlags property: %w", err)
 	}
