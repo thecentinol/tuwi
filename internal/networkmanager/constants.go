@@ -16,11 +16,16 @@ const (
 	GetSettings    = SettConnection + ".GetSettings"
 
 	// wireless
-	DeviceWireless     = BaseServiceName + ".Device.Wireless"
-	ActiveAccessPoint  = BaseServiceName + ".Device.Wireless.ActiveAccessPoint"
-	AddAndConnect      = BaseServiceName + ".AddAndActivateConnection2"
-	ActivateConnection = BaseServiceName + ".ActivateConnection"
+	DeviceWireless       = BaseServiceName + ".Device.Wireless"
+	ActiveAccessPoint    = BaseServiceName + ".Device.Wireless.ActiveAccessPoint"
 	ActiveConnections    = BaseServiceName + ".ActiveConnections"
+	AddAndConnect        = BaseServiceName + ".AddAndActivateConnection2"
+	ActivateConnection   = BaseServiceName + ".ActivateConnection"
+	DeactivateConnection = BaseServiceName + ".DeactivateConnection"
+
+	// Connection.Active
+	ConnectionActiveType  = BaseServiceName + ".Connection.Active.Type"
+	ConnectionActiveState = BaseServiceName + ".Connection.Active.State"
 
 	// wired
 	DeviceWired = BaseServiceName + ".Device.Wired"

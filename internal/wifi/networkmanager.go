@@ -228,3 +228,46 @@ func ActivateConnection(c *dbus.Client, network nm.AccessPoint) (godbus.ObjectPa
 		}
 	}
 }
+
+func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath) error {
+	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+
+	var activeConnection godbus.ObjectPath
+	for _, activePath := range activeConnections {
+		conn := c.Conn.Object(nm.BaseServiceName, activePath)
+
+		typeVariant, err := conn.GetProperty(nm.ConnectionActiveType)
+		if err != nil {
+			return fmt.Errorf("DeactivateConnection: Type property: %w", err)
+		}
+		connType, ok := typeVariant.Value().(string)
+		if !ok {
+			return fmt.Errorf("DeactivateConnection: unexpected type for Type property")
+		}
+
+		stateVariant, err := conn.GetProperty(nm.ConnectionActiveState)
+		if err != nil {
+			return fmt.Errorf("DeactivateConnection: State property: %w", err)
+		}
+		connState, ok := stateVariant.Value().(uint32)
+		if !ok {
+			return fmt.Errorf("DeactivateConnection: unexpected type for State property")
+		}
+
+		if connType == "802-11-wireless" && connState == 2 {
+			activeConnection = activePath
+			break
+		}
+		continue
+	}
+
+	if activeConnection == "" {
+		return fmt.Errorf("DeactivateConnection: active connection not found")
+	}
+
+	call := obj.Call(nm.DeactivateConnection, 0, activeConnection)
+	if call.Err != nil {
+		return fmt.Errorf("DeactivateConnection: %w", call.Err)
+	}
+	return nil
+}
