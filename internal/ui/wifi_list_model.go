@@ -132,7 +132,7 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 		case key.Matches(msg, w.keymap.disconnect):
 			err := wifi.Disconnect(w.client)
 			if err != nil {
-				// TODO: call error modal.
+				return w, events.ShowError(err)
 			}
 
 		case key.Matches(msg, w.keymap.scan):
