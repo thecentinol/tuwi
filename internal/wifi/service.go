@@ -49,18 +49,18 @@ func isHidden(ssidBytes []byte) (bool, string) {
 // this gets the actual APs + details (ssid, strength, etc)
 // for available WiFi networks
 func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
-	wifiDevicePath, err := GetWifiDevice(c)
+	wifiDevicePath, err := nm.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableNetworks: GetWifiDevice: %w", err)
 	}
 
-	if err := RequestScan(c, wifiDevicePath); err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: RequestScan: %w", err)
+	if err := nm.Scan(c, wifiDevicePath); err != nil {
+		return nil, fmt.Errorf("GetAvailableNetworks: Scan: %w", err)
 	}
 
-	accessPoints, err := GetAccessPoints(c, wifiDevicePath)
+	accessPoints, err := nm.GetAccessPoints(c, wifiDevicePath)
 	if err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: error getting access points: %w", err)
+		return nil, fmt.Errorf("GetAvailableNetworks: GetAccessPoints: %w", err)
 	}
 
 	var networks []nm.AccessPoint
@@ -224,7 +224,7 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	var activeNetwork nm.AccessPoint
 
-	devicePath, err := GetWifiDevice(c)
+	devicePath, err := nm.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: GetWifiDevice: %w", err)
 	}
@@ -264,7 +264,7 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 }
 
 func ConnectSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
-	obj, err := ActivateConnection(client, network)
+	obj, err := nm.ActivateConnection(client, network)
 
 	if err != nil {
 		return "", fmt.Errorf("ConnectSaved: %w", err)
@@ -278,7 +278,7 @@ func ConnectSecured(
 	network *nm.AccessPoint,
 	password string,
 ) error {
-	err := AddAndActivateConnection(
+	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		password,
@@ -295,7 +295,7 @@ func ConnectOpen(
 	client *dbus.Client,
 	network *nm.AccessPoint,
 ) error {
-	err := AddAndActivateConnection(
+	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		"",
@@ -309,11 +309,11 @@ func ConnectOpen(
 }
 
 func Disconnect(client *dbus.Client) error {
-	ACs, err := ActiveConnections(client)
+	ACs, err := nm.GetActiveConnections(client)
 	if err != nil {
-		return fmt.Errorf("Disconnect: ActiveConnections: %w", err)
+		return fmt.Errorf("Disconnect: GetActiveConnections: %w", err)
 	}
-	err = DeactivateConnection(client, ACs)
+	err = nm.DeactivateConnection(client, ACs)
 	if err != nil {
 		return fmt.Errorf("Disconnect: DeactivateConnection: %w", err)
 	}

@@ -10,12 +10,12 @@ const (
 const (
 	// Methods
 	Reload                          = BaseServiceName + ".Reload"
-	GetDevices                      = BaseServiceName + ".GetDevices"
+	GetDevicesConnMan               = BaseServiceName + ".GetDevices"
 	GetAllDevices                   = BaseServiceName + ".GetAllDevices"
 	GetDeviceByIpIface              = BaseServiceName + ".GetDeviceByIpIface"
-	ActivateConnection              = BaseServiceName + ".ActivateConnection"
+	ActivateConnectionConnMan       = BaseServiceName + ".ActivateConnection"
 	AddAndActivateConnection2       = BaseServiceName + ".AddAndActivateConnection2"
-	DeactivateConnection            = BaseServiceName + ".DeactivateConnection"
+	DeactivateConnectionConnMan     = BaseServiceName + ".DeactivateConnection"
 	Sleep                           = BaseServiceName + ".Sleep"
 	Enable                          = BaseServiceName + ".Enable"
 	GetPermissions                  = BaseServiceName + ".GetPermissions"
@@ -114,8 +114,7 @@ const (
 
 // Device
 const (
-	baseDeviceServiceName     = BaseServiceName + ".Device"
-	deviceWirelessServiceName = baseDeviceServiceName + ".Wireless"
+	baseDeviceServiceName = BaseServiceName + ".Device"
 
 	// Methods
 	Reapply              = baseDeviceServiceName + ".Reapply"
