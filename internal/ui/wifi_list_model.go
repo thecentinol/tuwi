@@ -15,11 +15,12 @@ import (
 )
 
 type WifiKeymap struct {
-	connect     key.Binding
-	forget      key.Binding
-	edit        key.Binding
-	autoConnect key.Binding
-	scan        key.Binding
+	connect,
+	disconnect,
+	forget,
+	edit,
+	autoConnect,
+	scan key.Binding
 }
 
 type WifiListModel struct {
@@ -49,9 +50,13 @@ func NewSavedList(c *dbus.Client) WifiListModel {
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
 			),
-			forget: key.NewBinding(
+			disconnect: key.NewBinding(
 				key.WithKeys("d"),
-				key.WithHelp("d", "forget"),
+				key.WithHelp("d", "disconnect"),
+			),
+			forget: key.NewBinding(
+				key.WithKeys("f"),
+				key.WithHelp("f", "forget"),
 			),
 			edit: key.NewBinding(
 				key.WithKeys("e"),
@@ -86,6 +91,11 @@ func NewAvailableList(c *dbus.Client) WifiListModel {
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
 			),
+			disconnect: key.NewBinding(
+				key.WithKeys(""),
+				key.WithHelp("", ""),
+				key.WithDisabled(),
+			),
 			scan: key.NewBinding(
 				key.WithKeys("s"),
 				key.WithHelp("s", "scan"),
@@ -118,6 +128,12 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 		switch {
 		case key.Matches(msg, w.keymap.connect):
 			w.ChooseConnection()
+
+		case key.Matches(msg, w.keymap.disconnect):
+			err := wifi.Disconnect(w.client)
+			if err != nil {
+				// TODO: call error modal.
+			}
 
 		case key.Matches(msg, w.keymap.scan):
 			cmds = append(cmds, fetchAvailableWifiNetworks(w.client))
@@ -162,6 +178,7 @@ func (w WifiListModel) HelpView() []key.Binding {
 	bindings := append(
 		w.table.HelpView(),
 		w.keymap.connect,
+		w.keymap.disconnect,
 		w.keymap.forget,
 		w.keymap.edit,
 		w.keymap.autoConnect,
