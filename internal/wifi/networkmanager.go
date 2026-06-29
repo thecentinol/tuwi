@@ -147,6 +147,21 @@ func AddAndActivateConnection(
 	return nil
 }
 
+func ActiveConnections(c *dbus.Client) ([]godbus.ObjectPath, error) {
+	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
+	variant, err := obj.GetProperty(nm.ActiveConnections)
+	if err != nil {
+		return nil, fmt.Errorf("ActiveConnections: %w", err)
+	}
+
+	activeConns, ok := variant.Value().([]godbus.ObjectPath)
+	if !ok {
+		return nil, fmt.Errorf("ActiveConnections: error extracting variant info")
+	}
+
+	return activeConns, nil
+}
+
 func ActivateConnection(c *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
 	obj := c.Conn.Object(nm.BaseServiceName, nm.BaseObjPath)
 	call := obj.Call(nm.ActivateConnection, 0, network.ConnectionPath, network.DevicePath, network.APPath)
