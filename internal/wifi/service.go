@@ -86,13 +86,6 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 }
 
 func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPoint, error) {
-	visibleAPs := make(map[string]nm.AccessPoint)
-	for _, ap := range available {
-		if ap.SSID != "" {
-			visibleAPs[ap.SSID] = ap
-		}
-	}
-
 	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
 
 	var connPaths []godbus.ObjectPath
@@ -124,14 +117,23 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 // settings - such as Strength.
 func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.AccessPoint) (*nm.AccessPoint, error) {
 	visibleAPs := make(map[string]nm.AccessPoint)
-	for _, ap := range available {
-		if ap.SSID != "" {
-			visibleAPs[ap.SSID] = ap
-		}
-	}
 
 	// as per NM docs this is the response type from GetSettings.
 	var settings map[string]map[string]godbus.Variant
+
+	var ssid string = "unknown"
+	var bssid string
+	var conUUID string = ""
+	var secType string = "open"
+	var strength uint8 = 0
+	var activeAPPath godbus.ObjectPath
+	var devicePath godbus.ObjectPath
+
+	for _, ap := range available {
+		if ap.BSSID != "" {
+			visibleAPs[ap.BSSID] = ap
+		}
+	}
 
 	obj := c.Conn.Object(nm.BaseServiceName, godbus.ObjectPath(path))
 	err := obj.Call(nm.CspGetSettings, 0).Store(&settings)
@@ -145,8 +147,11 @@ func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.Ac
 		return nil, nil
 	}
 
-	var ssid string = "unknown"
-	var bssid string
+	uuid, ok := connBlock["uuid"]
+	if ok {
+		conUUID = uuid.Value().(string)
+	}
+
 	if wirelessBlock, ok := settings["802-11-wireless"]; ok {
 		// get SSID
 		if ssidVal, ok := wirelessBlock["ssid"]; ok {
@@ -158,12 +163,20 @@ func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.Ac
 		// get BSSID
 		if bssidVal, ok := wirelessBlock["seen-bssids"]; ok {
 			if bssidSlice, ok := bssidVal.Value().([]string); ok {
-				bssid = bssidSlice[0]
+				for _, seenBssid := range bssidSlice {
+					if ap, found := visibleAPs[seenBssid]; found {
+						strength = ap.Strength
+						activeAPPath = ap.APPath
+						devicePath = ap.DevicePath
+						bssid = ap.BSSID
+
+						break
+					}
+				}
 			}
 		}
 	}
 
-	var secType string = "unknown"
 	_, secured := settings["802-11-wireless-security"]
 	if secured {
 		if keyMgmtVal, ok := settings["802-11-wireless-security"]["key-mgmt"]; ok {
@@ -171,21 +184,11 @@ func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.Ac
 		}
 	}
 
-	var strength uint8 = 0
-	var activeAPPath godbus.ObjectPath
-	var devicePath godbus.ObjectPath
-
-	if activeScan, isNearby := visibleAPs[ssid]; isNearby {
-		strength = activeScan.Strength
-		bssid = activeScan.BSSID
-		activeAPPath = activeScan.APPath
-		devicePath = activeScan.DevicePath
-	}
-
 	ap := nm.AccessPoint{
-		SSID:         ssid,
-		BSSID:        bssid,
-		SecurityType: secType,
+		SSID:           ssid,
+		BSSID:          bssid,
+		ConnectionUUID: conUUID,
+		SecurityType:   secType,
 
 		ConnectionPath: path,
 		DevicePath:     devicePath,
