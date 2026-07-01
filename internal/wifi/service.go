@@ -299,3 +299,11 @@ func Disconnect(client *dbus.Client) error {
 	}
 	return nil
 }
+
+func Forget(client *dbus.Client, conPath string) error {
+	err := nm.DeleteConnection(client, conPath)
+	if err != nil {
+		return fmt.Errorf("Forget: %w", err)
+	}
+	return nil
+}

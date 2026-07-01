@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"fmt"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
@@ -132,6 +133,16 @@ func (w WifiListModel) Update(msg tea.Msg) (WifiListModel, tea.Cmd) {
 
 		case key.Matches(msg, w.keymap.disconnect):
 			err := wifi.Disconnect(w.client)
+			if err != nil {
+				return w, events.ShowError(err)
+			}
+
+		case key.Matches(msg, w.keymap.forget):
+			connection := w.SelectedNetwork()
+			if connection == nil {
+				return w, events.ShowError(fmt.Errorf("SelectedNetwork: no network selected"))
+			}
+			err := wifi.Forget(w.client, string(connection.ConnectionPath))
 			if err != nil {
 				return w, events.ShowError(err)
 			}
