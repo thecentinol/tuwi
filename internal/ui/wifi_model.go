@@ -4,6 +4,9 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	godbus "github.com/godbus/dbus/v5"
+	"slices"
+
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
@@ -43,6 +46,35 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 		rows := AccessPointsToRows(msg.Networks)
 		w.availableList.table.SetRows(rows)
 		cmds = append(cmds, fetchSavedNetworks(w.client, msg.Networks))
+
+	case events.AccessPointAddedMsg:
+		w.availableList.networks = append(w.availableList.networks, msg.AP)
+		w.availableList.table.SetRows(AccessPointsToRows(w.availableList.networks))
+
+	case events.AccessPointRemovedMsg:
+		apPath := godbus.ObjectPath(msg.ApPath)
+		result := slices.DeleteFunc(w.availableList.networks, func(n nm.AccessPoint) bool {
+			return apPath == n.APPath
+		})
+		w.availableList.networks = result
+		w.availableList.table.SetRows(AccessPointsToRows(result))
+
+	case events.NewConnectionMsg:
+		ap, _ := wifi.GetApFromSettings(
+			w.client,
+			godbus.ObjectPath(msg.ConnectionPath),
+			w.availableList.networks,
+		)
+		w.savedList.networks = append(w.savedList.networks, *ap)
+		w.savedList.table.SetRows(AccessPointsToRows(w.savedList.networks))
+
+	case events.ConnectionRemovedMsg:
+		conPath := godbus.ObjectPath(msg.ConnectionPath)
+		result := slices.DeleteFunc(w.savedList.networks, func(n nm.AccessPoint) bool {
+			return conPath == n.ConnectionPath
+		})
+		w.savedList.networks = result
+		w.savedList.table.SetRows(AccessPointsToRows(result))
 
 	case error:
 		w.scanning = false

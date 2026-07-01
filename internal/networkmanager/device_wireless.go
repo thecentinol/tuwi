@@ -8,14 +8,14 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func Scan(c *dbus.Client, devicePath godbus.ObjectPath) error {
+func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	device := c.Conn.Object(
 		BaseServiceName,
 		devicePath,
 	)
 	call := device.Call(WirelessRequestScan, 0, map[string]godbus.Variant{})
 	if call.Err != nil {
-		return fmt.Errorf("Scan: %w", call.Err)
+		return fmt.Errorf("RequestScan: %w", call.Err)
 	}
 
 	// channel for listening to LastScan property
@@ -41,7 +41,7 @@ func Scan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	case <-ch:
 		// scan complete, continue
 	case <-time.After(10 * time.Second):
-		return fmt.Errorf("Scan: timed out waiting for scan completion")
+		return fmt.Errorf("RequestScan: timed out waiting for scan completion")
 	}
 
 	return nil
@@ -104,7 +104,7 @@ func ActivateConnection(c *dbus.Client, network AccessPoint) (godbus.ObjectPath,
 		select {
 		case sig := <-ch:
 
-			iface := sig.Body[0].(string)
+			iface := sig.Body[0]
 			if iface != BaseServiceName+".Connection.Active" {
 				continue
 			}

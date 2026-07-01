@@ -24,7 +24,7 @@ unit-test:
 	@go test ./... -short
 
 fuzz:
-	go test -fuzz=FuzzDetermineSecurityType -fuzztime=30s -v ./internal/wifi/...
+	go test -fuzz=FuzzDetermineSecurityType -fuzztime=30s -v ./internal/networkmanager/...
 
 test: unit-test
 
