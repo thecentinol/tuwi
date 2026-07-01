@@ -26,10 +26,12 @@ type Model struct {
 	help   help.Model
 	keymap keymap
 
-	wifi WifiModel
+	wifi            WifiModel
+	selectedNetwork *nm.AccessPoint
+
 	passwordModal     comp.PasswordModel
 	showPasswordModal bool
-	selectedNetwork   *nm.AccessPoint
+
 	errorModal     comp.ErrorModel
 	showErrorModal bool
 }
