@@ -104,7 +104,7 @@ func ActivateConnection(c *dbus.Client, network AccessPoint) (godbus.ObjectPath,
 		select {
 		case sig := <-ch:
 
-			iface := sig.Body[0].(string)
+			iface := sig.Body[0]
 			if iface != BaseServiceName+".Connection.Active" {
 				continue
 			}
