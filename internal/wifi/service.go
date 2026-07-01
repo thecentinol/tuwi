@@ -116,8 +116,6 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 // this is done so we can get info on the network that's not available via it's
 // settings - such as Strength.
 func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.AccessPoint) (*nm.AccessPoint, error) {
-	visibleAPs := make(map[string]nm.AccessPoint)
-
 	// as per NM docs this is the response type from GetSettings.
 	var settings map[string]map[string]godbus.Variant
 
@@ -129,6 +127,7 @@ func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.Ac
 	var activeAPPath godbus.ObjectPath
 	var devicePath godbus.ObjectPath
 
+	visibleAPs := make(map[string]nm.AccessPoint)
 	for _, ap := range available {
 		if ap.BSSID != "" {
 			visibleAPs[ap.BSSID] = ap
