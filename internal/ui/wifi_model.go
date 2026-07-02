@@ -36,9 +36,21 @@ func (w WifiModel) Update(msg tea.Msg) (WifiModel, tea.Cmd) {
 
 	case events.SavedWifiMsg:
 		w.savedList.networks = msg.Networks
+		w.savedList.table.SetRows(AccessPointsToRows(msg.Networks))
 
-		rows := AccessPointsToRows(msg.Networks)
-		w.savedList.table.SetRows(rows)
+		savedBSSIDs := make(map[string]bool)
+		for _, saved := range w.savedList.networks {
+			if saved.BSSID != "" {
+				savedBSSIDs[saved.BSSID] = true
+			}
+		}
+
+		result := slices.DeleteFunc(w.availableList.networks, func(n nm.AccessPoint) bool {
+			return savedBSSIDs[n.BSSID]
+		})
+		w.availableList.networks = result
+		w.availableList.table.SetRows(AccessPointsToRows(result))
+
 	case events.AvailableWifiMsg:
 		w.scanning = false
 		w.availableList.networks = msg.Networks
