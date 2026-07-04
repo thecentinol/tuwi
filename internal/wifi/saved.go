@@ -3,88 +3,12 @@ package wifi
 import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
+
 	"github.com/thecentinol/tuwi/internal/dbus"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
-// this gets the actual APs + details (ssid, strength, etc)
-// for available WiFi networks
-func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
-	wifiDevicePath, err := nm.GetWifiDevice(c)
-	if err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: GetWifiDevice: %w", err)
-	}
-
-	if err := nm.RequestScan(c, wifiDevicePath); err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: %w", err)
-	}
-
-	accessPoints, err := nm.GetAccessPoints(c, wifiDevicePath)
-	if err != nil {
-		return nil, fmt.Errorf("GetAvailableNetworks: GetAccessPoints: %w", err)
-	}
-
-	var networks []nm.AccessPoint
-
-	for _, accessPointPath := range accessPoints {
-		ap := c.Conn.Object(nm.BaseServiceName, accessPointPath)
-
-		ssidBytes, err := ap.GetProperty(nm.ApSsid)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointSsid property: %w", err)
-		}
-		rawSsid := ssidBytes.Value().([]byte)
-
-		hidden, ssid := nm.IsHidden(rawSsid)
-
-		bssid, err := ap.GetProperty(nm.ApHwAddress)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointBssid property: %w", err)
-		}
-
-		strength, err := ap.GetProperty(nm.ApStrength)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointStrength property: %w", err)
-		}
-
-		flagsRaw, err := ap.GetProperty(nm.ApFlags)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointFlags property: %w", err)
-		}
-		wpaFlags, err := ap.GetProperty(nm.ApWpaFlags)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointWpaFlags property: %w", err)
-		}
-		rsnFlags, err := ap.GetProperty(nm.ApRsnFlags)
-		if err != nil {
-			return nil, fmt.Errorf("GetAvailableNetworks: AccessPointRsnFlags property: %w", err)
-		}
-
-		flags := flagsRaw.Value().(uint32)
-		wpa := wpaFlags.Value().(uint32)
-		rsn := rsnFlags.Value().(uint32)
-		securityType := nm.DetermineSecurityType(flags, wpa, rsn)
-
-		networks = append(networks, nm.AccessPoint{
-			SSID:         ssid,
-			BSSID:        bssid.Value().(string),
-			SecurityType: securityType,
-
-			DevicePath: wifiDevicePath,
-			APPath:     accessPointPath,
-
-			Strength: strength.Value().(uint8),
-
-			IsSaved: false,
-			Secured: securityType != "open",
-			Hidden:  hidden,
-			HasWps:  flags&0x00000002 != 0,
-		})
-	}
-
-	return networks, nil
-}
-
+// get a slice of the saved connection profile's
 func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPoint, error) {
 	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
 
@@ -110,8 +34,8 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 	return savedNetworks, nil
 }
 
-// build an AccessPoint from the connection's settings. Pass in the connection path
-// of the connection. available is the slice of available networks that we already
+// build an AccessPoint from a saved connection profile's settings.
+// `available` is the slice of available networks that we already
 // have so that we can cross-reference/match the new connection with an existing one,
 // this is done so we can get info on the network that's not available via it's
 // settings - such as Strength.
@@ -203,6 +127,7 @@ func GetApFromSettings(c *dbus.Client, path godbus.ObjectPath, available []nm.Ac
 	return &ap, nil
 }
 
+// get the wifi network that's currently connected to
 func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	var activeNetwork nm.AccessPoint
 
@@ -243,69 +168,4 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	}
 
 	return &activeNetwork, nil
-}
-
-func ConnectSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
-	obj, err := nm.ActivateConnection(client, network)
-
-	if err != nil {
-		return "", fmt.Errorf("ConnectSaved: %w", err)
-	}
-
-	return obj, nil
-}
-
-func ConnectSecured(
-	client *dbus.Client,
-	network *nm.AccessPoint,
-	password string,
-) error {
-	err := nm.AddAndActivateConnection(
-		client,
-		*network,
-		password,
-	)
-
-	if err != nil {
-		return fmt.Errorf("ConnectSecured: %w", err)
-	}
-
-	return nil
-}
-
-func ConnectOpen(
-	client *dbus.Client,
-	network *nm.AccessPoint,
-) error {
-	err := nm.AddAndActivateConnection(
-		client,
-		*network,
-		"",
-	)
-
-	if err != nil {
-		return fmt.Errorf("ConnectOpen: %w", err)
-	}
-
-	return nil
-}
-
-func Disconnect(client *dbus.Client) error {
-	ACs, err := nm.GetActiveConnections(client)
-	if err != nil {
-		return fmt.Errorf("Disconnect: %w", err)
-	}
-	err = nm.DeactivateConnection(client, ACs)
-	if err != nil {
-		return fmt.Errorf("Disconnect: %w", err)
-	}
-	return nil
-}
-
-func Forget(client *dbus.Client, conPath string) error {
-	err := nm.DeleteConnection(client, conPath)
-	if err != nil {
-		return fmt.Errorf("Forget: %w", err)
-	}
-	return nil
 }
