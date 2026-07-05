@@ -9,7 +9,7 @@ import (
 )
 
 // get a slice of the saved connection profile's
-func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPoint, error) {
+func GetSavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
 	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
 
 	var connPaths []godbus.ObjectPath
@@ -18,16 +18,16 @@ func GetSavedNetworks(c *dbus.Client, available []nm.AccessPoint) ([]nm.AccessPo
 		return nil, fmt.Errorf("GetSavedNetworks: list connections: %w", err)
 	}
 
-	var savedNetworks []nm.AccessPoint
+	var savedNetworks []nm.SavedConnection
 
 	for _, path := range connPaths {
-		ap, err := GetApFromSettings(c, path, available)
+		saved, err := nm.GetSettings(c, path)
 		if err != nil {
 			return nil, fmt.Errorf("GetSavedNetworks: %w", err)
 		}
 
-		if ap != nil {
-			savedNetworks = append(savedNetworks, *ap)
+		if saved != nil {
+			savedNetworks = append(savedNetworks, *saved)
 		}
 	}
 
