@@ -66,9 +66,20 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 	return accessPoints, nil
 }
 
-func ActivateConnection(c *dbus.Client, network AccessPoint) (godbus.ObjectPath, error) {
+func ActivateConnection(
+	c *dbus.Client,
+	connectionPath godbus.ObjectPath,
+	devicePath godbus.ObjectPath,
+	apPath godbus.ObjectPath,
+) (godbus.ObjectPath, error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(CmActivateConnection, 0, network.ConnectionPath, network.DevicePath, network.APPath)
+	call := obj.Call(
+		CmActivateConnection,
+		0,
+		connectionPath,
+		devicePath,
+		apPath,
+	)
 	if call.Err != nil {
 		return "", fmt.Errorf("ActivateConnection: %w", call.Err)
 	}
