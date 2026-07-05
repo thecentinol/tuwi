@@ -3,6 +3,7 @@ package wifi
 import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
+	"slices"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
@@ -34,14 +35,33 @@ func GetSavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
 	return savedNetworks, nil
 }
 
+// when a NewConnectionMsg is received, this function is used to
+// build the SavedConnection struct from the returned connection-
+// path from NewConnectionMsg
+func AppendNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.NearbyConnection, error) {
+	var savedConnection nm.NearbyConnection
 
+	saved, err := nm.GetSettings(c, connectionPath)
 	if err != nil {
+		return nil, fmt.Errorf("AddNewConnection: %w", err)
 	}
 
+	savedConnection = nm.NearbyConnection{
+		Connection: *saved,
+		AP:         nil,
 	}
 
+	return &savedConnection, nil
+}
 
+// when a ConnectionRemovedMsg is received, this function is used to
+// remove the selected connection from the SavedConnection (networks) slice.
+func RemoveConnection(networks []nm.NearbyConnection, connectionPath godbus.ObjectPath) []nm.NearbyConnection {
+	result := slices.DeleteFunc(networks, func(nc nm.NearbyConnection) bool {
+		return connectionPath == nc.Connection.ConnectionPath
+	})
 
+	return result
 }
 
 // get the wifi network that's currently connected to
