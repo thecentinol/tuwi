@@ -7,8 +7,8 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func DeleteConnection(c *dbus.Client, conPath string) error {
-	obj := c.Conn.Object(BaseServiceName, godbus.ObjectPath(conPath))
+func DeleteConnection(c *dbus.Client, conPath godbus.ObjectPath) error {
+	obj := c.Conn.Object(BaseServiceName, conPath)
 	call := obj.Call(CspDelete, 0)
 
 	if call.Err != nil {

@@ -64,45 +64,24 @@ func RemoveConnection(networks []nm.NearbyConnection, connectionPath godbus.Obje
 	return result
 }
 
-// get the wifi network that's currently connected to
+// get the wifi network that we're currently connected to
 func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
-	var activeNetwork nm.AccessPoint
-
 	devicePath, err := nm.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: %w", err)
 	}
-	device := c.Conn.Object(nm.BaseServiceName, devicePath)
-	active, err := device.GetProperty(nm.WirelessActiveAccessPoint)
+	activeAP, err := nm.GetActiveAccessPoint(c, devicePath)
+
+	ap, err := nm.GetAccessPointProperties(c, devicePath, *activeAP)
 	if err != nil {
-		return nil, fmt.Errorf("GetActiveNetwork: ActiveAccessPoint property: %w", err)
-	}
-	activePath := active.Value().(godbus.ObjectPath)
-	apObject := c.Conn.Object(nm.BaseServiceName, activePath)
-
-	ssid, err := apObject.GetProperty(nm.ApSsid)
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveNetwork: ActivePointSsid property: %w", err)
+		return nil, fmt.Errorf("GetActiveNetwork: %w", err)
 	}
 
-	strength, err := apObject.GetProperty(nm.ApStrength)
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveNetwork: AccessPointStrength property: %w", err)
+	return ap, nil
+}
+
 	}
 
-	flags, err := apObject.GetProperty(nm.ApFlags)
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveNetwork: AccessPointFlags property: %w", err)
 	}
 
-	ssidBytes := string(ssid.Value().([]byte))
-	flagsVal := flags.Value().(uint32)
-	activeNetwork = nm.AccessPoint{
-		SSID:     ssidBytes,
-		Strength: strength.Value().(uint8),
-		Secured:  flagsVal&0x00000001 != 0,
-		HasWps:   flagsVal&0x00000002 != 0,
-	}
-
-	return &activeNetwork, nil
 }
