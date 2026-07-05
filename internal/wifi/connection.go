@@ -9,8 +9,16 @@ import (
 )
 
 // connect to a saved wifi network
-func ConnectSaved(client *dbus.Client, network nm.AccessPoint) (godbus.ObjectPath, error) {
-	obj, err := nm.ActivateConnection(client, network)
+func ConnectSaved(client *dbus.Client, nc nm.NearbyConnection) (godbus.ObjectPath, error) {
+	if nc.AP == nil {
+		return "", fmt.Errorf("ConnectSaved: network is out of range")
+	}
+	obj, err := nm.ActivateConnection(
+		client,
+		nc.Connection.ConnectionPath,
+		nc.AP.DevicePath,
+		nc.AP.APPath,
+	)
 
 	if err != nil {
 		return "", fmt.Errorf("ConnectSaved: %w", err)
@@ -70,7 +78,7 @@ func Disconnect(client *dbus.Client) error {
 }
 
 // forget a wifi network - deletes the saved connection profile if using NetworkManager backend
-func Forget(client *dbus.Client, conPath string) error {
+func Forget(client *dbus.Client, conPath godbus.ObjectPath) error {
 	err := nm.DeleteConnection(client, conPath)
 	if err != nil {
 		return fmt.Errorf("Forget: %w", err)
