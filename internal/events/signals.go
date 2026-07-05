@@ -1,6 +1,8 @@
 package events
 
 import (
+	godbus "github.com/godbus/dbus/v5"
+
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
@@ -14,8 +16,8 @@ type AccessPointRemovedMsg struct {
 
 // Connection Settings Profile Manager - Settings Object
 type NewConnectionMsg struct {
-	ConnectionPath string
+	ConnectionPath godbus.ObjectPath
 }
 type ConnectionRemovedMsg struct {
-	ConnectionPath string
+	ConnectionPath godbus.ObjectPath
 }
