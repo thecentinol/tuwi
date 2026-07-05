@@ -80,8 +80,38 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 	return ap, nil
 }
 
+// if a saved connection is in range we will match the access point
+// to the saved connection profile by BSSID and return the NearbyConnection
+// slice so we can display the properties of the network that are only
+// available to access points. If a saved connection is not in range we will
+// default to show info of the network available via its saved profile settings.
+func DisplaySavedConnections(
+	saved []nm.SavedConnection,
+	available []nm.AccessPoint,
+) []nm.NearbyConnection {
+	var nearbyConnections []nm.NearbyConnection
+
+	visibleAPs := make(map[string]*nm.AccessPoint)
+	for i := range available {
+		ap := &available[i]
+		if ap.BSSID != "" {
+			visibleAPs[ap.BSSID] = ap
+		}
 	}
 
+	for _, sc := range saved {
+		nearbyConnection := nm.NearbyConnection{
+			Connection: sc,
+			AP:         nil,
+		}
+		for _, seenBssid := range sc.BSSIDs {
+			if ap, found := visibleAPs[seenBssid]; found {
+				nearbyConnection.AP = ap
+				break
+			}
+		}
+		nearbyConnections = append(nearbyConnections, nearbyConnection)
 	}
 
+	return nearbyConnections
 }
