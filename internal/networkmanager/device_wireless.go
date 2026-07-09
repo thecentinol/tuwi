@@ -47,7 +47,7 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	return nil
 }
 
-// this gets theraw paths for the access points
+// this gets the raw paths for the access points
 func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPath, error) {
 	obj := c.Conn.Object(
 		BaseServiceName,

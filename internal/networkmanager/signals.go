@@ -13,61 +13,12 @@ func handleAccessPointAdded(c *dbus.Client, signal *godbus.Signal) (*AccessPoint
 		return nil, fmt.Errorf("handleAccessPointAdded: signal body missing!")
 	}
 	apPath := body[0].(godbus.ObjectPath)
-
-	obj := c.Conn.Object(BaseServiceName, apPath)
-
-	ssidBytes, err := obj.GetProperty(ApSsid)
+	ap, err := GetAccessPointProperties(c, signal.Path, apPath)
 	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: SSID: %w", err)
-	}
-	rawSsid := ssidBytes.Value().([]byte)
-
-	hidden, ssid := IsHidden(rawSsid)
-
-	bssid, err := obj.GetProperty(ApHwAddress)
-	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: BSSID/HwAddress: %w", err)
+		return nil, fmt.Errorf("handleAccessPointAdded: %w", err)
 	}
 
-	strength, err := obj.GetProperty(ApStrength)
-	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: strength: %w", err)
-	}
-
-	rawFlags, err := obj.GetProperty(ApFlags)
-	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: flags: %w", err)
-	}
-	rawWpaFlags, err := obj.GetProperty(ApWpaFlags)
-	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: wpa flags: %w", err)
-	}
-	rawRsnFlags, err := obj.GetProperty(ApRsnFlags)
-	if err != nil {
-		return nil, fmt.Errorf("handleAccessPointAdded AP property: rsn flags: %w", err)
-	}
-
-	flags := rawFlags.Value().(uint32)
-	wpaFlags := rawWpaFlags.Value().(uint32)
-	rsnFlags := rawRsnFlags.Value().(uint32)
-	securityType := DetermineSecurityType(flags, wpaFlags, rsnFlags)
-
-	ap := AccessPoint{
-		SSID:         ssid,
-		BSSID:        bssid.Value().(string),
-		SecurityType: securityType,
-
-		DevicePath: signal.Path,
-		APPath:     apPath,
-
-		Strength: strength.Value().(uint8),
-
-		IsSaved: false,
-		Secured: securityType != "open",
-		Hidden:  hidden,
-		HasWps:  flags&0x00000002 != 0,
-	}
-	return &ap, nil
+	return ap, nil
 }
 
 func handleAccessPointRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
