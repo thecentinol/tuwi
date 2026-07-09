@@ -47,7 +47,7 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	return nil
 }
 
-// this gets the raw paths for the access points
+// this gets theraw paths for the access points
 func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.ObjectPath, error) {
 	obj := c.Conn.Object(
 		BaseServiceName,
@@ -66,9 +66,101 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 	return accessPoints, nil
 }
 
-func ActivateConnection(c *dbus.Client, network AccessPoint) (godbus.ObjectPath, error) {
+// gets the ObjectPath of the access point currently used
+// by the wireless device
+func GetActiveAccessPoint(
+	c *dbus.Client,
+	wirelessDevicePath godbus.ObjectPath,
+) (*godbus.ObjectPath, error) {
+	obj := c.Conn.Object(BaseServiceName, wirelessDevicePath)
+	rawActiveAP, err := obj.GetProperty(WirelessActiveAccessPoint)
+
+	if err != nil {
+		return nil, fmt.Errorf("GetActiveAccessPoint: %w", err)
+	}
+
+	activeAP := rawActiveAP.Value().(godbus.ObjectPath)
+
+	return &activeAP, nil
+}
+
+// gets the properties of an access point and builds an AccessPoint struct/object
+func GetAccessPointProperties(
+	c *dbus.Client,
+	wifiDevicePath godbus.ObjectPath,
+	apPath godbus.ObjectPath,
+) (*AccessPoint, error) {
+	obj := c.Conn.Object(BaseServiceName, apPath)
+
+	ssidBytes, err := obj.GetProperty(ApSsid)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: SSID property: %w", err)
+	}
+	rawSsid := ssidBytes.Value().([]byte)
+
+	hidden, ssid := IsHidden(rawSsid)
+
+	bssid, err := obj.GetProperty(ApHwAddress)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: HwAddress property: %w", err)
+	}
+
+	strength, err := obj.GetProperty(ApStrength)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Strength property: %w", err)
+	}
+
+	flagsRaw, err := obj.GetProperty(ApFlags)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Flags property: %w", err)
+	}
+	wpaFlags, err := obj.GetProperty(ApWpaFlags)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: WpaFlags property: %w", err)
+	}
+	rsnFlags, err := obj.GetProperty(ApRsnFlags)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: RsnFlags property: %w", err)
+	}
+
+	flags := flagsRaw.Value().(uint32)
+	wpa := wpaFlags.Value().(uint32)
+	rsn := rsnFlags.Value().(uint32)
+	securityType := DetermineSecurityType(flags, wpa, rsn)
+
+	ap := &AccessPoint{
+		SSID:         ssid,
+		BSSID:        bssid.Value().(string),
+		SecurityType: securityType,
+
+		DevicePath: wifiDevicePath,
+		APPath:     apPath,
+
+		Strength: strength.Value().(uint8),
+
+		IsSaved: false,
+		Secured: securityType != "open",
+		Hidden:  hidden,
+		HasWps:  flags&0x00000002 != 0,
+	}
+
+	return ap, nil
+}
+
+func ActivateConnection(
+	c *dbus.Client,
+	connectionPath godbus.ObjectPath,
+	devicePath godbus.ObjectPath,
+	apPath godbus.ObjectPath,
+) (godbus.ObjectPath, error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
-	call := obj.Call(CmActivateConnection, 0, network.ConnectionPath, network.DevicePath, network.APPath)
+	call := obj.Call(
+		CmActivateConnection,
+		0,
+		connectionPath,
+		devicePath,
+		apPath,
+	)
 	if call.Err != nil {
 		return "", fmt.Errorf("ActivateConnection: %w", call.Err)
 	}

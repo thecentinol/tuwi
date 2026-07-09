@@ -2,6 +2,7 @@ package main
 
 import (
 	tea "charm.land/bubbletea/v2"
+	godbus "github.com/godbus/dbus/v5"
 	"log"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -23,13 +24,13 @@ func main() {
 		OnAccessPointAdded: func(ap nm.AccessPoint) {
 			p.Send(events.AccessPointAddedMsg{AP: ap})
 		},
-		OnAccessPointRemoved: func(apPath string) {
+		OnAccessPointRemoved: func(apPath godbus.ObjectPath) {
 			p.Send(events.AccessPointRemovedMsg{ApPath: apPath})
 		},
-		OnNewConnection: func(path string) {
+		OnNewConnection: func(path godbus.ObjectPath) {
 			p.Send(events.NewConnectionMsg{ConnectionPath: path})
 		},
-		OnConnectionRemoved: func(path string) {
+		OnConnectionRemoved: func(path godbus.ObjectPath) {
 			p.Send(events.ConnectionRemovedMsg{ConnectionPath: path})
 		},
 		OnError: func(err error) {

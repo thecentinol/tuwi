@@ -3,13 +3,14 @@ package ui
 import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type keymap struct {
@@ -18,15 +19,25 @@ type keymap struct {
 	quit key.Binding
 }
 
+type Focused string
+
+const (
+	FocusSaved         Focused = "saved"
+	FocusAvailable     Focused = "available"
+	FocusPasswordModal Focused = "password"
+	FocusErrorModal    Focused = "error"
+)
+
 type Model struct {
 	Client *dbus.Client
 	width  int
 	height int
-	focus  int
+	focus  Focused
 	help   help.Model
 	keymap keymap
 
-	wifi            WifiModel
+	wifiSaved       WifiSavedModel
+	wifiAvailable   WifiAvailableModel
 	selectedNetwork *nm.AccessPoint
 
 	passwordModal     comp.PasswordModel
@@ -37,14 +48,13 @@ type Model struct {
 }
 
 func NewModel(client *dbus.Client) Model {
+	state := &wifi.State{}
 	return Model{
-		Client: client,
-		help:   help.New(),
-		wifi: WifiModel{
-			client:        client,
-			savedList:     NewSavedList(client),
-			availableList: NewAvailableList(client),
-		},
+		Client:        client,
+		focus:         FocusSaved,
+		help:          help.New(),
+		wifiSaved:     NewWifiSavedModel(client, state),
+		wifiAvailable: NewWifiAvailableModel(client, state),
 		passwordModal: comp.NewPasswordModal(),
 		errorModal:    comp.NewErrorModal(),
 		keymap: keymap{
@@ -64,7 +74,8 @@ func NewModel(client *dbus.Client) Model {
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		m.wifi.Init(),
+		m.wifiSaved.Init(),
+		m.wifiAvailable.Init(),
 	)
 }
 
@@ -73,15 +84,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-
 	case tea.KeyPressMsg:
 		switch {
+		case m.showPasswordModal:
+			m.passwordModal, cmd = m.passwordModal.Update(msg)
+			cmds = append(cmds, cmd)
+		case m.showErrorModal:
+			m.errorModal, cmd = m.errorModal.Update(msg)
+			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keymap.focus1):
-			m.focus = 0
+			m.focus = FocusSaved
 		case key.Matches(msg, m.keymap.focus2):
-			m.focus = 1
+			m.focus = FocusAvailable
 		case key.Matches(msg, m.keymap.quit):
 			return m, tea.Quit
+		case m.wifiSaved.isFocused:
+			m.wifiSaved, cmd = m.wifiSaved.Update(msg)
+			cmds = append(cmds, cmd)
+		case m.wifiAvailable.isFocused:
+			m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
+			cmds = append(cmds, cmd)
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -109,41 +131,47 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ShowErrorMsg:
 		m.errorModal.SetText(msg.Err.Error())
 		m.showErrorModal = true
-		m.errorModal.Width = m.width / 3
-		m.errorModal.MaxHeight = m.height / 5
-		m.errorModal.X = (m.width / 2) - (m.errorModal.Width / 2)
-		m.errorModal.Y = (m.height / 2) - (m.errorModal.Height / 2)
 		return m, m.errorModal.Init()
 
 	case events.DismissErrorMsg:
 		m.showErrorModal = false
-	}
-
-	switch {
-	case m.showPasswordModal:
-		m.passwordModal, cmd = m.passwordModal.Update(msg)
-		cmds = append(cmds, cmd)
-	case m.showErrorModal:
-		m.errorModal, cmd = m.errorModal.Update(msg)
-		cmds = append(cmds, cmd)
 
 	default:
-		m.wifi.savedList.focused = m.focus == 0
-		m.wifi.availableList.focused = m.focus == 1
-
-		m.wifi, cmd = m.wifi.Update(msg)
+		m.wifiSaved, cmd = m.wifiSaved.Update(msg)
 		cmds = append(cmds, cmd)
+
+		m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
+		cmds = append(cmds, cmd)
+
+		if m.showPasswordModal {
+			m.passwordModal, cmd = m.passwordModal.Update(msg)
+			cmds = append(cmds, cmd)
+		}
+		if m.showErrorModal {
+			m.errorModal, cmd = m.errorModal.Update(msg)
+			cmds = append(cmds, cmd)
+		}
 	}
+
+	m.wifiSaved.isFocused = m.focus == FocusSaved
+	m.wifiAvailable.isFocused = m.focus == FocusAvailable
 
 	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() tea.View {
 	var view tea.View
-	wifiView := m.wifi.View().Content
+	wifiSavedView := m.wifiSaved.View().Content
+	wifiAvailableView := m.wifiAvailable.View().Content
 	helpView := m.HelpView()
 	passwordView := m.passwordModal.View().Content
 	errorModalView := m.errorModal.View().Content
+
+	wifiView := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		wifiSavedView,
+		wifiAvailableView,
+	)
 
 	base := lipgloss.NewLayer(
 		lipgloss.JoinVertical(
@@ -183,35 +211,18 @@ func (m *Model) sizeComponents() {
 	halfWidth := m.width / 2
 	// halfHeight := m.height / 2
 	helpHeight := 1
-	tableH := m.height - helpHeight - 2
-
-	m.wifi.savedList.width = halfWidth
-	m.wifi.savedList.height = m.height - helpHeight
-	m.wifi.savedList.table.SetWidth(halfWidth)
-	m.wifi.savedList.table.SetHeight(tableH)
-
-	m.wifi.availableList.width = halfWidth
-	m.wifi.availableList.height = m.height - helpHeight
-	m.wifi.availableList.table.SetWidth(halfWidth)
-	m.wifi.availableList.table.SetHeight(tableH)
-
-	// set the width of the columns for the wifi tables
-	colWidth := int(float64(halfWidth) * 0.25)
-
-	m.wifi.savedList.table.SetColumns([]table.Column{
-		{Title: "SSID", Width: colWidth},
-		{Title: "Security", Width: colWidth},
-		{Title: "Hidden", Width: colWidth},
-		{Title: "Strength", Width: colWidth - 10},
-	})
-	m.wifi.availableList.table.SetColumns([]table.Column{
-		{Title: "SSID", Width: colWidth},
-		{Title: "Security", Width: colWidth},
-		{Title: "Hidden", Width: colWidth},
-		{Title: "Strength", Width: colWidth - 10},
-	})
-
 	modalWidth := m.width / 3
+	tableHeight := m.height - helpHeight - 2
+
+	// set wifi model's width and height
+	m.wifiSaved.SetWidth(halfWidth)
+	m.wifiSaved.Setheight(m.height - helpHeight)
+	m.wifiSaved.table.SetWidth(halfWidth)
+	m.wifiSaved.table.SetHeight(tableHeight)
+	m.wifiAvailable.SetWidth(halfWidth)
+	m.wifiAvailable.Setheight(m.height - helpHeight)
+	m.wifiAvailable.table.SetWidth(halfWidth)
+	m.wifiAvailable.table.SetHeight(tableHeight)
 
 	// Password Modal
 	iconWidth := 2
@@ -226,6 +237,12 @@ func (m *Model) sizeComponents() {
 	// calculate X and Y coordinates of password modal
 	m.passwordModal.X = (m.width / 2) - (getPasswordModalWidth / 2)
 	m.passwordModal.Y = (m.height / 2) - (getPasswordModalHeight / 2)
+
+	// error modal
+	m.errorModal.Width = m.width / 3
+	m.errorModal.MaxHeight = m.height / 5
+	m.errorModal.X = (m.width / 2) - (m.errorModal.Width / 2)
+	m.errorModal.Y = (m.height / 2) - (m.errorModal.Height / 2)
 }
 
 func (m Model) HelpView() string {
@@ -233,8 +250,12 @@ func (m Model) HelpView() string {
 
 	if m.showPasswordModal {
 		help = append(help, m.passwordModal.HelpView()...)
-	} else {
-		help = append(help, m.wifi.HelpView()...)
+	}
+	if m.focus == FocusSaved {
+		help = append(help, m.wifiSaved.HelpView()...)
+	}
+	if m.focus == FocusAvailable {
+		help = append(help, m.wifiAvailable.HelpView()...)
 	}
 
 	help = append(help, m.keymap.quit)
