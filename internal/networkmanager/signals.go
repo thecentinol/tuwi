@@ -113,7 +113,7 @@ func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 
 type SignalCallbacks struct {
 	OnAccessPointAdded   func(ap AccessPoint)
-	OnAccessPointRemoved func(apPath string)
+	OnAccessPointRemoved func(apPath godbus.ObjectPath)
 
 	OnNewConnection     func(path godbus.ObjectPath)
 	OnConnectionRemoved func(path godbus.ObjectPath)
@@ -156,7 +156,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 			if err != nil {
 				cb.OnError(err)
 			} else {
-				cb.OnAccessPointRemoved(string(apPath))
+				cb.OnAccessPointRemoved(apPath)
 			}
 
 		case CspmNewConnection:

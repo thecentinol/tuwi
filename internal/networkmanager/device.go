@@ -28,3 +28,22 @@ func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 	}
 	return "", fmt.Errorf("GetWifiDevice: no wifi device found")
 }
+
+// this gets the object paths of saved connection profiles that
+// are currently available to connect to.
+func AvailableConnections(c *dbus.Client) ([]godbus.ObjectPath, error) {
+	wifiDevice, err := GetWifiDevice(c)
+	if err != nil {
+		return nil, fmt.Errorf("GetAvailableConnections: %w", err)
+	}
+
+	obj := c.Conn.Object(BaseServiceName, wifiDevice)
+
+	availableConnections, err := obj.GetProperty(DeviceAvailableConnections)
+	if err != nil {
+		return nil, fmt.Errorf("GetAvailableConnections: AvailableConnections property %w", err)
+	}
+	available := availableConnections.Value().([]godbus.ObjectPath)
+
+	return available, nil
+}

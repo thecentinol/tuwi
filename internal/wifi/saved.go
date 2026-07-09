@@ -35,33 +35,37 @@ func GetSavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
 	return savedNetworks, nil
 }
 
+// uses the ObjectPaths of saved connection profiles that are available
+// to connect to and builds a SavedConnection struct for each one.
+func GetNearbySavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
+	available, err := nm.AvailableConnections(c)
+	if err != nil {
+		return nil, fmt.Errorf("GetNearbySavedNetworks: %w", err)
+	}
+
+	var nearby []nm.SavedConnection
+
+	for _, a := range available {
+		saved, err := nm.GetSettings(c, a)
+		if err != nil {
+			return nil, fmt.Errorf("GetNearbySavedNetworks: %w", err)
+		}
+
+		nearby = append(nearby, *saved)
+	}
+	return nearby, nil
+}
+
 // when a NewConnectionMsg is received, this function is used to
 // build the SavedConnection struct from the returned connection-
 // path from NewConnectionMsg
-func AppendNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.NearbyConnection, error) {
-	var savedConnection nm.NearbyConnection
-
+func BuildNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.SavedConnection, error) {
 	saved, err := nm.GetSettings(c, connectionPath)
 	if err != nil {
 		return nil, fmt.Errorf("AddNewConnection: %w", err)
 	}
 
-	savedConnection = nm.NearbyConnection{
-		Connection: *saved,
-		AP:         nil,
-	}
-
-	return &savedConnection, nil
-}
-
-// when a ConnectionRemovedMsg is received, this function is used to
-// remove the selected connection from the SavedConnection (networks) slice.
-func RemoveConnection(networks []nm.NearbyConnection, connectionPath godbus.ObjectPath) []nm.NearbyConnection {
-	result := slices.DeleteFunc(networks, func(nc nm.NearbyConnection) bool {
-		return connectionPath == nc.Connection.ConnectionPath
-	})
-
-	return result
+	return saved, nil
 }
 
 // get the wifi network that we're currently connected to

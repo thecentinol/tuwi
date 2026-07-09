@@ -24,7 +24,7 @@ func main() {
 		OnAccessPointAdded: func(ap nm.AccessPoint) {
 			p.Send(events.AccessPointAddedMsg{AP: ap})
 		},
-		OnAccessPointRemoved: func(apPath string) {
+		OnAccessPointRemoved: func(apPath godbus.ObjectPath) {
 			p.Send(events.AccessPointRemovedMsg{ApPath: apPath})
 		},
 		OnNewConnection: func(path godbus.ObjectPath) {
