@@ -3,7 +3,6 @@ package wifi
 import (
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
-	"slices"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
@@ -87,7 +86,7 @@ func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
 // if a saved connection is in range we will match the access point
 // to the saved connection profile by BSSID and return the NearbyConnection
 // slice so we can display the properties of the network that are only
-// available to access points. If a saved connection is not in range we will
+// available to access point paths. If a saved connection is not in range we will
 // default to show info of the network available via its saved profile settings.
 func DisplaySavedConnections(
 	saved []nm.SavedConnection,
@@ -95,11 +94,16 @@ func DisplaySavedConnections(
 ) []nm.NearbyConnection {
 	var nearbyConnections []nm.NearbyConnection
 
-	visibleAPs := make(map[string]*nm.AccessPoint)
+	visibleAPsByBSSID := make(map[string]*nm.AccessPoint)
+	visibleAPsByConnection := make(map[string]*nm.AccessPoint)
 	for i := range available {
 		ap := &available[i]
 		if ap.BSSID != "" {
-			visibleAPs[ap.BSSID] = ap
+			visibleAPsByBSSID[ap.BSSID] = ap
+		}
+
+		if ap.SSID != "" {
+			visibleAPsByConnection[ap.SSID] = ap
 		}
 	}
 
@@ -108,10 +112,19 @@ func DisplaySavedConnections(
 			Connection: sc,
 			AP:         nil,
 		}
-		for _, seenBssid := range sc.BSSIDs {
-			if ap, found := visibleAPs[seenBssid]; found {
+
+		if sc.BSSIDs != nil {
+			for _, seenBssid := range sc.BSSIDs {
+				if ap, found := visibleAPsByBSSID[seenBssid]; found {
+					nearbyConnection.AP = ap
+					break
+				}
+			}
+
+		}
+		if sc.SSID != "" {
+			if ap, found := visibleAPsByConnection[sc.SSID]; found {
 				nearbyConnection.AP = ap
-				break
 			}
 		}
 		nearbyConnections = append(nearbyConnections, nearbyConnection)
