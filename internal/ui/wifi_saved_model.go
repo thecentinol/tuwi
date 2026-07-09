@@ -209,7 +209,7 @@ func setSavedRows(nc []nm.NearbyConnection) []table.Row {
 		var strength string
 
 		if isNearby {
-			security = n.AP.SecurityType
+			security = nm.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
 			strength = strconv.FormatInt(int64(n.AP.Strength), 10)
 		} else {
 			security = n.Connection.KeyMgmt

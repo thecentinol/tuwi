@@ -216,13 +216,15 @@ func (a *WifiAvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 }
 
 func (a *WifiAvailableModel) handleConnect(connection nm.AccessPoint) (WifiAvailableModel, tea.Cmd) {
+	securityType := nm.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
+	isSecured := securityType != "open" && securityType != "unknown"
 	switch {
-	case connection.Secured && !connection.IsSaved:
+	case isSecured:
 		return *a, func() tea.Msg {
 			return events.ShowPasswordModalMsg{Network: &connection}
 		}
 
-	case connection.SecurityType != "open" && connection.SecurityType != "unknown" && !connection.Secured:
+	case securityType != "open" && securityType != "unknown":
 		err := wifi.ConnectOpen(a.client, &connection)
 		if err != nil {
 			return *a, events.ShowError(err)
@@ -259,11 +261,12 @@ func setAvailableRows(networks []nm.AccessPoint) []table.Row {
 
 	for _, n := range networks {
 		strength := strconv.FormatInt(int64(n.Strength), 10)
+		securityType := nm.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
 
 		rows = append(rows, table.Row{
-			n.SSID,
-			n.SecurityType,
-			strconv.FormatBool(n.Hidden),
+			string(n.SSID),
+			securityType,
+			"",
 			string(strength) + "%",
 		})
 	}

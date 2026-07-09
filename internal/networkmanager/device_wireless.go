@@ -92,25 +92,7 @@ func GetAccessPointProperties(
 ) (*AccessPoint, error) {
 	obj := c.Conn.Object(BaseServiceName, apPath)
 
-	ssidBytes, err := obj.GetProperty(ApSsid)
-	if err != nil {
-		return nil, fmt.Errorf("GetAccessPointProperties: SSID property: %w", err)
-	}
-	rawSsid := ssidBytes.Value().([]byte)
-
-	hidden, ssid := IsHidden(rawSsid)
-
-	bssid, err := obj.GetProperty(ApHwAddress)
-	if err != nil {
-		return nil, fmt.Errorf("GetAccessPointProperties: HwAddress property: %w", err)
-	}
-
-	strength, err := obj.GetProperty(ApStrength)
-	if err != nil {
-		return nil, fmt.Errorf("GetAccessPointProperties: Strength property: %w", err)
-	}
-
-	flagsRaw, err := obj.GetProperty(ApFlags)
+	flags, err := obj.GetProperty(ApFlags)
 	if err != nil {
 		return nil, fmt.Errorf("GetAccessPointProperties: Flags property: %w", err)
 	}
@@ -123,25 +105,63 @@ func GetAccessPointProperties(
 		return nil, fmt.Errorf("GetAccessPointProperties: RsnFlags property: %w", err)
 	}
 
-	flags := flagsRaw.Value().(uint32)
-	wpa := wpaFlags.Value().(uint32)
-	rsn := rsnFlags.Value().(uint32)
-	securityType := DetermineSecurityType(flags, wpa, rsn)
+	ssid, err := obj.GetProperty(ApSsid)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: SSID property: %w", err)
+	}
+
+	freq, err := obj.GetProperty(ApFrequency)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Frequency property: %w", err)
+	}
+
+	bssid, err := obj.GetProperty(ApHwAddress)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: HwAddress property: %w", err)
+	}
+
+	mode, err := obj.GetProperty(ApMode)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Mode property: %w", err)
+	}
+
+	maxBitate, err := obj.GetProperty(ApMaxBitrate)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: MaxBitrate property: %w", err)
+	}
+
+	bandwidth, err := obj.GetProperty(ApBandwidth)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Bandwidth property: %w", err)
+	}
+
+	strength, err := obj.GetProperty(ApStrength)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: Strength property: %w", err)
+	}
+
+	lastSeen, err := obj.GetProperty(ApLastSeen)
+	if err != nil {
+		return nil, fmt.Errorf("GetAccessPointProperties: LastSeen property: %w", err)
+	}
 
 	ap := &AccessPoint{
-		SSID:         ssid,
-		BSSID:        bssid.Value().(string),
-		SecurityType: securityType,
+		Flags:    flags.Value().(uint32),
+		WpaFlags: wpaFlags.Value().(uint32),
+		RsnFlags: rsnFlags.Value().(uint32),
+
+		SSID:      ssid.Value().([]byte),
+		Frequency: freq.Value().(uint32),
+		BSSID:     bssid.Value().(string),
+
+		Mode:       mode.Value().(uint32),
+		MaxBitrate: maxBitate.Value().(uint32),
+		Bandwidth:  bandwidth.Value().(uint32),
+		Strength:   strength.Value().(uint8),
+		LastSeen:   lastSeen.Value().(int32),
 
 		DevicePath: wifiDevicePath,
 		APPath:     apPath,
-
-		Strength: strength.Value().(uint8),
-
-		IsSaved: false,
-		Secured: securityType != "open",
-		Hidden:  hidden,
-		HasWps:  flags&0x00000002 != 0,
 	}
 
 	return ap, nil

@@ -33,10 +33,13 @@ func ConnectSecured(
 	network *nm.AccessPoint,
 	password string,
 ) error {
+	securityType := nm.DetermineSecurityType(network.Flags, network.WpaFlags, network.RsnFlags)
+
 	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		password,
+		securityType,
 	)
 
 	if err != nil {
@@ -51,10 +54,13 @@ func ConnectOpen(
 	client *dbus.Client,
 	network *nm.AccessPoint,
 ) error {
+	securityType := nm.DetermineSecurityType(network.Flags, network.WpaFlags, network.RsnFlags)
+
 	err := nm.AddAndActivateConnection(
 		client,
 		*network,
 		"",
+		securityType,
 	)
 
 	if err != nil {

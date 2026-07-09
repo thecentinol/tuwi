@@ -5,21 +5,22 @@ import godbus "github.com/godbus/dbus/v5"
 // this is the shape of an Access Point.
 // refer to the `.AccessPoint.Properties` in NM docs
 type AccessPoint struct {
-	SSID           string
-	BSSID          string // AKA HwAddress
-	ConnectionUUID string
-	SecurityType   string // wpa-psk, wpa-eap, none
+	Flags    uint32
+	WpaFlags uint32
+	RsnFlags uint32
 
-	ConnectionPath godbus.ObjectPath
-	DevicePath     godbus.ObjectPath
-	APPath         godbus.ObjectPath
+	SSID      []byte
+	Frequency uint32
+	BSSID     string // HwAddress
 
-	Strength uint8
+	Mode       uint32
+	MaxBitrate uint32
+	Bandwidth  uint32
+	Strength   uint8
+	LastSeen   int32
 
-	IsSaved bool
-	Secured bool
-	Hidden  bool
-	HasWps  bool
+	DevicePath godbus.ObjectPath
+	APPath     godbus.ObjectPath
 }
 
 // this is the shape of the saved connection profile
