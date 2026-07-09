@@ -26,7 +26,6 @@ type AccessPoint struct {
 // this is the shape of the saved connection profile
 // as seen in `.Settings.Connection.GetSettings` (refer to NM docs)
 type SavedConnection struct {
-	// meta data
 	ConnectionPath godbus.ObjectPath
 
 	// connection block
