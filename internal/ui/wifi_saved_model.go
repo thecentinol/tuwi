@@ -74,6 +74,12 @@ func NewWifiSavedModel(c *dbus.Client, state *wifi.State) WifiSavedModel {
 }
 
 func (s WifiSavedModel) Init() tea.Cmd {
+	an, err := wifi.GetActiveNetwork(s.client)
+	if err != nil {
+		return events.ShowError(err)
+	}
+	s.state.SetActiveConnection(*an)
+
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(s.client)
 		if err != nil {
