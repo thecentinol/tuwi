@@ -39,3 +39,37 @@ func FormatSSID(ssid []byte) string {
 	}
 	return string(ssid)
 }
+
+func DetermineFrequency(hertz uint32) string {
+	if hertz >= 2401 && hertz <= 2495 {
+		return "2.4GHz"
+	}
+	if hertz >= 5150 && hertz <= 5895 {
+		return "5GHz"
+	}
+	if hertz >= 5945 && hertz <= 7125 {
+		return "6GHz"
+	}
+	return "unknown"
+}
+
+func DetermineChannel(freq uint32) uint32 {
+	var channel uint32
+
+	if freq >= 2412 && freq <= 2472 {
+		channel = (freq - 2407) / 5
+
+	} else if freq == 2484 {
+		channel = 14
+
+	} else if freq >= 5160 && freq <= 5855 {
+		channel = (freq - 5000) / 5
+
+	} else if freq == 5935 {
+		channel = 2
+
+	} else if freq >= 5955 && freq <= 7115 {
+		channel = (freq - 5950) / 5
+	}
+	return channel
+}
