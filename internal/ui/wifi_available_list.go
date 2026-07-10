@@ -263,16 +263,14 @@ func setAvailableRows(networks []nm.AccessPoint) []table.Row {
 	for _, n := range networks {
 		strength := strconv.FormatInt(int64(n.Strength), 10)
 		securityType := wifi.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
-		channel := strconv.FormatUint(uint64(
-			wifi.DetermineChannel(n.Frequency),
-		), 10)
+		channel := wifi.DetermineChannel(n.Frequency)
 
 		rows = append(rows, table.Row{
 			wifi.FormatSSID(n.SSID),
 			securityType,
 			wifi.DetermineFrequency(n.Frequency),
-			string(strength) + "%",
-			channel,
+			strength + "%",
+			wifi.FormatChannel(channel),
 		})
 	}
 

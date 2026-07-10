@@ -1,6 +1,10 @@
 package wifi
 
-import nm "github.com/thecentinol/tuwi/internal/networkmanager"
+import (
+	"strconv"
+
+	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+)
 
 func DetermineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	var secType string
@@ -72,4 +76,11 @@ func DetermineChannel(freq uint32) uint32 {
 		channel = (freq - 5950) / 5
 	}
 	return channel
+}
+
+func FormatChannel(channel uint32) string {
+	if channel == 0 {
+		return "-"
+	}
+	return strconv.FormatUint(uint64(channel), 10)
 }
