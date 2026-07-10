@@ -68,19 +68,24 @@ func BuildNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.S
 }
 
 // get the wifi network that we're currently connected to
-func GetActiveNetwork(c *dbus.Client) (*nm.AccessPoint, error) {
-	devicePath, err := nm.GetWifiDevice(c)
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveNetwork: %w", err)
-	}
-	activeAP, err := nm.GetActiveAccessPoint(c, devicePath)
-
-	ap, err := nm.GetAccessPointProperties(c, devicePath, *activeAP)
+func GetActiveNetwork(c *dbus.Client) (*nm.ActiveConnection, error) {
+	activeConnections, err := nm.GetActiveConnections(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: %w", err)
 	}
 
-	return ap, nil
+	for _, ac := range activeConnections {
+		connection, err := nm.GetActiveConnectionProperties(c, ac)
+		if err != nil {
+			return nil, fmt.Errorf("GetActiveNetwork: %w", err)
+		}
+
+		if connection.Type == "802-11-wireless" {
+			return connection, nil
+		}
+	}
+
+	return nil, nil
 }
 
 // if a saved connection is in range we will match the access point
