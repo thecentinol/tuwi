@@ -33,6 +33,9 @@ func main() {
 		OnConnectionRemoved: func(path godbus.ObjectPath) {
 			p.Send(events.ConnectionRemovedMsg{ConnectionPath: path})
 		},
+		OnActiveConnStateChanged: func(state, reason uint32) {
+			p.Send(events.UpdateActiveConnectionMsg{State: state, Reason: reason})
+		},
 		OnError: func(err error) {
 			p.Send(events.ShowError(err))
 		},
