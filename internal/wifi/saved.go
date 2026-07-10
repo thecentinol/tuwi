@@ -102,8 +102,8 @@ func DisplaySavedConnections(
 			visibleAPsByBSSID[ap.BSSID] = ap
 		}
 
-		if ap.SSID != "" {
-			visibleAPsByConnection[ap.SSID] = ap
+		if len(ap.SSID) != 0 {
+			visibleAPsByConnection[string(ap.SSID)] = ap
 		}
 	}
 

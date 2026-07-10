@@ -21,14 +21,15 @@ func GetDevices(c *dbus.Client) ([]godbus.ObjectPath, error) {
 }
 
 func baseSettings(network AccessPoint) map[string]map[string]godbus.Variant {
+	hidden := len(network.SSID) == 0
 	settings := map[string]map[string]godbus.Variant{
 		"connection": {
 			"id":   godbus.MakeVariant(network.SSID),
 			"type": godbus.MakeVariant("802-11-wireless"),
 		},
 		"802-11-wireless": {
-			"ssid":   godbus.MakeVariant([]byte(network.SSID)),
-			"hidden": godbus.MakeVariant(network.Hidden),
+			"ssid":   godbus.MakeVariant(network.SSID),
+			"hidden": godbus.MakeVariant(hidden),
 		},
 		"ipv4": {
 			"method": godbus.MakeVariant("auto"),
@@ -41,11 +42,11 @@ func baseSettings(network AccessPoint) map[string]map[string]godbus.Variant {
 }
 
 func securitySettings(
-	network AccessPoint,
+	securityType string,
 	password string,
 ) map[string]godbus.Variant {
 	settings := map[string]godbus.Variant{
-		"key-mgmt": godbus.MakeVariant(network.SecurityType),
+		"key-mgmt": godbus.MakeVariant(securityType),
 		"psk":      godbus.MakeVariant(password),
 	}
 	return settings
@@ -55,11 +56,12 @@ func AddAndActivateConnection(
 	c *dbus.Client,
 	network AccessPoint,
 	password string,
+	securityType string,
 ) error {
 	settings := baseSettings(network)
-	if network.Secured {
+	if securityType != "open" && securityType != "unknown" {
 		settings["802-11-wireless"]["security"] = godbus.MakeVariant("802-11-wireless-security")
-		settings["802-11-wireless-security"] = securitySettings(network, password)
+		settings["802-11-wireless-security"] = securitySettings(securityType, password)
 	}
 
 	options := map[string]godbus.Variant{}

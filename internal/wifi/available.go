@@ -63,7 +63,7 @@ func DisplayAvailableAPs(nearbySaved []nm.SavedConnection, available []nm.Access
 			continue
 		}
 
-		if _, ok := savedSSIDs[ap.SSID]; ok {
+		if _, ok := savedSSIDs[string(ap.SSID)]; ok {
 			continue
 		}
 		accessPoints = append(accessPoints, ap)
