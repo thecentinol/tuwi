@@ -66,24 +66,6 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 	return accessPoints, nil
 }
 
-// gets the ObjectPath of the access point currently used
-// by the wireless device
-func GetActiveAccessPoint(
-	c *dbus.Client,
-	wirelessDevicePath godbus.ObjectPath,
-) (*godbus.ObjectPath, error) {
-	obj := c.Conn.Object(BaseServiceName, wirelessDevicePath)
-	rawActiveAP, err := obj.GetProperty(WirelessActiveAccessPoint)
-
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveAccessPoint: %w", err)
-	}
-
-	activeAP := rawActiveAP.Value().(godbus.ObjectPath)
-
-	return &activeAP, nil
-}
-
 // gets the properties of an access point and builds an AccessPoint struct/object
 func GetAccessPointProperties(
 	c *dbus.Client,
