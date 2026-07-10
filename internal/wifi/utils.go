@@ -84,3 +84,10 @@ func FormatChannel(channel uint32) string {
 	}
 	return strconv.FormatUint(uint64(channel), 10)
 }
+
+func FormatStrength(strength uint8) string {
+	if strength == 0 {
+		return "-"
+	}
+	return strconv.FormatInt(int64(strength), 10) + "%"
+}

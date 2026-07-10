@@ -219,14 +219,14 @@ func setSavedRows(nc []nm.NearbyConnection) []table.Row {
 	for _, n := range nc {
 		isNearby := n.AP != nil
 		var security string
-		var strength string
+		var strength uint8
 
 		if isNearby {
 			security = wifi.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
-			strength = strconv.FormatInt(int64(n.AP.Strength), 10)
+			strength = n.AP.Strength
 		} else {
 			security = n.Connection.KeyMgmt
-			strength = "0"
+			strength = 0
 		}
 
 		rows = append(rows, table.Row{
@@ -234,7 +234,7 @@ func setSavedRows(nc []nm.NearbyConnection) []table.Row {
 			"", // intentionally nil
 			security,
 			strconv.FormatBool(n.Connection.Hidden),
-			strength + "%",
+			wifi.FormatStrength(strength),
 		})
 	}
 
