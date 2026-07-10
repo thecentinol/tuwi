@@ -142,6 +142,13 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 	case events.ConnectionRemovedMsg:
 		s.state.RemoveSaved(msg.ConnectionPath)
 		s.table.SetRows(setSavedRows(s.state.Nearby))
+
+	case events.UpdateActiveConnectionMsg:
+		an, err := wifi.GetActiveNetwork(s.client)
+		if err != nil {
+			return s, events.ShowError(err)
+		}
+		s.state.SetActiveConnection(*an)
 	}
 
 	s.table, cmd = s.table.Update(msg)
