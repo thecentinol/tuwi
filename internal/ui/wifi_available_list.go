@@ -245,13 +245,14 @@ func handleScan(c *dbus.Client) tea.Cmd {
 }
 
 func (a *WifiAvailableModel) setAvailableColumns() {
-	colWidth := a.width / 4
+	colWidth := a.width / 5
 
 	cols := []table.Column{
 		{Title: "SSID", Width: colWidth},
 		{Title: "Security", Width: colWidth},
-		{Title: "Hidden", Width: colWidth},
-		{Title: "Strength", Width: colWidth - 10},
+		{Title: "Freq", Width: colWidth},
+		{Title: "Signal", Width: colWidth},
+		{Title: "Channel", Width: colWidth - 10},
 	}
 	a.table.SetColumns(cols)
 }
@@ -262,12 +263,14 @@ func setAvailableRows(networks []nm.AccessPoint) []table.Row {
 	for _, n := range networks {
 		strength := strconv.FormatInt(int64(n.Strength), 10)
 		securityType := wifi.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
+		channel := wifi.DetermineChannel(n.Frequency)
 
 		rows = append(rows, table.Row{
 			wifi.FormatSSID(n.SSID),
 			securityType,
-			"",
-			string(strength) + "%",
+			wifi.DetermineFrequency(n.Frequency),
+			strength + "%",
+			wifi.FormatChannel(channel),
 		})
 	}
 

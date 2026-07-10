@@ -24,7 +24,7 @@ func baseSettings(network AccessPoint) map[string]map[string]godbus.Variant {
 	hidden := len(network.SSID) == 0
 	settings := map[string]map[string]godbus.Variant{
 		"connection": {
-			"id":   godbus.MakeVariant(network.SSID),
+			"id":   godbus.MakeVariant(string(network.SSID)),
 			"type": godbus.MakeVariant("802-11-wireless"),
 		},
 		"802-11-wireless": {

@@ -97,3 +97,103 @@ func TestFormatSSID(t *testing.T) {
 		})
 	}
 }
+
+func TestDetermineFrequency(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		hertz uint32
+		want  string
+	}{
+		{name: "Unknown Freq with 0 MHz", hertz: uint32(0), want: "unknown"},
+		{name: "Uknown Freq with 9999 MHz", hertz: uint32(9999), want: "unknown"},
+		{name: "Uknown Freq with 3999 MHz", hertz: uint32(9999), want: "unknown"},
+		{name: "Uknown Freq with 7126 MHz", hertz: uint32(9999), want: "unknown"},
+
+		{name: "2.4GHz Freq lower bound", hertz: uint32(2401), want: "2.4GHz"},
+		{name: "2.4GHz Freq mid range", hertz: uint32(2442), want: "2.4GHz"},
+		{name: "2.4GHz Freq higher bound", hertz: uint32(2495), want: "2.4GHz"},
+
+		{name: "5GHz Freq lower bound", hertz: uint32(5150), want: "5GHz"},
+		{name: "5GHz Freq mid range", hertz: uint32(5500), want: "5GHz"},
+		{name: "5GHz Freq higher bound", hertz: uint32(5850), want: "5GHz"},
+
+		{name: "6GHz Freq lower bound", hertz: uint32(5945), want: "6GHz"},
+		{name: "6GHz Freq mid range", hertz: uint32(6525), want: "6GHz"},
+		{name: "6GHz Freq higher bound", hertz: uint32(7125), want: "6GHz"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			result := DetermineFrequency(tc.hertz)
+			if result != tc.want {
+				t.Errorf("Incorrect frequency band. Got %v, want %v", result, tc.want)
+			}
+		})
+	}
+}
+
+func FuzzDetermineFrequency(f *testing.F) {
+	f.Add(uint32(2442))
+	f.Add(uint32(5500))
+	f.Add(uint32(6525))
+	f.Add(uint32(0))
+	f.Add(uint32(9999))
+
+	f.Fuzz(func(t *testing.T, hertz uint32) {
+		result := DetermineFrequency(hertz)
+
+		if result != "2.4GHz" && result != "5GHz" && result != "6GHz" && result != "unknown" {
+			t.Errorf("invalid string: %s", result)
+		}
+	})
+}
+
+func TestDetermineChannel(t *testing.T) {
+	tests := []struct {
+		name string
+		freq uint32
+		want uint32
+	}{
+		// 2.4 GHz
+		{"channel 1", 2412, 1},
+		{"channel 6", 2437, 6},
+		{"channel 11", 2462, 11},
+		{"channel 13", 2472, 13},
+		{"channel 14", 2484, 14},
+
+		// 5 GHz
+		{"channel 32", 5160, 32},
+		{"channel 36", 5180, 36},
+		{"channel 40", 5200, 40},
+		{"channel 44", 5220, 44},
+		{"channel 48", 5240, 48},
+		{"channel 149", 5745, 149},
+		{"channel 161", 5805, 161},
+		{"channel 171", 5855, 171},
+
+		// 6 GHz
+		{"6ghz channel 2", 5935, 2},
+		{"6ghz channel 1", 5955, 1},
+		{"6ghz channel 5", 5975, 5},
+		{"6ghz channel 233", 7115, 233},
+
+		// Invalid / unknown
+		{"below 2.4ghz", 2400, 0},
+		{"between 2.4 and 5ghz", 5000, 0},
+		{"between 5 and 6ghz", 5900, 0},
+		{"above 6ghz", 7200, 0},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := DetermineChannel(tc.freq)
+			if got != tc.want {
+				t.Errorf("DetermineChannel(%d) = %d, want %d", tc.freq, got, tc.want)
+			}
+		})
+	}
+}
