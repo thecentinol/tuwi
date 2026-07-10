@@ -2,9 +2,9 @@ package networkmanager
 
 import (
 	"fmt"
+	godbus "github.com/godbus/dbus/v5"
 	"time"
 
-	godbus "github.com/godbus/dbus/v5"
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
@@ -64,24 +64,6 @@ func GetAccessPoints(c *dbus.Client, devicePath godbus.ObjectPath) ([]godbus.Obj
 		return nil, fmt.Errorf("GetAccessPoints store: %w", err)
 	}
 	return accessPoints, nil
-}
-
-// gets the ObjectPath of the access point currently used
-// by the wireless device
-func GetActiveAccessPoint(
-	c *dbus.Client,
-	wirelessDevicePath godbus.ObjectPath,
-) (*godbus.ObjectPath, error) {
-	obj := c.Conn.Object(BaseServiceName, wirelessDevicePath)
-	rawActiveAP, err := obj.GetProperty(WirelessActiveAccessPoint)
-
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveAccessPoint: %w", err)
-	}
-
-	activeAP := rawActiveAP.Value().(godbus.ObjectPath)
-
-	return &activeAP, nil
 }
 
 // gets the properties of an access point and builds an AccessPoint struct/object

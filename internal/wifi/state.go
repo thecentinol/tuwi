@@ -11,11 +11,11 @@ type State struct {
 	Saved     []nm.SavedConnection
 	Available []nm.AccessPoint
 
-	Nearby []nm.NearbyConnection
+	Nearby           []nm.NearbyConnection
+	ActiveConnection nm.ActiveConnection
 
-	ActiveConnectionPath godbus.ObjectPath
-	Scanning             bool
-	Error                error
+	Scanning bool
+	Error    error
 }
 
 func (s *State) SetSaved(connections []nm.SavedConnection) {
@@ -72,12 +72,12 @@ func (s *State) RefreshNearby() {
 	)
 }
 
-func (s *State) SetActiveConnection(path godbus.ObjectPath) {
-	s.ActiveConnectionPath = path
+func (s *State) SetActiveConnection(activeConnection nm.ActiveConnection) {
+	s.ActiveConnection = activeConnection
 }
 
 func (s *State) ClearActiveConnection() {
-	s.ActiveConnectionPath = ""
+	s.ActiveConnection = nm.ActiveConnection{}
 }
 
 func (s *State) SetScanning(scanning bool) {

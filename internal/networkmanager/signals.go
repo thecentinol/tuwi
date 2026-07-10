@@ -62,12 +62,33 @@ func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 	return conPath, nil
 }
 
+// org.freedesktop.NetworkManager.Connection.Active
+func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) {
+	body := signal.Body
+	if len(body) != 1 {
+		return 0, 0, fmt.Errorf("handleActiveConnectionState: signal body missing!")
+	}
+
+	state, ok := body[0].(uint32)
+	if !ok {
+		return 0, 0, fmt.Errorf("handleActiveConnectionState: failed to get state")
+	}
+
+	reason, ok := body[1].(uint32)
+	if !ok {
+		return 0, 0, fmt.Errorf("handleActiveConnectionState: failed to get reason")
+	}
+
+	return state, reason, nil
+}
+
 type SignalCallbacks struct {
 	OnAccessPointAdded   func(ap AccessPoint)
 	OnAccessPointRemoved func(apPath godbus.ObjectPath)
 
-	OnNewConnection     func(path godbus.ObjectPath)
-	OnConnectionRemoved func(path godbus.ObjectPath)
+	OnNewConnection          func(path godbus.ObjectPath)
+	OnConnectionRemoved      func(path godbus.ObjectPath)
+	OnActiveConnStateChanged func(state, reason uint32)
 
 	OnError func(err error)
 }
@@ -90,6 +111,10 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(BaseServiceName+".Settings"),
 		godbus.WithMatchMember("ConnectionRemoved"),
+	)
+	c.Conn.AddMatchSignal(
+		godbus.WithMatchInterface(baseActiveConnServiceName),
+		godbus.WithMatchMember(AcStateChanged),
 	)
 
 	for sig := range ch {
@@ -124,6 +149,14 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 				cb.OnError(err)
 			} else {
 				cb.OnConnectionRemoved(conPath)
+			}
+
+		case AcStateChanged:
+			state, reason, err := handleActiveConnectionState(sig)
+			if err != nil {
+				cb.OnError(err)
+			} else {
+				cb.OnActiveConnStateChanged(state, reason)
 			}
 		}
 	}

@@ -55,3 +55,23 @@ type NearbyConnection struct {
 	Connection SavedConnection
 	AP         *AccessPoint
 }
+
+type ActiveConnection struct {
+	Connection     godbus.ObjectPath
+	SpecificObject godbus.ObjectPath
+	ID             string
+	UUID           string
+	Type           string
+	Devices        []godbus.ObjectPath
+	State          uint32
+	StateFlags     uint32
+	Default        bool
+	IP4Config      godbus.ObjectPath
+	DHCP4Config    godbus.ObjectPath
+	Default6       bool
+	IP6Config      godbus.ObjectPath
+	DHCP6Config    godbus.ObjectPath
+	VPN            bool
+	Controller     godbus.ObjectPath
+	Master         godbus.ObjectPath
+}
