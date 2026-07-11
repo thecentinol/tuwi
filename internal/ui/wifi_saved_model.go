@@ -222,13 +222,18 @@ func (s *WifiSavedModel) setSavedColumns() {
 	s.table.SetColumns(cols)
 }
 
-func setSavedRows(nc []nm.NearbyConnection) []table.Row {
+func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
 	rows := make([]table.Row, 0, len(nc))
 
 	for _, n := range nc {
 		isNearby := n.AP != nil
+		isActive := false
 		var security string
 		var strength uint8
+
+		if active != nil {
+			isActive = active.Connection == n.Connection.ConnectionPath
+		}
 
 		if isNearby {
 			security = wifi.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
@@ -240,7 +245,7 @@ func setSavedRows(nc []nm.NearbyConnection) []table.Row {
 
 		rows = append(rows, table.Row{
 			n.Connection.SSID,
-			"", // intentionally nil
+			wifi.DetermineStatus(isNearby, isActive),
 			security,
 			strconv.FormatBool(n.Connection.Hidden),
 			wifi.FormatStrength(strength),
