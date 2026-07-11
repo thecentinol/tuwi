@@ -91,3 +91,17 @@ func FormatStrength(strength uint8) string {
 	}
 	return strconv.FormatInt(int64(strength), 10) + "%"
 }
+
+// used for saved WiFi networks
+func DetermineStatus(isNearby bool, isActive bool) string {
+	switch {
+	case isActive:
+		return "Connected"
+
+	case isNearby:
+		return "Nearby"
+
+	default:
+		return "Unreachable"
+	}
+}

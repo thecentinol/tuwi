@@ -197,3 +197,26 @@ func TestDetermineChannel(t *testing.T) {
 		})
 	}
 }
+
+func TestDetermineStatus(t *testing.T) {
+	tests := []struct {
+		name       string
+		nearbyBool bool
+		activeBool bool
+		want       string
+	}{
+		{"Nearby and Active", true, true, "Connected"},
+		{"Active only", false, true, "Connected"},
+		{"Nearby only", true, false, "Nearby"},
+		{"Not nearby or active", false, false, "Unreachable"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := DetermineStatus(tc.nearbyBool, tc.activeBool)
+			if got != tc.want {
+				t.Errorf("DetermineStatus(%v, %v) got: %v, want: %v", tc.nearbyBool, tc.activeBool, got, tc.want)
+			}
+		})
+	}
+}
