@@ -78,7 +78,9 @@ func (s WifiSavedModel) Init() tea.Cmd {
 	if err != nil {
 		return events.ShowError(err)
 	}
-	s.state.SetActiveConnection(*an)
+	if an != nil {
+		s.state.SetActiveConnection(*an)
+	}
 
 	return func() tea.Msg {
 		saved, err := wifi.GetSavedNetworks(s.client)
@@ -125,11 +127,11 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 
 	case events.SavedWifiMsg:
 		s.state.SetSaved(msg.Networks)
-		s.table.SetRows(setSavedRows(s.state.Nearby))
+		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.AvailableWifiMsg:
 		s.state.SetAvailable(msg.Networks)
-		s.table.SetRows(setSavedRows(s.state.Nearby))
+		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.NewConnectionMsg:
 		conn, err := wifi.BuildNewConnection(s.client, msg.ConnectionPath)
@@ -137,18 +139,25 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 			return s, events.ShowError(err)
 		}
 		s.state.AddSaved(*conn)
-		s.table.SetRows(setSavedRows(s.state.Nearby))
+		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.ConnectionRemovedMsg:
 		s.state.RemoveSaved(msg.ConnectionPath)
-		s.table.SetRows(setSavedRows(s.state.Nearby))
+		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.UpdateActiveConnectionMsg:
 		an, err := wifi.GetActiveNetwork(s.client)
 		if err != nil {
 			return s, events.ShowError(err)
 		}
-		s.state.SetActiveConnection(*an)
+		if an != nil {
+			s.state.SetActiveConnection(*an)
+			s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		}
+
+	case events.ClearActiveConnectionMsg:
+		s.state.ClearActiveConnection()
+		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 	}
 
 	s.table, cmd = s.table.Update(msg)
@@ -213,28 +222,33 @@ func (s *WifiSavedModel) setSavedColumns() {
 	s.table.SetColumns(cols)
 }
 
-func setSavedRows(nc []nm.NearbyConnection) []table.Row {
+func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
 	rows := make([]table.Row, 0, len(nc))
 
 	for _, n := range nc {
 		isNearby := n.AP != nil
+		isActive := false
 		var security string
-		var strength string
+		var strength uint8
+
+		if active != nil {
+			isActive = active.Connection == n.Connection.ConnectionPath
+		}
 
 		if isNearby {
 			security = wifi.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
-			strength = strconv.FormatInt(int64(n.AP.Strength), 10)
+			strength = n.AP.Strength
 		} else {
 			security = n.Connection.KeyMgmt
-			strength = "0"
+			strength = 0
 		}
 
 		rows = append(rows, table.Row{
 			n.Connection.SSID,
-			"", // intentionally nil
+			wifi.DetermineStatus(isNearby, isActive),
 			security,
 			strconv.FormatBool(n.Connection.Hidden),
-			strength + "%",
+			wifi.FormatStrength(strength),
 		})
 	}
 

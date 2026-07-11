@@ -12,8 +12,3 @@ type WifiConnectReqMsg struct {
 	Network  *nm.AccessPoint
 	Password string
 }
-
-type UpdateActiveConnectionMsg struct {
-	State,
-	Reason uint32
-}

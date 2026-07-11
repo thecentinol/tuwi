@@ -65,7 +65,7 @@ func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 // org.freedesktop.NetworkManager.Connection.Active
 func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) {
 	body := signal.Body
-	if len(body) != 1 {
+	if len(body) != 2 {
 		return 0, 0, fmt.Errorf("handleActiveConnectionState: signal body missing!")
 	}
 
@@ -114,7 +114,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	)
 	c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(baseActiveConnServiceName),
-		godbus.WithMatchMember(AcStateChanged),
+		godbus.WithMatchMember("StateChanged"),
 	)
 
 	for sig := range ch {

@@ -21,3 +21,11 @@ type NewConnectionMsg struct {
 type ConnectionRemovedMsg struct {
 	ConnectionPath godbus.ObjectPath
 }
+
+// Active Connection
+type UpdateActiveConnectionMsg struct {
+	State,
+	Reason uint32
+}
+
+type ClearActiveConnectionMsg struct{}

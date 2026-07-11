@@ -34,7 +34,12 @@ func main() {
 			p.Send(events.ConnectionRemovedMsg{ConnectionPath: path})
 		},
 		OnActiveConnStateChanged: func(state, reason uint32) {
-			p.Send(events.UpdateActiveConnectionMsg{State: state, Reason: reason})
+			if state == 2 {
+				p.Send(events.UpdateActiveConnectionMsg{State: state, Reason: reason})
+			}
+			if state == 4 {
+				p.Send(events.ClearActiveConnectionMsg{})
+			}
 		},
 		OnError: func(err error) {
 			p.Send(events.ShowError(err))
