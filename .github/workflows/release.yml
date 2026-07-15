@@ -1,0 +1,27 @@
+name: Release
+on:
+    push:
+        tags:
+            - v[0-9]+.*
+
+jobs:
+    build-release:
+        name: Build Binaries
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v7
+
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version: 1.26.x
+
+            - name: Run goreleaser
+              uses: goreleaser/goreleaser-action@v7
+              with:
+                  distribution: goreleaser
+                  version: v2
+                  args: release --clean
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
