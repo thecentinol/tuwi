@@ -1,15 +1,25 @@
 BINARY_NAME := tuwi
+PREFIX ?= /usr
+BINDIR := $(PREFIX)/bin
 
-.PHONY: all build clean help install run run-debug run-dev test
+.PHONY: install-deps build install install-local uninstall \
+	run-dev run-debug run unit-test fuzz test clean help
 
-all: build
+install-deps:
+	@go mod download
 
 build:
-	@echo "Building $(BINARY_NAME) binary..."
 	@go build -ldflags="-s -w" -o $(BINARY_NAME) .
 
-install:
-	@go mod download
+install: build
+	@sudo install -m 755 ./$(BINARY_NAME) /usr/bin
+	@rm -f ./$(BINARY_NAME)
+
+install-local:
+	@go install
+
+uninstall:
+	@sudo rm -f $(BINDIR)/$(BINARY_NAME)
 
 run-dev:
 	@go run main.go
@@ -30,22 +40,25 @@ test: unit-test
 
 clean:
 	@go clean
-	@rm -rf $(BINARY_NAME)
+	@rm -f ~/go/bin/$(BINARY_NAME)
+	@rm -f $(BINARY_NAME)
 
 help:
 	@echo ""
 	@echo "  Setup:"
-	@echo "    make install        - Install project dependencies listed in go.mod"
+	@echo "    make install-deps   — Install project dependencies"
 	@echo ""
-	@echo "  Local Development:"
-	@echo "    make run-dev        - Run from source code"
-	@echo "    make run-debug      - Run with debug"
-	@echo "    make test           - Run full test suite"
-	@echo "    make unit-test      - Run short unit tests"
-	@echo "    make fuzz           - Run fuzz tests"
+	@echo "  Local development:"
+	@echo "    make run-dev        — Run from source code"
+	@echo "    make run-debug      — Run with debug"
+	@echo "    make test           — Run full test suite"
+	@echo "    make unit-test      — Run short unit tests"
+	@echo "    make fuzz           — Run fuzz tests"
 	@echo ""
-	@echo "  Local Builds:"
-	@echo "    make build          - Compile the binary"
-	@echo "    make run            - Build and execute the compiled binary"
-	@echo "    make clean          - Remove binary and clear cache"
+	@echo "  Builds:"
+	@echo "    make build          — Compile the binary into repo root"
+	@echo "    make install        — Combile binary and move into $(BINDIR)"
+	@echo "    make uninstall      — Remove the binary from $(BINDIR)"
+	@echo "    make run            — Build and execute the compiled binary"
+	@echo "    make clean          — Remove clear cache, remove binary from $GOPATH/bin/ & $(BINDIR)"
 	@echo ""
