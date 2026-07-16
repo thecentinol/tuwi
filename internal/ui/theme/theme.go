@@ -1,15 +1,15 @@
-package ui
+package theme
 
 import (
 	"charm.land/lipgloss/v2"
 )
 
 var (
-	base        = lipgloss.Color("238")
-	focused     = lipgloss.Green
-	focusedLine = lipgloss.NewStyle().
-			Background(focused).
-			Foreground(base)
+	Base        = lipgloss.Color("238")
+	Focused     = lipgloss.Green
+	FocusedLine = lipgloss.NewStyle().
+			Background(Focused).
+			Foreground(Base)
 
 	// focusedBorderStyle = lipgloss.NewStyle().
 	// 			Border(lipgloss.RoundedBorder()).

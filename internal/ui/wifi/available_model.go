@@ -1,4 +1,4 @@
-package ui
+package wifi
 
 import (
 	"charm.land/bubbles/v2/help"
@@ -13,15 +13,16 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
-type wifiAvailableKeymap struct {
+type availableKeymap struct {
 	connect,
 	scan key.Binding
 }
 
-type WifiAvailableModel struct {
+type AvailableModel struct {
 	client *dbus.Client
 	state  *wifi.State
 
@@ -29,25 +30,25 @@ type WifiAvailableModel struct {
 	// a network to connect to because relying on the state of
 	// State.Available will produce bugs if some APs are filtered out.
 	displayedNetworks []nm.AccessPoint
-	table             comp.TableModel
+	Table             comp.TableModel
 
 	width  int
 	height int
 
-	keys      wifiAvailableKeymap
+	keys      availableKeymap
 	help      help.Model
-	isFocused bool
+	IsFocused bool
 }
 
-func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) WifiAvailableModel {
-	return WifiAvailableModel{
+func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) AvailableModel {
+	return AvailableModel{
 		client: c,
 		state:  state,
-		table: comp.NewTable(
+		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
 		),
-		keys: wifiAvailableKeymap{
+		keys: availableKeymap{
 			connect: key.NewBinding(
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
@@ -60,7 +61,7 @@ func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) WifiAvailableModel
 	}
 }
 
-func (a WifiAvailableModel) Init() tea.Cmd {
+func (a AvailableModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		networks, err := wifi.GetAvailableNetworks(a.client)
 		if err != nil {
@@ -70,7 +71,7 @@ func (a WifiAvailableModel) Init() tea.Cmd {
 	}
 }
 
-func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
+func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -100,7 +101,7 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
@@ -114,7 +115,7 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
@@ -128,7 +129,7 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.WifiConnectReqMsg:
 		err := wifi.ConnectSecured(
@@ -151,7 +152,7 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 			nearbySaved,
 			a.state.Available,
 		)
-		a.table.SetRows(setAvailableRows(aps))
+		a.Table.SetRows(setAvailableRows(aps))
 
 	case events.ConnectionRemovedMsg:
 		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
@@ -164,19 +165,19 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 			a.state.Available,
 		)
 
-		a.table.SetRows(setAvailableRows(aps))
+		a.Table.SetRows(setAvailableRows(aps))
 	}
 
-	a.table, cmd = a.table.Update(msg)
+	a.Table, cmd = a.Table.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return a, tea.Batch(cmds...)
 }
 
-func (a WifiAvailableModel) View() tea.View {
-	borderColor := base
-	if a.isFocused {
-		borderColor = focused
+func (a AvailableModel) View() tea.View {
+	borderColor := theme.Base
+	if a.IsFocused {
+		borderColor = theme.Focused
 	}
 
 	style := lipgloss.NewStyle().
@@ -185,29 +186,29 @@ func (a WifiAvailableModel) View() tea.View {
 		Width(a.width).
 		Height(a.height)
 
-	return tea.NewView(style.Render(a.table.View().Content))
+	return tea.NewView(style.Render(a.Table.View().Content))
 }
 
-func (a WifiAvailableModel) HelpView() []key.Binding {
+func (a AvailableModel) HelpView() []key.Binding {
 	bindings := append(
-		a.table.HelpView(),
+		a.Table.HelpView(),
 		a.keys.connect,
 		a.keys.scan,
 	)
 	return bindings
 }
 
-func (a *WifiAvailableModel) Setheight(height int) {
+func (a *AvailableModel) Setheight(height int) {
 	a.height = height
 }
 
-func (a *WifiAvailableModel) SetWidth(width int) {
+func (a *AvailableModel) SetWidth(width int) {
 	a.width = width
 	a.setAvailableColumns()
 }
 
-func (a *WifiAvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
-	idx := a.table.Cursor()
+func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
+	idx := a.Table.Cursor()
 
 	if idx < 0 || idx >= len(a.state.Available) {
 		return nil
@@ -215,7 +216,7 @@ func (a *WifiAvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 	return &a.displayedNetworks[idx]
 }
 
-func (a *WifiAvailableModel) handleConnect(connection nm.AccessPoint) (WifiAvailableModel, tea.Cmd) {
+func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableModel, tea.Cmd) {
 	securityType := wifi.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
 	isSecured := securityType != "open" && securityType != "unknown"
 	switch {
@@ -244,7 +245,7 @@ func handleScan(c *dbus.Client) tea.Cmd {
 	}
 }
 
-func (a *WifiAvailableModel) setAvailableColumns() {
+func (a *AvailableModel) setAvailableColumns() {
 	colWidth := a.width / 5
 
 	cols := []table.Column{
@@ -254,7 +255,7 @@ func (a *WifiAvailableModel) setAvailableColumns() {
 		{Title: "Signal", Width: colWidth},
 		{Title: "Channel", Width: colWidth - 10},
 	}
-	a.table.SetColumns(cols)
+	a.Table.SetColumns(cols)
 }
 
 func setAvailableRows(networks []nm.AccessPoint) []table.Row {

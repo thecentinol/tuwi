@@ -1,4 +1,4 @@
-package ui
+package wifi
 
 import (
 	"charm.land/bubbles/v2/help"
@@ -13,10 +13,11 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
 	"github.com/thecentinol/tuwi/internal/wifi"
 )
 
-type wifiSavedKeymap struct {
+type savedKeymap struct {
 	connect,
 	disconnect,
 	forget,
@@ -24,29 +25,29 @@ type wifiSavedKeymap struct {
 	autoConnect key.Binding
 }
 
-type WifiSavedModel struct {
+type SavedModel struct {
 	client *dbus.Client
 	state  *wifi.State
 
-	table comp.TableModel
+	Table comp.TableModel
 
 	width  int
 	height int
 
-	keys      wifiSavedKeymap
+	keys      savedKeymap
 	help      help.Model
-	isFocused bool
+	IsFocused bool
 }
 
-func NewWifiSavedModel(c *dbus.Client, state *wifi.State) WifiSavedModel {
-	return WifiSavedModel{
+func NewWifiSavedModel(c *dbus.Client, state *wifi.State) SavedModel {
+	return SavedModel{
 		client: c,
 		state:  state,
-		table: comp.NewTable(
+		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
 		),
-		keys: wifiSavedKeymap{
+		keys: savedKeymap{
 			connect: key.NewBinding(
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
@@ -73,7 +74,7 @@ func NewWifiSavedModel(c *dbus.Client, state *wifi.State) WifiSavedModel {
 	}
 }
 
-func (s WifiSavedModel) Init() tea.Cmd {
+func (s SavedModel) Init() tea.Cmd {
 	an, err := wifi.GetActiveNetwork(s.client)
 	if err != nil {
 		return events.ShowError(err)
@@ -91,7 +92,7 @@ func (s WifiSavedModel) Init() tea.Cmd {
 	}
 }
 
-func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
+func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -127,11 +128,11 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 
 	case events.SavedWifiMsg:
 		s.state.SetSaved(msg.Networks)
-		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.AvailableWifiMsg:
 		s.state.SetAvailable(msg.Networks)
-		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.NewConnectionMsg:
 		conn, err := wifi.BuildNewConnection(s.client, msg.ConnectionPath)
@@ -139,11 +140,11 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 			return s, events.ShowError(err)
 		}
 		s.state.AddSaved(*conn)
-		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.ConnectionRemovedMsg:
 		s.state.RemoveSaved(msg.ConnectionPath)
-		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.UpdateActiveConnectionMsg:
 		an, err := wifi.GetActiveNetwork(s.client)
@@ -152,24 +153,24 @@ func (s WifiSavedModel) Update(msg tea.Msg) (WifiSavedModel, tea.Cmd) {
 		}
 		if an != nil {
 			s.state.SetActiveConnection(*an)
-			s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+			s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 		}
 
 	case events.ClearActiveConnectionMsg:
 		s.state.ClearActiveConnection()
-		s.table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 	}
 
-	s.table, cmd = s.table.Update(msg)
+	s.Table, cmd = s.Table.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return s, tea.Batch(cmds...)
 }
 
-func (s WifiSavedModel) View() tea.View {
-	borderColor := base
-	if s.isFocused {
-		borderColor = focused
+func (s SavedModel) View() tea.View {
+	borderColor := theme.Base
+	if s.IsFocused {
+		borderColor = theme.Focused
 	}
 
 	style := lipgloss.NewStyle().
@@ -178,12 +179,12 @@ func (s WifiSavedModel) View() tea.View {
 		Width(s.width).
 		Height(s.height)
 
-	return tea.NewView(style.Render(s.table.View().Content))
+	return tea.NewView(style.Render(s.Table.View().Content))
 }
 
-func (s WifiSavedModel) HelpView() []key.Binding {
+func (s SavedModel) HelpView() []key.Binding {
 	bindings := append(
-		s.table.HelpView(),
+		s.Table.HelpView(),
 		s.keys.connect,
 		s.keys.disconnect,
 		s.keys.forget,
@@ -191,17 +192,17 @@ func (s WifiSavedModel) HelpView() []key.Binding {
 	return bindings
 }
 
-func (s *WifiSavedModel) Setheight(height int) {
+func (s *SavedModel) Setheight(height int) {
 	s.height = height
 }
 
-func (s *WifiSavedModel) SetWidth(width int) {
+func (s *SavedModel) SetWidth(width int) {
 	s.width = width
 	s.setSavedColumns()
 }
 
-func (s *WifiSavedModel) selectedSavedNetwork() *nm.NearbyConnection {
-	idx := s.table.Cursor()
+func (s *SavedModel) selectedSavedNetwork() *nm.NearbyConnection {
+	idx := s.Table.Cursor()
 
 	if idx < 0 || idx >= len(s.state.Nearby) {
 		return nil
@@ -209,7 +210,7 @@ func (s *WifiSavedModel) selectedSavedNetwork() *nm.NearbyConnection {
 	return &s.state.Nearby[idx]
 }
 
-func (s *WifiSavedModel) setSavedColumns() {
+func (s *SavedModel) setSavedColumns() {
 	colWidth := s.width / 5
 
 	cols := []table.Column{
@@ -219,7 +220,7 @@ func (s *WifiSavedModel) setSavedColumns() {
 		{Title: "Hidden", Width: colWidth},
 		{Title: "Strength", Width: colWidth - 10},
 	}
-	s.table.SetColumns(cols)
+	s.Table.SetColumns(cols)
 }
 
 func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
