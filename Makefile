@@ -40,6 +40,7 @@ test: unit-test
 
 clean:
 	@go clean
+	@rm -rf ./dist
 	@rm -f ~/go/bin/$(BINARY_NAME)
 	@rm -f $(BINARY_NAME)
 
