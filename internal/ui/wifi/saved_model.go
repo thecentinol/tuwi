@@ -7,14 +7,13 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"fmt"
-	"strconv"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
-	"github.com/thecentinol/tuwi/internal/wifi"
+	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type savedKeymap struct {
@@ -27,7 +26,7 @@ type savedKeymap struct {
 
 type SavedModel struct {
 	client *dbus.Client
-	state  *wifi.State
+	state  *wifidomain.State
 
 	Table comp.TableModel
 
@@ -39,7 +38,7 @@ type SavedModel struct {
 	IsFocused bool
 }
 
-func NewWifiSavedModel(c *dbus.Client, state *wifi.State) SavedModel {
+func NewWifiSavedModel(c *dbus.Client, state *wifidomain.State) SavedModel {
 	return SavedModel{
 		client: c,
 		state:  state,
@@ -75,7 +74,7 @@ func NewWifiSavedModel(c *dbus.Client, state *wifi.State) SavedModel {
 }
 
 func (s SavedModel) Init() tea.Cmd {
-	an, err := wifi.GetActiveNetwork(s.client)
+	an, err := wifidomain.GetActiveNetwork(s.client)
 	if err != nil {
 		return events.ShowError(err)
 	}
@@ -84,7 +83,7 @@ func (s SavedModel) Init() tea.Cmd {
 	}
 
 	return func() tea.Msg {
-		saved, err := wifi.GetSavedNetworks(s.client)
+		saved, err := wifidomain.GetSavedNetworks(s.client)
 		if err != nil {
 			return events.ShowError(err)
 		}
@@ -104,13 +103,13 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
-			_, err := wifi.ConnectSaved(s.client, *selected)
+			_, err := wifidomain.ConnectSaved(s.client, *selected)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
 
 		case key.Matches(msg, s.keys.disconnect):
-			err := wifi.Disconnect(s.client)
+			err := wifidomain.Disconnect(s.client)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
@@ -120,7 +119,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
-			err := wifi.Forget(s.client, selected.Connection.ConnectionPath)
+			err := wifidomain.Forget(s.client, selected.Connection.ConnectionPath)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
@@ -135,7 +134,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.NewConnectionMsg:
-		conn, err := wifi.BuildNewConnection(s.client, msg.ConnectionPath)
+		conn, err := wifidomain.BuildNewConnection(s.client, msg.ConnectionPath)
 		if err != nil {
 			return s, events.ShowError(err)
 		}
@@ -147,7 +146,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.UpdateActiveConnectionMsg:
-		an, err := wifi.GetActiveNetwork(s.client)
+		an, err := wifidomain.GetActiveNetwork(s.client)
 		if err != nil {
 			return s, events.ShowError(err)
 		}
@@ -221,37 +220,4 @@ func (s *SavedModel) setSavedColumns() {
 		{Title: "Strength", Width: colWidth - 10},
 	}
 	s.Table.SetColumns(cols)
-}
-
-func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
-	rows := make([]table.Row, 0, len(nc))
-
-	for _, n := range nc {
-		isNearby := n.AP != nil
-		isActive := false
-		var security string
-		var strength uint8
-
-		if active != nil {
-			isActive = active.Connection == n.Connection.ConnectionPath
-		}
-
-		if isNearby {
-			security = wifi.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
-			strength = n.AP.Strength
-		} else {
-			security = n.Connection.KeyMgmt
-			strength = 0
-		}
-
-		rows = append(rows, table.Row{
-			n.Connection.SSID,
-			wifi.DetermineStatus(isNearby, isActive),
-			security,
-			strconv.FormatBool(n.Connection.Hidden),
-			wifi.FormatStrength(strength),
-		})
-	}
-
-	return rows
 }

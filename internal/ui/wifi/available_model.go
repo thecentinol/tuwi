@@ -7,14 +7,13 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"fmt"
-	"strconv"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
-	"github.com/thecentinol/tuwi/internal/wifi"
+	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type availableKeymap struct {
@@ -24,7 +23,7 @@ type availableKeymap struct {
 
 type AvailableModel struct {
 	client *dbus.Client
-	state  *wifi.State
+	state  *wifidomain.State
 
 	// displayedNetworks is used for indexing when slecting
 	// a network to connect to because relying on the state of
@@ -40,7 +39,7 @@ type AvailableModel struct {
 	IsFocused bool
 }
 
-func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) AvailableModel {
+func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State) AvailableModel {
 	return AvailableModel{
 		client: c,
 		state:  state,
@@ -63,7 +62,7 @@ func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) AvailableModel {
 
 func (a AvailableModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		networks, err := wifi.GetAvailableNetworks(a.client)
+		networks, err := wifidomain.GetAvailableNetworks(a.client)
 		if err != nil {
 			return events.ShowError(err)
 		}
@@ -91,12 +90,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		}
 
 	case events.AvailableWifiMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -105,12 +104,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -119,12 +118,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -132,7 +131,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.WifiConnectReqMsg:
-		err := wifi.ConnectSecured(
+		err := wifidomain.ConnectSecured(
 			a.client,
 			msg.Network,
 			msg.Password,
@@ -143,24 +142,24 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		}
 
 	case events.NewConnectionMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 		a.Table.SetRows(setAvailableRows(aps))
 
 	case events.ConnectionRemovedMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -217,7 +216,7 @@ func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 }
 
 func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableModel, tea.Cmd) {
-	securityType := wifi.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
+	securityType := wifidomain.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
 	isSecured := securityType != "open" && securityType != "unknown"
 	switch {
 	case isSecured:
@@ -226,23 +225,13 @@ func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableMode
 		}
 
 	case securityType != "open" && securityType != "unknown":
-		err := wifi.ConnectOpen(a.client, &connection)
+		err := wifidomain.ConnectOpen(a.client, &connection)
 		if err != nil {
 			return *a, events.ShowError(err)
 		}
 	}
 
 	return *a, nil
-}
-
-func handleScan(c *dbus.Client) tea.Cmd {
-	return func() tea.Msg {
-		networks, err := wifi.GetAvailableNetworks(c)
-		if err != nil {
-			return events.ShowError(err)
-		}
-		return events.AvailableWifiMsg{Networks: networks}
-	}
 }
 
 func (a *AvailableModel) setAvailableColumns() {
@@ -256,24 +245,4 @@ func (a *AvailableModel) setAvailableColumns() {
 		{Title: "Channel", Width: colWidth - 10},
 	}
 	a.Table.SetColumns(cols)
-}
-
-func setAvailableRows(networks []nm.AccessPoint) []table.Row {
-	rows := make([]table.Row, 0, len(networks))
-
-	for _, n := range networks {
-		strength := strconv.FormatInt(int64(n.Strength), 10)
-		securityType := wifi.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
-		channel := wifi.DetermineChannel(n.Frequency)
-
-		rows = append(rows, table.Row{
-			wifi.FormatSSID(n.SSID),
-			securityType,
-			wifi.DetermineFrequency(n.Frequency),
-			strength + "%",
-			wifi.FormatChannel(channel),
-		})
-	}
-
-	return rows
 }
