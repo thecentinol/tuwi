@@ -1,4 +1,4 @@
-package ui
+package wifi
 
 import (
 	"charm.land/bubbles/v2/help"
@@ -7,47 +7,47 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"fmt"
-	"strconv"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	"github.com/thecentinol/tuwi/internal/wifi"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
+	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
-type wifiAvailableKeymap struct {
+type availableKeymap struct {
 	connect,
 	scan key.Binding
 }
 
-type WifiAvailableModel struct {
+type AvailableModel struct {
 	client *dbus.Client
-	state  *wifi.State
+	state  *wifidomain.State
 
 	// displayedNetworks is used for indexing when slecting
 	// a network to connect to because relying on the state of
 	// State.Available will produce bugs if some APs are filtered out.
 	displayedNetworks []nm.AccessPoint
-	table             comp.TableModel
+	Table             comp.TableModel
 
 	width  int
 	height int
 
-	keys      wifiAvailableKeymap
+	keys      availableKeymap
 	help      help.Model
-	isFocused bool
+	IsFocused bool
 }
 
-func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) WifiAvailableModel {
-	return WifiAvailableModel{
+func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State) AvailableModel {
+	return AvailableModel{
 		client: c,
 		state:  state,
-		table: comp.NewTable(
+		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
 		),
-		keys: wifiAvailableKeymap{
+		keys: availableKeymap{
 			connect: key.NewBinding(
 				key.WithKeys("enter"),
 				key.WithHelp("enter", "connect"),
@@ -60,9 +60,9 @@ func NewWifiAvailableModel(c *dbus.Client, state *wifi.State) WifiAvailableModel
 	}
 }
 
-func (a WifiAvailableModel) Init() tea.Cmd {
+func (a AvailableModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		networks, err := wifi.GetAvailableNetworks(a.client)
+		networks, err := wifidomain.GetAvailableNetworks(a.client)
 		if err != nil {
 			return events.ShowError(err)
 		}
@@ -70,7 +70,7 @@ func (a WifiAvailableModel) Init() tea.Cmd {
 	}
 }
 
-func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
+func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
@@ -90,48 +90,48 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 		}
 
 	case events.AvailableWifiMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 		a.displayedNetworks = aps
-		a.table.SetRows(setAvailableRows(a.displayedNetworks))
+		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.WifiConnectReqMsg:
-		err := wifi.ConnectSecured(
+		err := wifidomain.ConnectSecured(
 			a.client,
 			msg.Network,
 			msg.Password,
@@ -142,41 +142,41 @@ func (a WifiAvailableModel) Update(msg tea.Msg) (WifiAvailableModel, tea.Cmd) {
 		}
 
 	case events.NewConnectionMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
-		a.table.SetRows(setAvailableRows(aps))
+		a.Table.SetRows(setAvailableRows(aps))
 
 	case events.ConnectionRemovedMsg:
-		nearbySaved, err := wifi.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifi.DisplayAvailableAPs(
+		aps := wifidomain.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 
-		a.table.SetRows(setAvailableRows(aps))
+		a.Table.SetRows(setAvailableRows(aps))
 	}
 
-	a.table, cmd = a.table.Update(msg)
+	a.Table, cmd = a.Table.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return a, tea.Batch(cmds...)
 }
 
-func (a WifiAvailableModel) View() tea.View {
-	borderColor := base
-	if a.isFocused {
-		borderColor = focused
+func (a AvailableModel) View() tea.View {
+	borderColor := theme.Base
+	if a.IsFocused {
+		borderColor = theme.Focused
 	}
 
 	style := lipgloss.NewStyle().
@@ -185,29 +185,29 @@ func (a WifiAvailableModel) View() tea.View {
 		Width(a.width).
 		Height(a.height)
 
-	return tea.NewView(style.Render(a.table.View().Content))
+	return tea.NewView(style.Render(a.Table.View().Content))
 }
 
-func (a WifiAvailableModel) HelpView() []key.Binding {
+func (a AvailableModel) HelpView() []key.Binding {
 	bindings := append(
-		a.table.HelpView(),
+		a.Table.HelpView(),
 		a.keys.connect,
 		a.keys.scan,
 	)
 	return bindings
 }
 
-func (a *WifiAvailableModel) Setheight(height int) {
+func (a *AvailableModel) Setheight(height int) {
 	a.height = height
 }
 
-func (a *WifiAvailableModel) SetWidth(width int) {
+func (a *AvailableModel) SetWidth(width int) {
 	a.width = width
 	a.setAvailableColumns()
 }
 
-func (a *WifiAvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
-	idx := a.table.Cursor()
+func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
+	idx := a.Table.Cursor()
 
 	if idx < 0 || idx >= len(a.state.Available) {
 		return nil
@@ -215,8 +215,8 @@ func (a *WifiAvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 	return &a.displayedNetworks[idx]
 }
 
-func (a *WifiAvailableModel) handleConnect(connection nm.AccessPoint) (WifiAvailableModel, tea.Cmd) {
-	securityType := wifi.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
+func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableModel, tea.Cmd) {
+	securityType := wifidomain.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
 	isSecured := securityType != "open" && securityType != "unknown"
 	switch {
 	case isSecured:
@@ -225,7 +225,7 @@ func (a *WifiAvailableModel) handleConnect(connection nm.AccessPoint) (WifiAvail
 		}
 
 	case securityType != "open" && securityType != "unknown":
-		err := wifi.ConnectOpen(a.client, &connection)
+		err := wifidomain.ConnectOpen(a.client, &connection)
 		if err != nil {
 			return *a, events.ShowError(err)
 		}
@@ -234,17 +234,7 @@ func (a *WifiAvailableModel) handleConnect(connection nm.AccessPoint) (WifiAvail
 	return *a, nil
 }
 
-func handleScan(c *dbus.Client) tea.Cmd {
-	return func() tea.Msg {
-		networks, err := wifi.GetAvailableNetworks(c)
-		if err != nil {
-			return events.ShowError(err)
-		}
-		return events.AvailableWifiMsg{Networks: networks}
-	}
-}
-
-func (a *WifiAvailableModel) setAvailableColumns() {
+func (a *AvailableModel) setAvailableColumns() {
 	colWidth := a.width / 5
 
 	cols := []table.Column{
@@ -254,25 +244,5 @@ func (a *WifiAvailableModel) setAvailableColumns() {
 		{Title: "Signal", Width: colWidth},
 		{Title: "Channel", Width: colWidth - 10},
 	}
-	a.table.SetColumns(cols)
-}
-
-func setAvailableRows(networks []nm.AccessPoint) []table.Row {
-	rows := make([]table.Row, 0, len(networks))
-
-	for _, n := range networks {
-		strength := strconv.FormatInt(int64(n.Strength), 10)
-		securityType := wifi.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
-		channel := wifi.DetermineChannel(n.Frequency)
-
-		rows = append(rows, table.Row{
-			wifi.FormatSSID(n.SSID),
-			securityType,
-			wifi.DetermineFrequency(n.Frequency),
-			strength + "%",
-			wifi.FormatChannel(channel),
-		})
-	}
-
-	return rows
+	a.Table.SetColumns(cols)
 }

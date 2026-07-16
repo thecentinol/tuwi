@@ -8,7 +8,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
-	"github.com/thecentinol/tuwi/internal/ui"
+	"github.com/thecentinol/tuwi/internal/ui/root"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	}
 	defer client.Close()
 
-	p := tea.NewProgram(ui.NewModel(client))
+	p := tea.NewProgram(root.NewModel(client))
 
 	cb := nm.SignalCallbacks{
 		OnAccessPointAdded: func(ap nm.AccessPoint) {

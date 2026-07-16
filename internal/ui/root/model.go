@@ -1,4 +1,4 @@
-package ui
+package root
 
 import (
 	"charm.land/bubbles/v2/help"
@@ -10,7 +10,8 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	"github.com/thecentinol/tuwi/internal/wifi"
+	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
+	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type keymap struct {
@@ -36,8 +37,8 @@ type Model struct {
 	help   help.Model
 	keymap keymap
 
-	wifiSaved       WifiSavedModel
-	wifiAvailable   WifiAvailableModel
+	wifiSaved       wifiui.SavedModel
+	wifiAvailable   wifiui.AvailableModel
 	selectedNetwork *nm.AccessPoint
 
 	passwordModal     comp.PasswordModel
@@ -48,13 +49,13 @@ type Model struct {
 }
 
 func NewModel(client *dbus.Client) Model {
-	state := &wifi.State{}
+	state := &wifidomain.State{}
 	return Model{
 		Client:        client,
 		focus:         FocusSaved,
 		help:          help.New(),
-		wifiSaved:     NewWifiSavedModel(client, state),
-		wifiAvailable: NewWifiAvailableModel(client, state),
+		wifiSaved:     wifiui.NewWifiSavedModel(client, state),
+		wifiAvailable: wifiui.NewWifiAvailableModel(client, state),
 		passwordModal: comp.NewPasswordModal(),
 		errorModal:    comp.NewErrorModal(),
 		keymap: keymap{
@@ -98,10 +99,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.focus = FocusAvailable
 		case key.Matches(msg, m.keymap.quit):
 			return m, tea.Quit
-		case m.wifiSaved.isFocused:
+		case m.wifiSaved.IsFocused:
 			m.wifiSaved, cmd = m.wifiSaved.Update(msg)
 			cmds = append(cmds, cmd)
-		case m.wifiAvailable.isFocused:
+		case m.wifiAvailable.IsFocused:
 			m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
 			cmds = append(cmds, cmd)
 		}
@@ -153,8 +154,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	m.wifiSaved.isFocused = m.focus == FocusSaved
-	m.wifiAvailable.isFocused = m.focus == FocusAvailable
+	m.wifiSaved.IsFocused = m.focus == FocusSaved
+	m.wifiAvailable.IsFocused = m.focus == FocusAvailable
 
 	return m, tea.Batch(cmds...)
 }
@@ -217,12 +218,12 @@ func (m *Model) sizeComponents() {
 	// set wifi model's width and height
 	m.wifiSaved.SetWidth(halfWidth)
 	m.wifiSaved.Setheight(m.height - helpHeight)
-	m.wifiSaved.table.SetWidth(halfWidth)
-	m.wifiSaved.table.SetHeight(tableHeight)
+	m.wifiSaved.Table.SetWidth(halfWidth)
+	m.wifiSaved.Table.SetHeight(tableHeight)
 	m.wifiAvailable.SetWidth(halfWidth)
 	m.wifiAvailable.Setheight(m.height - helpHeight)
-	m.wifiAvailable.table.SetWidth(halfWidth)
-	m.wifiAvailable.table.SetHeight(tableHeight)
+	m.wifiAvailable.Table.SetWidth(halfWidth)
+	m.wifiAvailable.Table.SetHeight(tableHeight)
 
 	// Password Modal
 	iconWidth := 2
