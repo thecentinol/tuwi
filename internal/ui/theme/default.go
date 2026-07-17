@@ -3,11 +3,13 @@ package theme
 import "charm.land/lipgloss/v2"
 
 var Default = Theme{
-	BG:            nil,
-	FG:            lipgloss.White,
-	Border:        lipgloss.Color("238"),
-	BorderFocused: lipgloss.Green,
-	Success:       lipgloss.BrightGreen,
+	BG:                   nil,
+	FG:                   lipgloss.White,
+	Border:               lipgloss.Color("238"),
+	BorderFocused:        lipgloss.Green,
+	BorderContent:        lipgloss.Color("238"),
+	BorderContentFocused: lipgloss.Green,
+	Success:              lipgloss.BrightGreen,
 	Table: TableTheme{
 		HeaderBG:   lipgloss.Color("238"),
 		HeaderFG:   lipgloss.White,
@@ -15,8 +17,13 @@ var Default = Theme{
 		SelectedFG: lipgloss.Black,
 	},
 	Error: ErrorTheme{
-		Text:   lipgloss.Red,
-		Border: lipgloss.Green,
+		Text:          lipgloss.Red,
+		Border:        lipgloss.Green,
+		BorderContent: lipgloss.Red,
+	},
+	Password: PasswordTheme{
+		Border:        lipgloss.Green,
+		BorderContent: lipgloss.Green,
 	},
 	Input: InputTheme{
 		TextFocused:        lipgloss.White,
