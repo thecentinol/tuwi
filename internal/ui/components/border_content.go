@@ -13,15 +13,16 @@ type BorderContent struct {
 }
 
 func NewBorderContent(
-	color color.Color,
+	border, content color.Color,
 	width, height int,
 ) BorderContent {
 	return BorderContent{
 		BorderStyle: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(color).
+			BorderForeground(border).
 			Height(height),
 		ContentStyle: lipgloss.NewStyle().
+			Foreground(content).
 			PaddingTop(0).
 			PaddingBottom(0).
 			PaddingLeft(1).

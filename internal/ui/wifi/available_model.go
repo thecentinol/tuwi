@@ -177,11 +177,13 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 
 func (a AvailableModel) View() tea.View {
 	borderColor := a.theme.Border
+	borderContent := a.theme.BorderContent
 	if a.IsFocused {
 		borderColor = a.theme.BorderFocused
+		borderContent = a.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, a.width, a.height)
+	title := comp.NewBorderContent(borderColor, borderContent, a.width, a.height)
 	return tea.NewView(title.Render("available networks", a.Table.View().Content, a.width))
 }
 

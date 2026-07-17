@@ -7,6 +7,8 @@ type Theme struct {
 	FG,
 	Border,
 	BorderFocused,
+	BorderContent,
+	BorderContentFocused,
 	Success color.Color
 
 	Table TableTheme
@@ -27,7 +29,8 @@ type TableTheme struct {
 // error modal
 type ErrorTheme struct {
 	Text,
-	Border color.Color
+	Border,
+	BorderContent color.Color
 }
 
 type InputTheme struct {

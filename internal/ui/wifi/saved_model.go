@@ -170,11 +170,13 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 
 func (s SavedModel) View() tea.View {
 	borderColor := s.theme.Border
+	borderContent := s.theme.BorderContent
 	if s.IsFocused {
 		borderColor = s.theme.BorderFocused
+		borderContent = s.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, s.width, s.height)
+	title := comp.NewBorderContent(borderColor, borderContent, s.width, s.height)
 
 	return tea.NewView(title.Render("saved connections", s.Table.View().Content, s.width))
 }
