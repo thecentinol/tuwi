@@ -5,7 +5,6 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"fmt"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -172,13 +171,9 @@ func (s SavedModel) View() tea.View {
 		borderColor = theme.Focused
 	}
 
-	style := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(borderColor).
-		Width(s.width).
-		Height(s.height)
+	title := comp.NewBorderContent(borderColor, s.width, s.height)
 
-	return tea.NewView(style.Render(s.Table.View().Content))
+	return tea.NewView(title.Render("saved connections", s.Table.View().Content, s.width))
 }
 
 func (s SavedModel) HelpView() []key.Binding {
