@@ -23,6 +23,7 @@ type availableKeymap struct {
 type AvailableModel struct {
 	client *dbus.Client
 	state  *wifidomain.State
+	theme  *theme.Theme
 
 	// displayedNetworks is used for indexing when slecting
 	// a network to connect to because relying on the state of
@@ -38,13 +39,15 @@ type AvailableModel struct {
 	IsFocused bool
 }
 
-func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State) AvailableModel {
+func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State, theme *theme.Theme) AvailableModel {
 	return AvailableModel{
 		client: c,
 		state:  state,
+		theme:  theme,
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
+			theme,
 		),
 		keys: availableKeymap{
 			connect: key.NewBinding(
@@ -173,9 +176,9 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 }
 
 func (a AvailableModel) View() tea.View {
-	borderColor := theme.Base
+	borderColor := a.theme.Border
 	if a.IsFocused {
-		borderColor = theme.Focused
+		borderColor = a.theme.BorderFocused
 	}
 
 	title := comp.NewBorderContent(borderColor, a.width, a.height)

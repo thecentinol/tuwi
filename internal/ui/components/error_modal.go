@@ -5,8 +5,10 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/thecentinol/tuwi/internal/events"
 	"strings"
+
+	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type ErrorModalKeymap struct {
@@ -14,7 +16,8 @@ type ErrorModalKeymap struct {
 }
 
 type ErrorModel struct {
-	Text string
+	theme *theme.Theme
+	Text  string
 
 	Width     int
 	Height    int
@@ -27,8 +30,9 @@ type ErrorModel struct {
 	Focused bool
 }
 
-func NewErrorModal() ErrorModel {
+func NewErrorModal(theme *theme.Theme) ErrorModel {
 	return ErrorModel{
+		theme: theme,
 		keys: ErrorModalKeymap{
 			dismiss: key.NewBinding(
 				key.WithKeys("enter", "esc"),
@@ -59,7 +63,7 @@ func (e ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 func (e ErrorModel) View() tea.View {
 	// wrap the text.
 	wrapped := lipgloss.NewStyle().
-		Foreground(lipgloss.Red).
+		Foreground(e.theme.Error.Text).
 		Width(e.Width - 2).
 		Render(e.Text)
 
@@ -71,7 +75,6 @@ func (e ErrorModel) View() tea.View {
 func (e *ErrorModel) SetText(text string) {
 	e.Text = text
 	wrapped := lipgloss.NewStyle().
-		Foreground(lipgloss.Red).
 		Width(e.Width - 2).
 		Render(e.Text)
 

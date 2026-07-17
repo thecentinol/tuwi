@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type passwordKeymap struct {
@@ -17,6 +18,7 @@ type passwordKeymap struct {
 }
 
 type PasswordModel struct {
+	theme    *theme.Theme
 	Input    textinput.Model
 	password string
 	keys     passwordKeymap
@@ -30,21 +32,32 @@ type PasswordModel struct {
 	Focused bool
 }
 
-func NewPasswordModal() PasswordModel {
+func NewPasswordModal(theme *theme.Theme) PasswordModel {
 	i := textinput.New()
 	i.Placeholder = "Enter Password"
-	i.SetVirtualCursor(false)
+	i.SetVirtualCursor(true)
 	i.Focus()
-	// i.SetWidth(20)
 	i.EchoMode = textinput.EchoPassword
 
 	s := i.Styles()
-	s.Cursor.Color = lipgloss.Color("205")
+	s.Focused.Text = lipgloss.NewStyle().
+		Foreground(theme.Input.TextFocused)
+
+	s.Focused.Placeholder = lipgloss.NewStyle().
+		Foreground(theme.Input.PlaceholderFocused)
+
+	s.Blurred.Text = lipgloss.NewStyle().
+		Foreground(theme.Input.TextBlurred)
+
+	s.Blurred.Placeholder = lipgloss.NewStyle().
+		Foreground(theme.Input.PlaceholderBlurred)
+
+	s.Cursor.Color = theme.Input.Cursor
 	s.Cursor.Blink = true
-	// s.Focused.Text = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	i.SetStyles(s)
 
 	return PasswordModel{
+		theme: theme,
 		Input: i,
 		keys: passwordKeymap{
 			togglePassword: key.NewBinding(

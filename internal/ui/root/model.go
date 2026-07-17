@@ -10,6 +10,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/theme"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
@@ -36,6 +37,7 @@ type Model struct {
 	focus  Focused
 	help   help.Model
 	keymap keymap
+	theme  *theme.Theme
 
 	wifiSaved       wifiui.SavedModel
 	wifiAvailable   wifiui.AvailableModel
@@ -49,15 +51,16 @@ type Model struct {
 }
 
 func NewModel(client *dbus.Client) Model {
+	th := theme.Default
 	state := &wifidomain.State{}
 	return Model{
 		Client:        client,
 		focus:         FocusSaved,
 		help:          help.New(),
-		wifiSaved:     wifiui.NewWifiSavedModel(client, state),
-		wifiAvailable: wifiui.NewWifiAvailableModel(client, state),
-		passwordModal: comp.NewPasswordModal(),
-		errorModal:    comp.NewErrorModal(),
+		wifiSaved:     wifiui.NewWifiSavedModel(client, state, &th),
+		wifiAvailable: wifiui.NewWifiAvailableModel(client, state, &th),
+		passwordModal: comp.NewPasswordModal(&th),
+		errorModal:    comp.NewErrorModal(&th),
 		keymap: keymap{
 			focus1: key.NewBinding(
 				key.WithKeys("1"),
@@ -70,6 +73,7 @@ func NewModel(client *dbus.Client) Model {
 				key.WithHelp("q", "quit"),
 			),
 		},
+		theme: &th,
 	}
 }
 
@@ -205,6 +209,7 @@ func (m Model) View() tea.View {
 
 	comp := lipgloss.NewCompositor(layers...)
 	view.SetContent(comp.Render())
+	view.BackgroundColor = m.theme.BG
 	view.AltScreen = true
 	return view
 }
@@ -261,5 +266,27 @@ func (m Model) HelpView() string {
 	}
 
 	help = append(help, m.keymap.quit)
-	return m.help.ShortHelpView(help)
+	render := m.help
+	render.Styles.Ellipsis = lipgloss.NewStyle().
+		Foreground(m.theme.Help.Ellipsis)
+
+	render.Styles.ShortKey = lipgloss.NewStyle().
+		Foreground(m.theme.Help.ShortKey)
+
+	render.Styles.ShortDesc = lipgloss.NewStyle().
+		Foreground(m.theme.Help.ShortDesc)
+
+	render.Styles.ShortSeparator = lipgloss.NewStyle().
+		Foreground(m.theme.Help.ShortSeparator)
+
+	render.Styles.FullKey = lipgloss.NewStyle().
+		Foreground(m.theme.Help.FullKey)
+
+	render.Styles.FullDesc = lipgloss.NewStyle().
+		Foreground(m.theme.Help.FullDesc)
+
+	render.Styles.FullSeparator = lipgloss.NewStyle().
+		Foreground(m.theme.Help.FullSeparator)
+
+	return render.ShortHelpView(help)
 }

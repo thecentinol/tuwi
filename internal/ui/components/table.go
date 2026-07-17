@@ -5,14 +5,9 @@ import (
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
-)
 
-type TableModel struct {
-	table table.Model
-	keys  keymap
-	help  help.Model
-}
+	"github.com/thecentinol/tuwi/internal/ui/theme"
+)
 
 type keymap struct {
 	up     key.Binding
@@ -21,22 +16,33 @@ type keymap struct {
 	bottom key.Binding
 }
 
-func NewTable(cols []table.Column, rows []table.Row) TableModel {
+type TableModel struct {
+	table table.Model
+	theme *theme.Theme
+	keys  keymap
+	help  help.Model
+}
+
+func NewTable(cols []table.Column, rows []table.Row, theme *theme.Theme) TableModel {
 	t := table.New(
 		table.WithColumns(cols),
 		table.WithRows(rows),
 	)
 
 	s := table.DefaultStyles()
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Black).
-		Background(lipgloss.Green)
 	s.Header = s.Header.
-		Background(lipgloss.Color("238"))
+		Background(theme.Table.HeaderBG).
+		Foreground(theme.Table.HeaderFG)
+
+	s.Selected = s.Selected.
+		Background(theme.Table.SelectedBG).
+		Foreground(theme.Table.SelectedFG)
+
 	t.SetStyles(s)
 
 	return TableModel{
 		table: t,
+		theme: theme,
 		keys: keymap{
 			up: key.NewBinding(
 				key.WithKeys("up", "k"),
