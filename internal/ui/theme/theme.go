@@ -11,10 +11,11 @@ type Theme struct {
 	BorderContentFocused,
 	Success color.Color
 
-	Table TableTheme
-	Error ErrorTheme
-	Input InputTheme
-	Help  HelpTheme
+	Table    TableTheme
+	Error    ErrorTheme
+	Password PasswordTheme
+	Input    InputTheme
+	Help     HelpTheme
 }
 
 type TableTheme struct {
@@ -29,6 +30,12 @@ type TableTheme struct {
 // error modal
 type ErrorTheme struct {
 	Text,
+	Border,
+	BorderContent color.Color
+}
+
+// password modal
+type PasswordTheme struct {
 	Border,
 	BorderContent color.Color
 }

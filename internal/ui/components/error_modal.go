@@ -67,7 +67,7 @@ func (e ErrorModel) View() tea.View {
 		Width(e.Width - 2).
 		Render(e.Text)
 
-	conatiner := NewBorderContent(lipgloss.Green, e.Width, e.Height-2)
+	conatiner := NewBorderContent(e.theme.Error.Border, e.theme.Error.BorderContent, e.Width, e.Height-2)
 	return tea.NewView(conatiner.Render("Error:", wrapped, e.Width))
 }
 

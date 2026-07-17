@@ -107,7 +107,7 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 }
 
 func (p PasswordModel) View() tea.View {
-	container := NewBorderContent(lipgloss.Green, p.Width, 0)
+	container := NewBorderContent(p.theme.Password.Border, p.theme.Password.BorderContent, p.Width, 0)
 
 	input := lipgloss.JoinHorizontal(
 		lipgloss.Left,
