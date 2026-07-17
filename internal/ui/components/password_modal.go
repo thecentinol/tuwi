@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
 	"github.com/thecentinol/tuwi/internal/events"
 )
 
@@ -20,6 +21,8 @@ type PasswordModel struct {
 	password string
 	keys     passwordKeymap
 	help     help.Model
+
+	Content string
 
 	X       int // x-coordinate for layering in root model
 	Y       int // y-coordinate for layering in root model
@@ -91,10 +94,7 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 }
 
 func (p PasswordModel) View() tea.View {
-	container := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Green).
-		Width(p.Width)
+	container := NewBorderContent(lipgloss.Green, p.Width, 0)
 
 	input := lipgloss.JoinHorizontal(
 		lipgloss.Left,
@@ -102,8 +102,7 @@ func (p PasswordModel) View() tea.View {
 		passwordIcon(p.Input.EchoMode == textinput.EchoPassword),
 	)
 
-	v := tea.NewView(container.Render(input))
-	return v
+	return tea.NewView(container.Render(p.Content, input, p.Width))
 }
 
 func (p PasswordModel) HelpView() []key.Binding {
