@@ -114,6 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case events.ShowPasswordModalMsg:
 		m.showPasswordModal = true
 		m.selectedNetwork = msg.Network
+		m.passwordModal.Content = string(msg.Network.SSID)
 		return m, m.passwordModal.Init()
 
 	case events.PasswordResultMsg:
@@ -211,7 +212,7 @@ func (m Model) View() tea.View {
 func (m *Model) sizeComponents() {
 	halfWidth := m.width / 2
 	// halfHeight := m.height / 2
-	helpHeight := 1
+	helpHeight := 2
 	modalWidth := m.width / 3
 	tableHeight := m.height - helpHeight - 2
 

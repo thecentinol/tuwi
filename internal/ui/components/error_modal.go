@@ -63,15 +63,8 @@ func (e ErrorModel) View() tea.View {
 		Width(e.Width - 2).
 		Render(e.Text)
 
-	// This is the border around the text content.
-	style := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Green).
-		Width(e.Width).
-		Height(e.Height - 2)
-
-	view := tea.NewView(style.Render(wrapped))
-	return view
+	conatiner := NewBorderContent(lipgloss.Green, e.Width, e.Height-2)
+	return tea.NewView(conatiner.Render("Error:", wrapped, e.Width))
 }
 
 // This is used in root Model's Update().
