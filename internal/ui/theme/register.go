@@ -1,5 +1,7 @@
 package theme
 
 var Themes = map[string]Theme{
-	"base": Default,
+	"base":           Default,
+	"rose-pine":      RosePine,
+	"rose-pine-moon": RosePineMoon,
 }
