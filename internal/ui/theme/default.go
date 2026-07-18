@@ -37,8 +37,8 @@ var Default = Theme{
 	Help: HelpTheme{
 		Ellipsis:       nil,
 		ShortKey:       lipgloss.White,
-		ShortDesc:      lipgloss.Color("238"),
-		ShortSeparator: lipgloss.Color("238"),
+		ShortDesc:      lipgloss.Color("#6e6a86"),
+		ShortSeparator: lipgloss.Color("#6e6a86"),
 		FullKey:        nil,
 		FullDesc:       nil,
 		FullSeparator:  nil,
