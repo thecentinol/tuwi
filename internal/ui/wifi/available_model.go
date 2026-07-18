@@ -184,7 +184,7 @@ func (a AvailableModel) View() tea.View {
 	}
 
 	title := comp.NewBorderContent(borderColor, borderContent, a.width, a.height)
-	return tea.NewView(title.Render("available networks", a.Table.View().Content, a.width))
+	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
 }
 
 func (a AvailableModel) HelpView() []key.Binding {

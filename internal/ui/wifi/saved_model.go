@@ -178,7 +178,7 @@ func (s SavedModel) View() tea.View {
 
 	title := comp.NewBorderContent(borderColor, borderContent, s.width, s.height)
 
-	return tea.NewView(title.Render("saved connections", s.Table.View().Content, s.width))
+	return tea.NewView(title.Render("[1]-Saved connections", s.Table.View().Content, s.width))
 }
 
 func (s SavedModel) HelpView() []key.Binding {
