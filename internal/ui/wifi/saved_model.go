@@ -26,6 +26,7 @@ type savedKeymap struct {
 type SavedModel struct {
 	client *dbus.Client
 	state  *wifidomain.State
+	theme  *theme.Theme
 
 	Table comp.TableModel
 
@@ -37,13 +38,15 @@ type SavedModel struct {
 	IsFocused bool
 }
 
-func NewWifiSavedModel(c *dbus.Client, state *wifidomain.State) SavedModel {
+func NewWifiSavedModel(c *dbus.Client, state *wifidomain.State, theme *theme.Theme) SavedModel {
 	return SavedModel{
 		client: c,
 		state:  state,
+		theme:  theme,
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
+			theme,
 		),
 		keys: savedKeymap{
 			connect: key.NewBinding(
@@ -166,12 +169,14 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 }
 
 func (s SavedModel) View() tea.View {
-	borderColor := theme.Base
+	borderColor := s.theme.Border
+	borderContent := s.theme.BorderContent
 	if s.IsFocused {
-		borderColor = theme.Focused
+		borderColor = s.theme.BorderFocused
+		borderContent = s.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, s.width, s.height)
+	title := comp.NewBorderContent(borderColor, borderContent, s.width, s.height)
 
 	return tea.NewView(title.Render("saved connections", s.Table.View().Content, s.width))
 }
