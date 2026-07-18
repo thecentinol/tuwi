@@ -5,10 +5,12 @@ import "image/color"
 type Theme struct {
 	BG,
 	FG,
+
 	Border,
 	BorderFocused,
 	BorderContent,
 	BorderContentFocused,
+
 	Success color.Color
 
 	Table    TableTheme
