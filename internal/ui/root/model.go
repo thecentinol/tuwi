@@ -257,11 +257,11 @@ func (m Model) HelpView() string {
 	if m.focus == FocusSaved {
 		help = append(help, m.wifiSaved.HelpView()...)
 	}
-	if m.focus == FocusAvailable {
+	if m.focus == FocusAvailable && m.showPasswordModal == false {
 		help = append(help, m.wifiAvailable.HelpView()...)
 	}
 
-	// help = append(help, m.keymap.quit)
+	help = append(help, m.keys.Quit.ToBubbles())
 	render := m.help
 	render.Styles.Ellipsis = lipgloss.NewStyle().
 		Foreground(m.theme.Help.Ellipsis)
