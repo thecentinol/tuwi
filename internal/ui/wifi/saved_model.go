@@ -9,19 +9,12 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
-
-type savedKeymap struct {
-	connect,
-	disconnect,
-	forget,
-	edit,
-	autoConnect key.Binding
-}
 
 type SavedModel struct {
 	client *dbus.Client
@@ -33,12 +26,17 @@ type SavedModel struct {
 	width  int
 	height int
 
-	keys      savedKeymap
+	keys      keybindings.Keybindings
 	help      help.Model
 	IsFocused bool
 }
 
-func NewWifiSavedModel(c *dbus.Client, state *wifidomain.State, theme *theme.Theme) SavedModel {
+func NewWifiSavedModel(
+	c *dbus.Client,
+	state *wifidomain.State,
+	keys keybindings.Keybindings,
+	theme *theme.Theme,
+) SavedModel {
 	return SavedModel{
 		client: c,
 		state:  state,
@@ -46,32 +44,10 @@ func NewWifiSavedModel(c *dbus.Client, state *wifidomain.State, theme *theme.The
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
+			keys,
 			theme,
 		),
-		keys: savedKeymap{
-			connect: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "connect"),
-			),
-			disconnect: key.NewBinding(
-				key.WithKeys("d"),
-				key.WithHelp("d", "disconnect"),
-			),
-			forget: key.NewBinding(
-				key.WithKeys("f"),
-				key.WithHelp("f", "forget"),
-			),
-			edit: key.NewBinding(
-				key.WithKeys("e"),
-				key.WithHelp("e", "edit"),
-				key.WithDisabled(),
-			),
-			autoConnect: key.NewBinding(
-				key.WithKeys("a"),
-				key.WithHelp("a", "auto-connect"),
-				key.WithDisabled(),
-			),
-		},
+		keys: keys,
 	}
 }
 
@@ -100,7 +76,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, s.keys.connect):
+		case key.Matches(msg, s.keys.WifiConnectSaved.ToBubbles()):
 			selected := s.selectedSavedNetwork()
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
@@ -110,13 +86,13 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 				return s, events.ShowError(err)
 			}
 
-		case key.Matches(msg, s.keys.disconnect):
+		case key.Matches(msg, s.keys.WifiDisconnect.ToBubbles()):
 			err := wifidomain.Disconnect(s.client)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
 
-		case key.Matches(msg, s.keys.forget):
+		case key.Matches(msg, s.keys.WifiForget.ToBubbles()):
 			selected := s.selectedSavedNetwork()
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
@@ -184,9 +160,9 @@ func (s SavedModel) View() tea.View {
 func (s SavedModel) HelpView() []key.Binding {
 	bindings := append(
 		s.Table.HelpView(),
-		s.keys.connect,
-		s.keys.disconnect,
-		s.keys.forget,
+		s.keys.WifiConnectSaved.ToBubbles(),
+		s.keys.WifiDisconnect.ToBubbles(),
+		s.keys.WifiForget.ToBubbles(),
 	)
 	return bindings
 }
