@@ -1,7 +1,7 @@
 package keybindings
 
 import (
-	"charm.land/bubbles/v2/key"
+// "charm.land/bubbles/v2/key"
 )
 
 const (
@@ -231,32 +231,4 @@ type Binding struct {
 	HelpKey         string // which key to display in the help view
 	HelpDescription string // the help text for bubbles key.Binding.Help
 	Description     string // the longer full description displayed in the keybindings modal
-}
-
-// converts the keybind to a bubbles keybinding
-func (b Binding) ToBubbles() key.Binding {
-	return key.NewBinding(
-		key.WithKeys(b.Keys...),
-		key.WithHelp(b.HelpKey, b.HelpDescription),
-	)
-}
-
-// returns all keybindings
-func (k Keybindings) All() []Binding {
-	return []Binding{
-		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Quit, k.WifiConnectSaved, k.WifiDisconnect,
-		k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable, k.LineUp, k.LineDown,
-		k.GotoTop, k.GotoBottom, k.ErrorDismiss, k.PasswordSubmit, k.PasswordCancel,
-	}
-}
-
-// get keybindings by ViewName
-func (k Keybindings) ByView(viewName string) []Binding {
-	var binds []Binding
-	for _, b := range k.All() {
-		if b.ViewName == viewName {
-			binds = append(binds, b)
-		}
-	}
-	return binds
 }
