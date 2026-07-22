@@ -26,7 +26,7 @@ func DefaultKeybindings() Keybindings {
 			ViewName:        "",
 			Group:           globalGroup,
 			Keys:            []string{"1"},
-			HelpKey:         "",
+			HelpKey:         "1",
 			HelpDescription: "",
 			Description:     "Switch focus to saved wifi connections pane",
 		},
@@ -34,7 +34,7 @@ func DefaultKeybindings() Keybindings {
 			ViewName:        "",
 			Group:           globalGroup,
 			Keys:            []string{"2"},
-			HelpKey:         "",
+			HelpKey:         "2",
 			HelpDescription: "",
 			Description:     "Switch focus to available wifi networks pane",
 		},
@@ -128,6 +128,24 @@ func DefaultKeybindings() Keybindings {
 			Description:     "Go to the bottom of the table",
 		},
 
+		// Keybindings modal
+		OpenKeybindingsModal: Binding{
+			ViewName:        "keybindings-modal",
+			Group:           "keybindings",
+			Keys:            []string{"?"},
+			HelpKey:         "?",
+			HelpDescription: "keybindings",
+			Description:     "Open keybindings modal",
+		},
+		CloseKeybindingsModal: Binding{
+			ViewName:        "keybindings-modal",
+			Group:           "keybindings",
+			Keys:            []string{"esc"},
+			HelpKey:         "escape",
+			HelpDescription: "close",
+			Description:     "Close keybindings modal",
+		},
+
 		// Error modal
 		ErrorDismiss: Binding{
 			ViewName:        errModalView,
@@ -188,6 +206,10 @@ type Keybindings struct {
 	LineDown   Binding
 	GotoTop    Binding
 	GotoBottom Binding
+
+	// Keybindings modal
+	OpenKeybindingsModal  Binding
+	CloseKeybindingsModal Binding
 
 	// Error modal
 	ErrorDismiss Binding
