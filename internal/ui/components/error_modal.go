@@ -8,12 +8,9 @@ import (
 	"strings"
 
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
-
-type ErrorModalKeymap struct {
-	dismiss key.Binding
-}
 
 type ErrorModel struct {
 	theme *theme.Theme
@@ -25,20 +22,15 @@ type ErrorModel struct {
 	X         int
 	Y         int
 
-	keys    ErrorModalKeymap
+	keys    keybindings.Keybindings
 	help    help.Model
 	Focused bool
 }
 
-func NewErrorModal(theme *theme.Theme) ErrorModel {
+func NewErrorModal(theme *theme.Theme, keys keybindings.Keybindings) ErrorModel {
 	return ErrorModel{
 		theme: theme,
-		keys: ErrorModalKeymap{
-			dismiss: key.NewBinding(
-				key.WithKeys("enter", "esc"),
-				key.WithHelp("enter/esc", "dismiss"),
-			),
-		},
+		keys:  keys,
 	}
 }
 
@@ -52,7 +44,7 @@ func (e ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, e.keys.dismiss):
+		case key.Matches(msg, e.keys.ErrorDismiss.ToBubbles()):
 			return e, events.DismissError()
 		}
 	}
@@ -84,7 +76,7 @@ func (e *ErrorModel) SetText(text string) {
 
 func (e ErrorModel) HelpView() []key.Binding {
 	help := []key.Binding{
-		e.keys.dismiss,
+		e.keys.ErrorDismiss.ToBubbles(),
 	}
 	return help
 }

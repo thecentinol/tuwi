@@ -7,6 +7,7 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/ui/root"
 )
@@ -18,7 +19,8 @@ func main() {
 	}
 	defer client.Close()
 
-	p := tea.NewProgram(root.NewModel(client))
+	keys := keybindings.DefaultKeybindings()
+	p := tea.NewProgram(root.NewModel(client, keys))
 
 	cb := nm.SignalCallbacks{
 		OnAccessPointAdded: func(ap nm.AccessPoint) {

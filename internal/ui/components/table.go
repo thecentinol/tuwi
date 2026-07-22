@@ -6,24 +6,23 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
-
-type keymap struct {
-	up     key.Binding
-	down   key.Binding
-	top    key.Binding
-	bottom key.Binding
-}
 
 type TableModel struct {
 	table table.Model
 	theme *theme.Theme
-	keys  keymap
+	keys  keybindings.Keybindings
 	help  help.Model
 }
 
-func NewTable(cols []table.Column, rows []table.Row, theme *theme.Theme) TableModel {
+func NewTable(
+	cols []table.Column,
+	rows []table.Row,
+	keys keybindings.Keybindings,
+	theme *theme.Theme,
+) TableModel {
 	t := table.New(
 		table.WithColumns(cols),
 		table.WithRows(rows),
@@ -43,25 +42,8 @@ func NewTable(cols []table.Column, rows []table.Row, theme *theme.Theme) TableMo
 	return TableModel{
 		table: t,
 		theme: theme,
-		keys: keymap{
-			up: key.NewBinding(
-				key.WithKeys("up", "k"),
-				key.WithHelp("↑/k", "up"),
-			),
-			down: key.NewBinding(
-				key.WithKeys("down", "j"),
-				key.WithHelp("↓/j", "down"),
-			),
-			top: key.NewBinding(
-				key.WithKeys("t"),
-				key.WithHelp("t", "go-to-top"),
-			),
-			bottom: key.NewBinding(
-				key.WithKeys("b"),
-				key.WithHelp("b", "go-to-bottom"),
-			),
-		},
-		help: help.New(),
+		keys:  keys,
+		help:  help.New(),
 	}
 }
 
@@ -73,7 +55,6 @@ func (t *TableModel) SetRows(rows []table.Row) {
 	t.table.SetRows(rows)
 }
 
-// the height and width gets set in root Model.sizeComponents
 func (t *TableModel) SetHeight(height int) {
 	t.table.SetHeight(height)
 }
@@ -88,13 +69,13 @@ func (t *TableModel) Update(msg tea.Msg) (TableModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, t.keys.up):
+		case key.Matches(msg, t.keys.LineUp.ToBubbles()):
 			t.table.MoveUp(1)
-		case key.Matches(msg, t.keys.down):
+		case key.Matches(msg, t.keys.LineDown.ToBubbles()):
 			t.table.MoveDown(1)
-		case key.Matches(msg, t.keys.top):
+		case key.Matches(msg, t.keys.GotoTop.ToBubbles()):
 			t.table.GotoTop()
-		case key.Matches(msg, t.keys.bottom):
+		case key.Matches(msg, t.keys.GotoBottom.ToBubbles()):
 			t.table.GotoBottom()
 		}
 	}
@@ -109,10 +90,10 @@ func (t *TableModel) View() tea.View {
 
 func (t TableModel) HelpView() []key.Binding {
 	return []key.Binding{
-		t.keys.up,
-		t.keys.down,
-		t.keys.top,
-		t.keys.bottom,
+		t.keys.LineUp.ToBubbles(),
+		t.keys.LineDown.ToBubbles(),
+		t.keys.GotoTop.ToBubbles(),
+		t.keys.GotoBottom.ToBubbles(),
 	}
 }
 

@@ -9,16 +9,12 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
-
-type availableKeymap struct {
-	connect,
-	scan key.Binding
-}
 
 type AvailableModel struct {
 	client *dbus.Client
@@ -34,12 +30,17 @@ type AvailableModel struct {
 	width  int
 	height int
 
-	keys      availableKeymap
+	keys      keybindings.Keybindings
 	help      help.Model
 	IsFocused bool
 }
 
-func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State, theme *theme.Theme) AvailableModel {
+func NewWifiAvailableModel(
+	c *dbus.Client,
+	state *wifidomain.State,
+	keys keybindings.Keybindings,
+	theme *theme.Theme,
+) AvailableModel {
 	return AvailableModel{
 		client: c,
 		state:  state,
@@ -47,18 +48,10 @@ func NewWifiAvailableModel(c *dbus.Client, state *wifidomain.State, theme *theme
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
+			keys,
 			theme,
 		),
-		keys: availableKeymap{
-			connect: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "connect"),
-			),
-			scan: key.NewBinding(
-				key.WithKeys("s"),
-				key.WithHelp("s", "scan"),
-			),
-		},
+		keys: keys,
 	}
 }
 
@@ -79,7 +72,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, a.keys.connect):
+		case key.Matches(msg, a.keys.WifiConnectAvailable.ToBubbles()):
 			selected := a.selectedAvailableNetwork()
 			if selected == nil {
 				return a, events.ShowError(fmt.Errorf("selectedAvailableNetwork: no network selected"))
@@ -87,7 +80,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 			_, cmd := a.handleConnect(*selected)
 			cmds = append(cmds, cmd)
 
-		case key.Matches(msg, a.keys.scan):
+		case key.Matches(msg, a.keys.WifiScan.ToBubbles()):
 			cmds = append(cmds, handleScan(a.client))
 		}
 
@@ -190,8 +183,7 @@ func (a AvailableModel) View() tea.View {
 func (a AvailableModel) HelpView() []key.Binding {
 	bindings := append(
 		a.Table.HelpView(),
-		a.keys.connect,
-		a.keys.scan,
+		a.keys.WifiConnectAvailable.ToBubbles(),
 	)
 	return bindings
 }

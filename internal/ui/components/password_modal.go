@@ -8,20 +8,15 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
-
-type passwordKeymap struct {
-	togglePassword key.Binding
-	submit         key.Binding
-	cancel         key.Binding
-}
 
 type PasswordModel struct {
 	theme    *theme.Theme
 	Input    textinput.Model
 	password string
-	keys     passwordKeymap
+	keys     keybindings.Keybindings
 	help     help.Model
 
 	Content string
@@ -32,7 +27,7 @@ type PasswordModel struct {
 	Focused bool
 }
 
-func NewPasswordModal(theme *theme.Theme) PasswordModel {
+func NewPasswordModal(theme *theme.Theme, keys keybindings.Keybindings) PasswordModel {
 	i := textinput.New()
 	i.Placeholder = "Enter Password"
 	i.SetVirtualCursor(true)
@@ -59,20 +54,7 @@ func NewPasswordModal(theme *theme.Theme) PasswordModel {
 	return PasswordModel{
 		theme: theme,
 		Input: i,
-		keys: passwordKeymap{
-			togglePassword: key.NewBinding(
-				key.WithKeys("ctrl+t"),
-				key.WithHelp("ctrl+t", "Toggle Password"),
-			),
-			submit: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "connect"),
-			),
-			cancel: key.NewBinding(
-				key.WithKeys("esc"),
-				key.WithHelp("esc", "cancel"),
-			),
-		},
+		keys:  keys,
 	}
 }
 
@@ -86,17 +68,17 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, p.keys.togglePassword):
+		case key.Matches(msg, p.keys.PasswordVisibility.ToBubbles()):
 			if p.Input.EchoMode == textinput.EchoPassword {
 				p.Input.EchoMode = textinput.EchoNormal
 			} else {
 				p.Input.EchoMode = textinput.EchoPassword
 			}
-		case key.Matches(msg, p.keys.submit):
+		case key.Matches(msg, p.keys.PasswordSubmit.ToBubbles()):
 			password := p.Input.Value()
 			p.Input.Reset()
 			return p, handlePasswordSubmit(password)
-		case key.Matches(msg, p.keys.cancel):
+		case key.Matches(msg, p.keys.PasswordCancel.ToBubbles()):
 			p.Input.Reset()
 			return p, handlePasswordClose()
 		}
@@ -120,9 +102,9 @@ func (p PasswordModel) View() tea.View {
 
 func (p PasswordModel) HelpView() []key.Binding {
 	help := []key.Binding{
-		p.keys.togglePassword,
-		p.keys.submit,
-		p.keys.cancel,
+		p.keys.PasswordVisibility.ToBubbles(),
+		p.keys.PasswordSubmit.ToBubbles(),
+		p.keys.PasswordCancel.ToBubbles(),
 	}
 	return help
 }
