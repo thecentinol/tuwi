@@ -77,6 +77,12 @@ var RosePine = Theme{
 
 		Cursor: lipgloss.Color(foam),
 	},
+	KeybindsModal: KeybindsModalTheme{
+		Border:          lipgloss.Color(foam),
+		BorderContent:   lipgloss.Color(foam),
+		KeybindsText:    lipgloss.Color(iris),
+		DescriptionText: lipgloss.White,
+	},
 	Help: HelpTheme{
 		Ellipsis:       nil,
 		ShortKey:       lipgloss.Color(gold),
@@ -127,6 +133,12 @@ var RosePineMoon = Theme{
 		PromptBlurred: lipgloss.Color(moonMuted),
 
 		Cursor: lipgloss.Color(moonFoam),
+	},
+	KeybindsModal: KeybindsModalTheme{
+		Border:          lipgloss.Color(foam),
+		BorderContent:   lipgloss.Color(foam),
+		KeybindsText:    lipgloss.Color(iris),
+		DescriptionText: lipgloss.White,
 	},
 	Help: HelpTheme{
 		Ellipsis:       nil,

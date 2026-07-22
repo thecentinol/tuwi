@@ -34,6 +34,12 @@ var Default = Theme{
 		PromptBlurred:      lipgloss.Color("238"),
 		Cursor:             lipgloss.White,
 	},
+	KeybindsModal: KeybindsModalTheme{
+		Border:          lipgloss.Green,
+		BorderContent:   lipgloss.Green,
+		KeybindsText:    lipgloss.White,
+		DescriptionText: lipgloss.Color("#6e6a86"),
+	},
 	Help: HelpTheme{
 		Ellipsis:       nil,
 		ShortKey:       lipgloss.White,
