@@ -81,7 +81,7 @@ var RosePine = Theme{
 		Border:          lipgloss.Color(foam),
 		BorderContent:   lipgloss.Color(foam),
 		GroupText:       lipgloss.Color(foam),
-		KeybindsText:    lipgloss.Color(iris),
+		KeybindsText:    lipgloss.Color(gold),
 		DescriptionText: lipgloss.White,
 	},
 	Help: HelpTheme{
@@ -136,10 +136,10 @@ var RosePineMoon = Theme{
 		Cursor: lipgloss.Color(moonFoam),
 	},
 	KeybindsModal: KeybindsModalTheme{
-		Border:          lipgloss.Color(foam),
-		BorderContent:   lipgloss.Color(foam),
-		GroupText:       lipgloss.Color(foam),
-		KeybindsText:    lipgloss.Color(iris),
+		Border:          lipgloss.Color(moonFoam),
+		BorderContent:   lipgloss.Color(moonFoam),
+		GroupText:       lipgloss.Color(moonFoam),
+		KeybindsText:    lipgloss.Color(moonGold),
 		DescriptionText: lipgloss.White,
 	},
 	Help: HelpTheme{

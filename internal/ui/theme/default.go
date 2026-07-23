@@ -38,8 +38,8 @@ var Default = Theme{
 		Border:          lipgloss.Green,
 		BorderContent:   lipgloss.Green,
 		GroupText:       lipgloss.Green,
-		KeybindsText:    lipgloss.White,
-		DescriptionText: lipgloss.Color("#6e6a86"),
+		KeybindsText:    lipgloss.Color("#038B5A"),
+		DescriptionText: lipgloss.White,
 	},
 	Help: HelpTheme{
 		Ellipsis:       nil,
