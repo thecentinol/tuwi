@@ -37,6 +37,7 @@ var Default = Theme{
 	KeybindsModal: KeybindsModalTheme{
 		Border:          lipgloss.Green,
 		BorderContent:   lipgloss.Green,
+		GroupText:       lipgloss.Green,
 		KeybindsText:    lipgloss.White,
 		DescriptionText: lipgloss.Color("#6e6a86"),
 	},

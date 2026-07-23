@@ -80,6 +80,7 @@ var RosePine = Theme{
 	KeybindsModal: KeybindsModalTheme{
 		Border:          lipgloss.Color(foam),
 		BorderContent:   lipgloss.Color(foam),
+		GroupText:       lipgloss.Color(foam),
 		KeybindsText:    lipgloss.Color(iris),
 		DescriptionText: lipgloss.White,
 	},
@@ -137,6 +138,7 @@ var RosePineMoon = Theme{
 	KeybindsModal: KeybindsModalTheme{
 		Border:          lipgloss.Color(foam),
 		BorderContent:   lipgloss.Color(foam),
+		GroupText:       lipgloss.Color(foam),
 		KeybindsText:    lipgloss.Color(iris),
 		DescriptionText: lipgloss.White,
 	},

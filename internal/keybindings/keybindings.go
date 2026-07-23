@@ -232,3 +232,8 @@ type Binding struct {
 	HelpDescription string // the help text for bubbles key.Binding.Help
 	Description     string // the longer full description displayed in the keybindings modal
 }
+
+type BindingGroup struct {
+	Title    string
+	Bindings []Binding
+}

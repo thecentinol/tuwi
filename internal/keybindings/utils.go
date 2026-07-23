@@ -4,7 +4,7 @@ import (
 	"charm.land/bubbles/v2/key"
 )
 
-// converts a single keybind to a bubbles keybinding
+// converts a single keybinding to a bubbles keybinding
 func (b Binding) ToBubbles() key.Binding {
 	return key.NewBinding(
 		key.WithKeys(b.Keys...),
@@ -12,6 +12,7 @@ func (b Binding) ToBubbles() key.Binding {
 	)
 }
 
+// converts multiple keybindings to a bubbles keybindings
 func ToBubblesBatch(keys []Binding) []key.Binding {
 	var binds []key.Binding
 
@@ -26,16 +27,75 @@ func ToBubblesBatch(keys []Binding) []key.Binding {
 	return binds
 }
 
-// returns all keybindings
+// Returns all keybindings
 func (k Keybindings) All() []Binding {
 	return []Binding{
 		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Quit, k.WifiConnectSaved, k.WifiDisconnect,
 		k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable, k.LineUp, k.LineDown,
-		k.GotoTop, k.GotoBottom, k.ErrorDismiss, k.PasswordSubmit, k.PasswordCancel,
+		k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.CloseKeybindingsModal, k.ErrorDismiss,
+		k.PasswordSubmit, k.PasswordCancel,
 	}
 }
 
-// get keybindings by ViewName
+// Get all Keybindings and sort them by Group
+func (k Keybindings) AllGrouped() []BindingGroup {
+	var groups []BindingGroup
+	var globalGroup BindingGroup
+	var wifiGroup BindingGroup
+	var tableGroup BindingGroup
+	var kbGroup BindingGroup
+	var errGroup BindingGroup
+	var passwordGroup BindingGroup
+
+	for _, b := range k.All() {
+		if b.Group == "global" {
+			globalGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("global"),
+			}
+		}
+		if b.Group == "wifi" {
+			wifiGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("wifi"),
+			}
+		}
+		if b.Group == "table" {
+			tableGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("table"),
+			}
+		}
+		if b.Group == "keybindings" {
+			kbGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("keybindings"),
+			}
+		}
+		if b.Group == "error" {
+			errGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("error"),
+			}
+		}
+		if b.Group == "password" {
+			passwordGroup = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup("password"),
+			}
+		}
+	}
+
+	groups = append(groups, globalGroup)
+	groups = append(groups, wifiGroup)
+	groups = append(groups, tableGroup)
+	groups = append(groups, kbGroup)
+	groups = append(groups, errGroup)
+	groups = append(groups, passwordGroup)
+	return groups
+}
+
+// Get keybindings by ViewName
 func (k Keybindings) ByView(viewName string) []Binding {
 	var binds []Binding
 	for _, b := range k.All() {
@@ -46,6 +106,7 @@ func (k Keybindings) ByView(viewName string) []Binding {
 	return binds
 }
 
+// Get keybindings by Group
 func (k Keybindings) ByGroup(group string) []Binding {
 	var binds []Binding
 	for _, kb := range k.All() {

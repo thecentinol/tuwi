@@ -59,6 +59,7 @@ type InputTheme struct {
 type KeybindsModalTheme struct {
 	Border,
 	BorderContent,
+	GroupText,
 	KeybindsText,
 	DescriptionText color.Color
 }
