@@ -63,3 +63,17 @@ linters:
             - std-error-handling
             - common-false-positives
             - legacy
+
+formatters:
+    enable:
+        - gofumpt
+        - goimports
+
+    settings:
+        gofumpt:
+            module-path: github.com/thecentinol/tuwi
+            extra-rules: true
+
+        goimports:
+            local-prefixes:
+                - github.com/thecentinol/tuwi
