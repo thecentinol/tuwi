@@ -1,8 +1,9 @@
 package wifi
 
 import (
-	godbus "github.com/godbus/dbus/v5"
 	"slices"
+
+	godbus "github.com/godbus/dbus/v5"
 
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )

@@ -1,8 +1,9 @@
 package wifi
 
 import (
-	"charm.land/bubbles/v2/table"
 	"strconv"
+
+	"charm.land/bubbles/v2/table"
 
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	wifidomain "github.com/thecentinol/tuwi/internal/wifi"

@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+
 	godbus "github.com/godbus/dbus/v5"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -125,7 +126,6 @@ func DisplaySavedConnections(
 					break
 				}
 			}
-
 		}
 		if sc.SSID != "" {
 			if ap, found := visibleAPsByConnection[sc.SSID]; found {

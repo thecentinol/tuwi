@@ -1,10 +1,11 @@
 package wifi
 
 import (
+	"fmt"
+
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"fmt"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
@@ -129,7 +130,6 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 			msg.Network,
 			msg.Password,
 		)
-
 		if err != nil {
 			return a, events.ShowError(err)
 		}

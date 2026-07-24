@@ -78,16 +78,12 @@ func DetermineChannel(freq uint32) uint32 {
 
 	if freq >= 2412 && freq <= 2472 {
 		channel = (freq - 2407) / 5
-
 	} else if freq == 2484 {
 		channel = 14
-
 	} else if freq >= 5160 && freq <= 5855 {
 		channel = (freq - 5000) / 5
-
 	} else if freq == 5935 {
 		channel = 2
-
 	} else if freq >= 5955 && freq <= 7115 {
 		channel = (freq - 5950) / 5
 	}
@@ -109,7 +105,7 @@ func FormatStrength(strength uint8) string {
 }
 
 // used for saved WiFi networks
-func DetermineStatus(isNearby bool, isActive bool) string {
+func DetermineStatus(isNearby, isActive bool) string {
 	switch {
 	case isActive:
 		return statusConnected

@@ -3,8 +3,9 @@ package networkmanager
 import (
 	"errors"
 	"fmt"
-	godbus "github.com/godbus/dbus/v5"
 	"time"
+
+	godbus "github.com/godbus/dbus/v5"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 )

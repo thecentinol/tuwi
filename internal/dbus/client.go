@@ -2,6 +2,7 @@ package dbus
 
 import (
 	"fmt"
+
 	"github.com/godbus/dbus/v5"
 )
 

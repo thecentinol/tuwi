@@ -40,6 +40,7 @@ func TestDetermineSecurityType(t *testing.T) {
 		})
 	}
 }
+
 func FuzzDetermineSecurityType(f *testing.F) {
 	f.Add(uint32(0), uint32(0), uint32(0))
 	f.Add(uint32(0), uint32(0), uint32(nm.NmSecMgmtSae))

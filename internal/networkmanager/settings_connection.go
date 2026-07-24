@@ -2,6 +2,7 @@ package networkmanager
 
 import (
 	"fmt"
+
 	godbus "github.com/godbus/dbus/v5"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -22,8 +23,8 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 	// as per NM docs this is the response type from GetSettings:
 	var settings map[string]map[string]godbus.Variant
 	var uuid string
-	var autoConnect = true
-	var ssid = "unknown"
+	autoConnect := true
+	ssid := "unknown"
 	var bssids []string
 	var mode string
 	var band string
