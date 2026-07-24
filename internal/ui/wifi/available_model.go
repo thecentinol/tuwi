@@ -1,7 +1,6 @@
 package wifi
 
 import (
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
@@ -31,7 +30,6 @@ type AvailableModel struct {
 	height int
 
 	keys      keybindings.Keybindings
-	help      help.Model
 	IsFocused bool
 }
 
@@ -176,7 +174,7 @@ func (a AvailableModel) View() tea.View {
 		borderContent = a.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, a.width, a.height)
+	title := comp.NewBorderContent(borderColor, borderContent, a.height)
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
 }
 

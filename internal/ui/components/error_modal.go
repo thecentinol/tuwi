@@ -1,7 +1,6 @@
 package components
 
 import (
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -23,7 +22,6 @@ type ErrorModel struct {
 	Y         int
 
 	keys    keybindings.Keybindings
-	help    help.Model
 	Focused bool
 }
 
@@ -59,8 +57,8 @@ func (e ErrorModel) View() tea.View {
 		Width(e.Width - 2).
 		Render(e.Text)
 
-	conatiner := NewBorderContent(e.theme.Error.Border, e.theme.Error.BorderContent, e.Width, e.Height-2)
-	return tea.NewView(conatiner.Render("Error:", wrapped, e.Width))
+	container := NewBorderContent(e.theme.Error.Border, e.theme.Error.BorderContent, e.Height-2)
+	return tea.NewView(container.Render("Error:", wrapped, e.Width))
 }
 
 // This is used in root Model's Update().

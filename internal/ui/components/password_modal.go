@@ -1,7 +1,6 @@
 package components
 
 import (
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -13,11 +12,9 @@ import (
 )
 
 type PasswordModel struct {
-	theme    *theme.Theme
-	Input    textinput.Model
-	password string
-	keys     keybindings.Keybindings
-	help     help.Model
+	theme *theme.Theme
+	Input textinput.Model
+	keys  keybindings.Keybindings
 
 	Content string
 
@@ -89,7 +86,7 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 }
 
 func (p PasswordModel) View() tea.View {
-	container := NewBorderContent(p.theme.Password.Border, p.theme.Password.BorderContent, p.Width, 0)
+	container := NewBorderContent(p.theme.Password.Border, p.theme.Password.BorderContent, 0)
 
 	input := lipgloss.JoinHorizontal(
 		lipgloss.Left,

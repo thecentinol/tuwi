@@ -10,7 +10,7 @@ import (
 func handleAccessPointAdded(c *dbus.Client, signal *godbus.Signal) (*AccessPoint, error) {
 	body := signal.Body
 	if len(body) != 1 {
-		return nil, fmt.Errorf("handleAccessPointAdded: signal body missing!")
+		return nil, fmt.Errorf("handleAccessPointAdded: signal body missing")
 	}
 	apPath := body[0].(godbus.ObjectPath)
 	ap, err := GetAccessPointProperties(c, signal.Path, apPath)
@@ -24,12 +24,12 @@ func handleAccessPointAdded(c *dbus.Client, signal *godbus.Signal) (*AccessPoint
 func handleAccessPointRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 	body := signal.Body
 	if len(body) != 1 {
-		return "", fmt.Errorf("handleAccessPointRemoved: signal body missing!")
+		return "", fmt.Errorf("handleAccessPointRemoved: signal body missing")
 	}
 
 	apPath, ok := body[0].(godbus.ObjectPath)
 	if !ok {
-		return "", fmt.Errorf("handleAccessPointRemoved: failed to get AP path!")
+		return "", fmt.Errorf("handleAccessPointRemoved: failed to get AP path")
 	}
 	return apPath, nil
 }
@@ -37,12 +37,12 @@ func handleAccessPointRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) 
 func handleNewConnection(signal *godbus.Signal) (godbus.ObjectPath, error) {
 	body := signal.Body
 	if len(body) != 1 {
-		return "", fmt.Errorf("handleNewConnection: signal body missing!")
+		return "", fmt.Errorf("handleNewConnection: signal body missing")
 	}
 
 	conPath, ok := body[0].(godbus.ObjectPath)
 	if !ok {
-		return "", fmt.Errorf("handleNewConnection: failed to get connection path!")
+		return "", fmt.Errorf("handleNewConnection: failed to get connection path")
 	}
 
 	return conPath, nil
@@ -51,12 +51,12 @@ func handleNewConnection(signal *godbus.Signal) (godbus.ObjectPath, error) {
 func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 	body := signal.Body
 	if len(body) != 1 {
-		return "", fmt.Errorf("handleConnectionRemoved: signal body missing!")
+		return "", fmt.Errorf("handleConnectionRemoved: signal body missing")
 	}
 
 	conPath, ok := body[0].(godbus.ObjectPath)
 	if !ok {
-		return "", fmt.Errorf("handleConnectionRemoved: failed to get connection path!")
+		return "", fmt.Errorf("handleConnectionRemoved: failed to get connection path")
 	}
 
 	return conPath, nil
@@ -66,7 +66,7 @@ func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) {
 	body := signal.Body
 	if len(body) != 2 {
-		return 0, 0, fmt.Errorf("handleActiveConnectionState: signal body missing!")
+		return 0, 0, fmt.Errorf("handleActiveConnectionState: signal body missing")
 	}
 
 	state, ok := body[0].(uint32)
@@ -83,39 +83,58 @@ func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) 
 }
 
 type SignalCallbacks struct {
-	OnAccessPointAdded   func(ap AccessPoint)
-	OnAccessPointRemoved func(apPath godbus.ObjectPath)
+	OnAccessPointAdded   func(AccessPoint)
+	OnAccessPointRemoved func(godbus.ObjectPath)
 
-	OnNewConnection          func(path godbus.ObjectPath)
-	OnConnectionRemoved      func(path godbus.ObjectPath)
-	OnActiveConnStateChanged func(state, reason uint32)
+	OnNewConnection          func(godbus.ObjectPath)
+	OnConnectionRemoved      func(godbus.ObjectPath)
+	OnActiveConnStateChanged func(uint32, uint32)
 
-	OnError func(err error)
+	OnError func(error)
 }
 
 func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	ch := make(chan *godbus.Signal, 10)
 	c.Conn.Signal(ch)
-	c.Conn.AddMatchSignal(
+	errApAdded := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(baseWirelessServiceName),
 		godbus.WithMatchMember("AccessPointAdded"),
 	)
-	c.Conn.AddMatchSignal(
+	if errApAdded != nil {
+		cb.OnError(fmt.Errorf("ListenForSignals: AccessPointAdded: %w", errApAdded))
+	}
+
+	errApRm := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(baseWirelessServiceName),
 		godbus.WithMatchMember("AccessPointRemoved"),
 	)
-	c.Conn.AddMatchSignal(
+	if errApRm != nil {
+		cb.OnError(fmt.Errorf("ListenForSignals: AccessPointRemoved: %w", errApRm))
+	}
+
+	errNewConn := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(BaseServiceName+".Settings"),
 		godbus.WithMatchMember("NewConnection"),
 	)
-	c.Conn.AddMatchSignal(
+	if errNewConn != nil {
+		cb.OnError(fmt.Errorf("ListenForSignals: NewConnection: %w", errNewConn))
+	}
+
+	errConnRm := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(BaseServiceName+".Settings"),
 		godbus.WithMatchMember("ConnectionRemoved"),
 	)
-	c.Conn.AddMatchSignal(
+	if errConnRm != nil {
+		cb.OnError(fmt.Errorf("ListenForSignals: ConnectionRemoved: %w", errConnRm))
+	}
+
+	errStateChanged := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface(baseActiveConnServiceName),
 		godbus.WithMatchMember("StateChanged"),
 	)
+	if errStateChanged != nil {
+		cb.OnError(fmt.Errorf("ListenForSignals: StateChanged: %w", errStateChanged))
+	}
 
 	for sig := range ch {
 		switch sig.Name {

@@ -25,8 +25,8 @@ func TestDetermineSecurityType(t *testing.T) {
 		{name: "OWE Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOwe, want: "OWE"},
 		{name: "OWE Transition Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOweTm, want: "OWE-TM"},
 		{name: "WPA2_WPA3 Network", flags: 0, wpa: nm.NmSecMgmtPsk, rsn: nm.NmSecMgmtSae, want: "WPA2/WPA3"},
-		{name: "Open Network with WPS", flags: nm.NmApFlagsWps, wpa: 0, rsn: 0, want: "open"},
-		{name: "Open Network no flags", flags: nm.NmApFlagsNone, wpa: 0, rsn: 0, want: "open"},
+		{name: "Open Network with WPS", flags: nm.NmApFlagsWps, wpa: 0, rsn: 0, want: secTypeOpen},
+		{name: "Open Network no flags", flags: nm.NmApFlagsNone, wpa: 0, rsn: 0, want: secTypeOpen},
 	}
 
 	for _, tc := range tests {
@@ -70,8 +70,8 @@ func TestFormatSSID(t *testing.T) {
 		bytes   []byte
 		wantStr string
 	}{
-		{name: "Hidden Network - nil", bytes: nil, wantStr: "<hidden>"},
-		{name: "Hidden Network - empty", bytes: []byte{}, wantStr: "<hidden>"},
+		{name: "Hidden Network - nil", bytes: nil, wantStr: ssidHidden},
+		{name: "Hidden Network - empty", bytes: []byte{}, wantStr: ssidHidden},
 		{name: "Visible Network", bytes: []byte("HomeWifi"), wantStr: "HomeWifi"},
 
 		{name: "Visible 1 character ssid", bytes: []byte{65}, wantStr: "A"},
@@ -106,22 +106,22 @@ func TestDetermineFrequency(t *testing.T) {
 		hertz uint32
 		want  string
 	}{
-		{name: "Unknown Freq with 0 MHz", hertz: uint32(0), want: "unknown"},
-		{name: "Uknown Freq with 9999 MHz", hertz: uint32(9999), want: "unknown"},
-		{name: "Uknown Freq with 3999 MHz", hertz: uint32(9999), want: "unknown"},
-		{name: "Uknown Freq with 7126 MHz", hertz: uint32(9999), want: "unknown"},
+		{name: "Unknown Freq with 0 MHz", hertz: uint32(0), want: secTypeUnknown},
+		{name: "Uknown Freq with 9999 MHz", hertz: uint32(9999), want: secTypeUnknown},
+		{name: "Uknown Freq with 3999 MHz", hertz: uint32(9999), want: secTypeUnknown},
+		{name: "Uknown Freq with 7126 MHz", hertz: uint32(9999), want: secTypeUnknown},
 
-		{name: "2.4GHz Freq lower bound", hertz: uint32(2401), want: "2.4GHz"},
-		{name: "2.4GHz Freq mid range", hertz: uint32(2442), want: "2.4GHz"},
-		{name: "2.4GHz Freq higher bound", hertz: uint32(2495), want: "2.4GHz"},
+		{name: "2.4GHz Freq lower bound", hertz: uint32(2401), want: freq24GHz},
+		{name: "2.4GHz Freq mid range", hertz: uint32(2442), want: freq24GHz},
+		{name: "2.4GHz Freq higher bound", hertz: uint32(2495), want: freq24GHz},
 
-		{name: "5GHz Freq lower bound", hertz: uint32(5150), want: "5GHz"},
-		{name: "5GHz Freq mid range", hertz: uint32(5500), want: "5GHz"},
-		{name: "5GHz Freq higher bound", hertz: uint32(5850), want: "5GHz"},
+		{name: "5GHz Freq lower bound", hertz: uint32(5150), want: freq5GHz},
+		{name: "5GHz Freq mid range", hertz: uint32(5500), want: freq5GHz},
+		{name: "5GHz Freq higher bound", hertz: uint32(5850), want: freq5GHz},
 
-		{name: "6GHz Freq lower bound", hertz: uint32(5945), want: "6GHz"},
-		{name: "6GHz Freq mid range", hertz: uint32(6525), want: "6GHz"},
-		{name: "6GHz Freq higher bound", hertz: uint32(7125), want: "6GHz"},
+		{name: "6GHz Freq lower bound", hertz: uint32(5945), want: freq6GHz},
+		{name: "6GHz Freq mid range", hertz: uint32(6525), want: freq6GHz},
+		{name: "6GHz Freq higher bound", hertz: uint32(7125), want: freq6GHz},
 	}
 
 	for _, tc := range tests {
@@ -146,7 +146,7 @@ func FuzzDetermineFrequency(f *testing.F) {
 	f.Fuzz(func(t *testing.T, hertz uint32) {
 		result := DetermineFrequency(hertz)
 
-		if result != "2.4GHz" && result != "5GHz" && result != "6GHz" && result != "unknown" {
+		if result != freq24GHz && result != freq5GHz && result != freq6GHz && result != freqUnknown {
 			t.Errorf("invalid string: %s", result)
 		}
 	})
@@ -205,10 +205,10 @@ func TestDetermineStatus(t *testing.T) {
 		activeBool bool
 		want       string
 	}{
-		{"Nearby and Active", true, true, "Connected"},
-		{"Active only", false, true, "Connected"},
-		{"Nearby only", true, false, "Nearby"},
-		{"Not nearby or active", false, false, "Unreachable"},
+		{"Nearby and Active", true, true, statusConnected},
+		{"Active only", false, true, statusConnected},
+		{"Nearby only", true, false, statusNearby},
+		{"Not nearby or active", false, false, statusUnreachable},
 	}
 
 	for _, tc := range tests {

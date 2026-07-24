@@ -1,7 +1,6 @@
 package wifi
 
 import (
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
@@ -27,7 +26,6 @@ type SavedModel struct {
 	height int
 
 	keys      keybindings.Keybindings
-	help      help.Model
 	IsFocused bool
 }
 
@@ -70,7 +68,7 @@ func (s SavedModel) Init() tea.Cmd {
 }
 
 func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
-	var cmds []tea.Cmd
+	cmds := make([]tea.Cmd, 0, 1)
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -152,7 +150,7 @@ func (s SavedModel) View() tea.View {
 		borderContent = s.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, s.width, s.height)
+	title := comp.NewBorderContent(borderColor, borderContent, s.height)
 
 	return tea.NewView(title.Render("[1]-Saved connections", s.Table.View().Content, s.width))
 }

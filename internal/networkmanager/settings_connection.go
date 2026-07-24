@@ -22,8 +22,8 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 	// as per NM docs this is the response type from GetSettings:
 	var settings map[string]map[string]godbus.Variant
 	var uuid string
-	var autoConnect bool = true
-	var ssid string = "unknown"
+	var autoConnect = true
+	var ssid = "unknown"
 	var bssids []string
 	var mode string
 	var band string
@@ -45,7 +45,7 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 
 	// filter out non-WiFi connections
 	connBlock, ok := settings["connection"]
-	if !ok || connBlock["type"].Value().(string) != "802-11-wireless" {
+	if !ok || connBlock["type"].Value().(string) != SettingsWireless {
 		return nil, nil
 	}
 
@@ -96,7 +96,7 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 		macAddress = rawMac.Value().(string)
 	}
 
-	securityBlock, ok := settings["802-11-wireless-security"]
+	securityBlock, ok := settings[SettingsSecurity]
 	if ok {
 		rawKeyMgmt, ok := securityBlock["key-mgmt"]
 		if ok {

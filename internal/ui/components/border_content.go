@@ -14,7 +14,7 @@ type BorderContent struct {
 
 func NewBorderContent(
 	border, content color.Color,
-	width, height int,
+	height int,
 ) BorderContent {
 	return BorderContent{
 		BorderStyle: lipgloss.NewStyle().
@@ -32,12 +32,12 @@ func NewBorderContent(
 
 func (b BorderContent) Render(label, content string, width int) string {
 	var (
-		border          lipgloss.Border             = b.BorderStyle.GetBorderStyle()
-		topBorderStyler func(strs ...string) string = lipgloss.NewStyle().Foreground(b.BorderStyle.GetBorderTopForeground()).Render
-		topLeft         string                      = topBorderStyler(border.TopLeft)
-		topRight        string                      = topBorderStyler(border.TopRight)
+		border          = b.BorderStyle.GetBorderStyle()
+		topBorderStyler = lipgloss.NewStyle().Foreground(b.BorderStyle.GetBorderTopForeground()).Render
+		topLeft         = topBorderStyler(border.TopLeft)
+		topRight        = topBorderStyler(border.TopRight)
 
-		renderedLabel string = b.ContentStyle.Render(label)
+		renderedLabel = b.ContentStyle.Render(label)
 	)
 
 	leftWidth := lipgloss.Width(topLeft)

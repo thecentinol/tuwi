@@ -1,6 +1,7 @@
 package networkmanager
 
 import (
+	"errors"
 	"fmt"
 	godbus "github.com/godbus/dbus/v5"
 	"time"
@@ -8,7 +9,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
+func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) (err error) {
 	device := c.Conn.Object(
 		BaseServiceName,
 		devicePath,
@@ -22,18 +23,25 @@ func RequestScan(c *dbus.Client, devicePath godbus.ObjectPath) error {
 	ch := make(chan *godbus.Signal, 1)
 	c.Conn.Signal(ch) // register the channel to receive all signal msgs
 
-	c.Conn.AddMatchSignal(
+	errAdd := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 		godbus.WithMatchMember("PropertiesChanged"),
 		godbus.WithMatchObjectPath(devicePath),
 	)
 
+	if errAdd != nil {
+		return fmt.Errorf("RequestScan AddMatchSignal: %w", err)
+	}
+
 	defer func() {
-		c.Conn.RemoveMatchSignal(
+		errRm := c.Conn.RemoveMatchSignal(
 			godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 			godbus.WithMatchMember("PropertiesChanged"),
 			godbus.WithMatchObjectPath(devicePath),
 		)
+		if errRm != nil {
+			err = errors.Join(err, fmt.Errorf("RequestScan RemoveMatchSignal: %w", err))
+		}
 		c.Conn.RemoveSignal(ch) // deregister the channel
 	}()
 
@@ -154,7 +162,7 @@ func ActivateConnection(
 	connectionPath godbus.ObjectPath,
 	devicePath godbus.ObjectPath,
 	apPath godbus.ObjectPath,
-) (godbus.ObjectPath, error) {
+) (_ godbus.ObjectPath, err error) {
 	obj := c.Conn.Object(BaseServiceName, BaseObjPath)
 	call := obj.Call(
 		CmActivateConnection,
@@ -179,18 +187,24 @@ func ActivateConnection(
 	// https://networkmanager.dev/docs/libnm/latest/libnm-nm-dbus-interface.html#NMActiveConnectionState
 	// for changes to the state of the connection so we can
 	// act on the signal received.
-	c.Conn.AddMatchSignal(
+	errAdd := c.Conn.AddMatchSignal(
 		godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 		godbus.WithMatchMember("PropertiesChanged"),
 		godbus.WithMatchObjectPath(activeConnection),
 	)
+	if errAdd != nil {
+		return "", fmt.Errorf("ActivateConnection AddMatchSignal: %w", errAdd)
+	}
 
 	defer func() {
-		c.Conn.RemoveMatchSignal(
+		errRm := c.Conn.RemoveMatchSignal(
 			godbus.WithMatchInterface("org.freedesktop.DBus.Properties"),
 			godbus.WithMatchMember("PropertiesChanged"),
 			godbus.WithMatchObjectPath(activeConnection),
 		)
+		if errRm != nil {
+			err = errors.Join(err, fmt.Errorf("ActivateConnection RemoveMatchSignal: %w", err))
+		}
 		c.Conn.RemoveSignal(ch)
 	}()
 
@@ -252,7 +266,7 @@ func DeactivateConnection(c *dbus.Client, activeConnections []godbus.ObjectPath)
 			return fmt.Errorf("DeactivateConnection: unexpected type for State property")
 		}
 
-		if connType == "802-11-wireless" && connState == 2 {
+		if connType == SettingsWireless && connState == 2 {
 			activeConnection = activePath
 			break
 		}

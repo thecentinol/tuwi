@@ -97,7 +97,7 @@ func DisplaySavedConnections(
 	saved []nm.SavedConnection,
 	available []nm.AccessPoint,
 ) []nm.NearbyConnection {
-	var nearbyConnections []nm.NearbyConnection
+	nearbyConnections := make([]nm.NearbyConnection, 0, len(saved))
 
 	visibleAPsByBSSID := make(map[string]*nm.AccessPoint)
 	visibleAPsByConnection := make(map[string]*nm.AccessPoint)
