@@ -1,0 +1,65 @@
+version: "2"
+
+run:
+    # Set to 0 to disable
+    # Default: 0
+    timeout: 5m
+    go: "1.26"
+
+issues:
+    # Maximum issues count per one linter.
+    # Set to 0 to disable.
+    # Default: 3
+    max-same-issues: 50
+
+linters:
+    enable:
+        - copyloopvar
+        - errorlint
+        - goconst
+        - importas
+        - intrange
+        - makezero
+        - misspell
+        - prealloc
+        - revive
+        - tparallel
+        - unparam
+        - unused
+        - wastedassign
+
+    settings:
+        copyloopvar:
+            check-alias: true
+
+        goconst:
+            find-duplicates: true
+
+        misspell:
+            locale: UK
+            ignore-rules:
+                - Color
+            mode: default
+
+        revive:
+            rules:
+                - name: comment-spacings
+                - name: error-naming
+                - name: error-return
+                - name: indent-error-flow
+                - name: package-comments
+                - name: range
+                - name: unhandled-error
+                - name: var-declaration
+
+        unused:
+            exported-fields-are-used: false
+            parameters-are-used: false
+            local-variables-are-used: false
+
+    exclusions:
+        presets:
+            - comments
+            - std-error-handling
+            - common-false-positives
+            - legacy

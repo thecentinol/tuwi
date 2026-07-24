@@ -3,7 +3,7 @@ PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
 
 .PHONY: install-deps build install install-local uninstall \
-	run-dev run-debug run unit-test fuzz test clean help
+	run-dev run-debug run unit-test fuzz test lint clean help
 
 install-deps:
 	@go mod download
@@ -38,6 +38,9 @@ fuzz:
 
 test: unit-test
 
+lint:
+	@golangci-lint run
+
 clean:
 	@go clean
 	@rm -rf ./dist
@@ -52,9 +55,10 @@ help:
 	@echo "  Local development:"
 	@echo "    make run-dev        — Run from source code"
 	@echo "    make run-debug      — Run with debug"
-	@echo "    make test           — Run full test suite"
 	@echo "    make unit-test      — Run short unit tests"
 	@echo "    make fuzz           — Run fuzz tests"
+	@echo "    make test           — Run full test suite"
+	@echo "    make lint           — Run linter"
 	@echo ""
 	@echo "  Builds:"
 	@echo "    make build          — Compile the binary into repo root"
