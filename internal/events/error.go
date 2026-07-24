@@ -2,8 +2,10 @@ package events
 
 import tea "charm.land/bubbletea/v2"
 
-type ShowErrorMsg struct{ Err error }
-type DismissErrorMsg struct{}
+type (
+	ShowErrorMsg    struct{ Err error }
+	DismissErrorMsg struct{}
+)
 
 func ShowError(err error) tea.Cmd {
 	return func() tea.Msg {

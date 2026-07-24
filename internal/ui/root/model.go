@@ -257,7 +257,7 @@ func (m Model) HelpView() string {
 	if m.focus == FocusSaved {
 		help = append(help, m.wifiSaved.HelpView()...)
 	}
-	if m.focus == FocusAvailable && m.showPasswordModal == false {
+	if m.focus == FocusAvailable && !m.showPasswordModal {
 		help = append(help, m.wifiAvailable.HelpView()...)
 	}
 

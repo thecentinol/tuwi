@@ -2,6 +2,7 @@ package theme
 
 import "charm.land/lipgloss/v2"
 
+//nolint:goconst // Rose Pine Default and Moon intentionally share certain hex codes
 const (
 	base          = "#191724"
 	surface       = "#1f1d2e"

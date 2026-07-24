@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+
 	godbus "github.com/godbus/dbus/v5"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -19,7 +20,6 @@ func ConnectSaved(client *dbus.Client, nc nm.NearbyConnection) (godbus.ObjectPat
 		nc.AP.DevicePath,
 		nc.AP.APPath,
 	)
-
 	if err != nil {
 		return "", fmt.Errorf("ConnectSaved: %w", err)
 	}
@@ -41,7 +41,6 @@ func ConnectSecured(
 		password,
 		securityType,
 	)
-
 	if err != nil {
 		return fmt.Errorf("ConnectSecured: %w", err)
 	}
@@ -62,7 +61,6 @@ func ConnectOpen(
 		"",
 		securityType,
 	)
-
 	if err != nil {
 		return fmt.Errorf("ConnectOpen: %w", err)
 	}

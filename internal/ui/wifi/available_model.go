@@ -1,11 +1,11 @@
 package wifi
 
 import (
-	"charm.land/bubbles/v2/help"
+	"fmt"
+
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"fmt"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
@@ -31,7 +31,6 @@ type AvailableModel struct {
 	height int
 
 	keys      keybindings.Keybindings
-	help      help.Model
 	IsFocused bool
 }
 
@@ -131,7 +130,6 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 			msg.Network,
 			msg.Password,
 		)
-
 		if err != nil {
 			return a, events.ShowError(err)
 		}
@@ -176,7 +174,7 @@ func (a AvailableModel) View() tea.View {
 		borderContent = a.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, a.width, a.height)
+	title := comp.NewBorderContent(borderColor, borderContent, a.height)
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
 }
 

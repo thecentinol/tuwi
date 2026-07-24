@@ -1,5 +1,15 @@
 package networkmanager
 
+const (
+	// the settings of a saved connection profile (type of map[string]map[string]godbus.Variant)
+
+	SettingsConnection = "connection"               // the connection block
+	SettingsWireless   = "802-11-wireless"          // the 802-11-wirless block
+	SettingsSecurity   = "802-11-wireless-security" // the 802-11-wirless-security block
+	SettingsIpv4       = "ipv4"                     // the IPv4 block
+	SettingsIpv6       = "ipv6"                     // the IPv6 block
+)
+
 // Base Service + Object
 const (
 	BaseServiceName = "org.freedesktop.NetworkManager"

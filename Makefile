@@ -3,7 +3,8 @@ PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
 
 .PHONY: install-deps build install install-local uninstall \
-	run-dev run-debug run unit-test fuzz test clean help
+	run-dev run-debug run unit-test fuzz test lint format-check \
+	format-write clean help
 
 install-deps:
 	@go mod download
@@ -34,9 +35,18 @@ unit-test:
 	@go test ./... -short
 
 fuzz:
-	go test -fuzz=FuzzDetermineSecurityType -fuzztime=30s -v ./internal/networkmanager/...
+	@go test -fuzz=FuzzDetermineSecurityType -fuzztime=30s -v ./internal/networkmanager/...
 
 test: unit-test
+
+lint:
+	@golangci-lint run
+
+format-check:
+	@gofumpt -l -extra .
+
+format-write:
+	@gofumpt -l -extra -w .
 
 clean:
 	@go clean
@@ -52,9 +62,12 @@ help:
 	@echo "  Local development:"
 	@echo "    make run-dev        — Run from source code"
 	@echo "    make run-debug      — Run with debug"
-	@echo "    make test           — Run full test suite"
 	@echo "    make unit-test      — Run short unit tests"
 	@echo "    make fuzz           — Run fuzz tests"
+	@echo "    make test           — Run full test suite"
+	@echo "    make lint           — Run linter"
+	@echo "    make format-check   — Check the codebases formatting"
+	@echo "    make format-write   — Fix formatting issues"
 	@echo ""
 	@echo "  Builds:"
 	@echo "    make build          — Compile the binary into repo root"

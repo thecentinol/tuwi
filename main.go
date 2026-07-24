@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	tea "charm.land/bubbletea/v2"
 	godbus "github.com/godbus/dbus/v5"
-	"log"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"

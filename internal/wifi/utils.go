@@ -6,6 +6,22 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
+const (
+	secTypeOpen    = "open"
+	secTypeUnknown = "unknown"
+
+	ssidHidden = "<hidden>"
+
+	freq24GHz   = "2.4GHz"
+	freq5GHz    = "5GHz"
+	freq6GHz    = "6GHz"
+	freqUnknown = "unknown" //nolint:goconst
+
+	statusConnected   = "Connected"
+	statusNearby      = "Nearby"
+	statusUnreachable = "Unreachable"
+)
+
 func DetermineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	var secType string
 	switch {
@@ -30,31 +46,31 @@ func DetermineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	case flags&nm.NmApFlagsPrivacy != 0:
 		secType = "wep"
 	case flags&nm.NmApFlagsPrivacy == 0 && wpaFlags == 0 && rsnFlags == 0:
-		secType = "open"
+		secType = secTypeOpen
 	default:
-		secType = "unknown"
+		secType = secTypeUnknown
 	}
 	return secType
 }
 
 func FormatSSID(ssid []byte) string {
 	if len(ssid) == 0 {
-		return "<hidden>"
+		return ssidHidden
 	}
 	return string(ssid)
 }
 
 func DetermineFrequency(hertz uint32) string {
 	if hertz >= 2401 && hertz <= 2495 {
-		return "2.4GHz"
+		return freq24GHz
 	}
 	if hertz >= 5150 && hertz <= 5895 {
-		return "5GHz"
+		return freq5GHz
 	}
 	if hertz >= 5945 && hertz <= 7125 {
-		return "6GHz"
+		return freq6GHz
 	}
-	return "unknown"
+	return freqUnknown
 }
 
 func DetermineChannel(freq uint32) uint32 {
@@ -62,16 +78,12 @@ func DetermineChannel(freq uint32) uint32 {
 
 	if freq >= 2412 && freq <= 2472 {
 		channel = (freq - 2407) / 5
-
 	} else if freq == 2484 {
 		channel = 14
-
 	} else if freq >= 5160 && freq <= 5855 {
 		channel = (freq - 5000) / 5
-
 	} else if freq == 5935 {
 		channel = 2
-
 	} else if freq >= 5955 && freq <= 7115 {
 		channel = (freq - 5950) / 5
 	}
@@ -93,15 +105,15 @@ func FormatStrength(strength uint8) string {
 }
 
 // used for saved WiFi networks
-func DetermineStatus(isNearby bool, isActive bool) string {
+func DetermineStatus(isNearby, isActive bool) string {
 	switch {
 	case isActive:
-		return "Connected"
+		return statusConnected
 
 	case isNearby:
-		return "Nearby"
+		return statusNearby
 
 	default:
-		return "Unreachable"
+		return statusUnreachable
 	}
 }

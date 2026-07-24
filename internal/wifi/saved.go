@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+
 	godbus "github.com/godbus/dbus/v5"
 
 	"github.com/thecentinol/tuwi/internal/dbus"
@@ -97,7 +98,7 @@ func DisplaySavedConnections(
 	saved []nm.SavedConnection,
 	available []nm.AccessPoint,
 ) []nm.NearbyConnection {
-	var nearbyConnections []nm.NearbyConnection
+	nearbyConnections := make([]nm.NearbyConnection, 0, len(saved))
 
 	visibleAPsByBSSID := make(map[string]*nm.AccessPoint)
 	visibleAPsByConnection := make(map[string]*nm.AccessPoint)
@@ -125,7 +126,6 @@ func DisplaySavedConnections(
 					break
 				}
 			}
-
 		}
 		if sc.SSID != "" {
 			if ap, found := visibleAPsByConnection[sc.SSID]; found {
