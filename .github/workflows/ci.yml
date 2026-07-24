@@ -5,7 +5,7 @@ on:
         branches:
             - main
             - dev
-            - 'feature/*'
+            - "feature/*"
     pull_request:
 
 jobs:
@@ -21,3 +21,18 @@ jobs:
                   go-version: 1.26.x
             - name: Test code
               run: go test ./...
+
+    lint:
+        name: Run golangci-lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+            - name: Setup Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version: 1.26.x
+            - name: lint
+              uses: golangci/golangci-lint-action@v9
+              with:
+                  version: v2.12
