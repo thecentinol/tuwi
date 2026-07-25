@@ -30,10 +30,10 @@ func ToBubblesBatch(keys []Binding) []key.Binding {
 // Returns all keybindings
 func (k Keybindings) All() []Binding {
 	return []Binding{
-		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Quit, k.WifiConnectSaved, k.WifiDisconnect,
-		k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable, k.LineUp, k.LineDown,
-		k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.CloseKeybindingsModal, k.ErrorDismiss,
-		k.PasswordSubmit, k.Cancel,
+		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Cancel, k.Quit, k.WifiConnectSaved,
+		k.WifiDisconnect, k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable,
+		k.LineUp, k.LineDown, k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.ErrorDismiss,
+		k.PasswordVisibility, k.PasswordSubmit,
 	}
 }
 

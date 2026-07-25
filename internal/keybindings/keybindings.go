@@ -145,11 +145,6 @@ func DefaultKeybindings() Keybindings {
 			HelpDescription: "keybindings",
 			Description:     "Open keybindings menu",
 		},
-		CloseKeybindingsModal: Binding{
-			Keys:            []string{keyEsc},
-			HelpKey:         keyEsc,
-			HelpDescription: "close",
-		},
 
 		// Error modal
 		ErrorDismiss: Binding{
@@ -206,8 +201,8 @@ type Keybindings struct {
 	GotoBottom Binding
 
 	// Keybindings modal
-	OpenKeybindingsModal  Binding
-	CloseKeybindingsModal Binding
+	// NOTE: Cancel is used to close the modal
+	OpenKeybindingsModal Binding
 
 	// Error modal
 	ErrorDismiss Binding
