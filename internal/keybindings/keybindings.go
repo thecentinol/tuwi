@@ -1,9 +1,5 @@
 package keybindings
 
-import (
-// "charm.land/bubbles/v2/key"
-)
-
 const (
 	// ViewNames's
 	wifiSavedView     = "wifi-saved"
@@ -15,8 +11,13 @@ const (
 	globalGroup   = "global"
 	wifiGroup     = "wifi"
 	tableGroup    = "table"
+	keybindsGroup = "keybindings"
 	errModalGroup = "error"
 	passwordGroup = "password"
+
+	// keys
+	keyEnter = "enter"
+	keyEsc   = "esc"
 )
 
 func DefaultKeybindings() Keybindings {
@@ -38,6 +39,14 @@ func DefaultKeybindings() Keybindings {
 			HelpDescription: "",
 			Description:     "Switch focus to available wifi networks pane",
 		},
+		Cancel: Binding{
+			ViewName:        "",
+			Group:           "global",
+			Keys:            []string{keyEsc},
+			HelpKey:         keyEsc,
+			HelpDescription: "cancel",
+			Description:     "Cancel",
+		},
 		Quit: Binding{
 			ViewName:        "",
 			Group:           globalGroup,
@@ -51,8 +60,8 @@ func DefaultKeybindings() Keybindings {
 		WifiConnectSaved: Binding{
 			ViewName:        wifiSavedView,
 			Group:           wifiGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "Enter",
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "connect",
 			Description:     "Connect to a saved wifi connection",
 		},
@@ -61,7 +70,7 @@ func DefaultKeybindings() Keybindings {
 			Group:           wifiGroup,
 			Keys:            []string{"d"},
 			HelpKey:         "d",
-			HelpDescription: "diconnect",
+			HelpDescription: "disconnect",
 			Description:     "Disconnect from current wifi network",
 		},
 		WifiForget: Binding{
@@ -91,14 +100,13 @@ func DefaultKeybindings() Keybindings {
 		WifiConnectAvailable: Binding{
 			ViewName:        wifiAvailableView,
 			Group:           wifiGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "enter",
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "connect",
 			Description:     "Connect to a new wifi network",
 		},
 
-		// table navigation
-		// ViewName is left nil because multiple models will use a table.
+		// Navigation
 		LineUp: Binding{
 			Group:           tableGroup,
 			Keys:            []string{"k", "up"},
@@ -135,23 +143,20 @@ func DefaultKeybindings() Keybindings {
 			Keys:            []string{"?"},
 			HelpKey:         "?",
 			HelpDescription: "keybindings",
-			Description:     "Open keybindings modal",
+			Description:     "Open keybindings menu",
 		},
 		CloseKeybindingsModal: Binding{
-			ViewName:        "keybindings-modal",
-			Group:           "keybindings",
-			Keys:            []string{"esc"},
-			HelpKey:         "escape",
+			Keys:            []string{keyEsc},
+			HelpKey:         keyEsc,
 			HelpDescription: "close",
-			Description:     "Close keybindings modal",
 		},
 
 		// Error modal
 		ErrorDismiss: Binding{
 			ViewName:        errModalView,
 			Group:           errModalGroup,
-			Keys:            []string{"esc", "enter"},
-			HelpKey:         "esc",
+			Keys:            []string{keyEsc, keyEnter},
+			HelpKey:         keyEsc,
 			HelpDescription: "dismiss",
 			Description:     "Dismiss the error modal",
 		},
@@ -163,23 +168,15 @@ func DefaultKeybindings() Keybindings {
 			Keys:            []string{"ctrl+t"},
 			HelpKey:         "ctrl+t",
 			HelpDescription: "hide/show password",
-			Description:     "Toggle the password inputs hidden state",
+			Description:     "Toggle the password input's hidden state",
 		},
 		PasswordSubmit: Binding{
 			ViewName:        passwordView,
 			Group:           passwordGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "enter",
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "submit",
 			Description:     "Submit password",
-		},
-		PasswordCancel: Binding{
-			ViewName:        passwordView,
-			Group:           passwordGroup,
-			Keys:            []string{"esc"},
-			HelpKey:         "esc",
-			HelpDescription: "cancel",
-			Description:     "Cancel",
 		},
 	}
 }
@@ -191,6 +188,7 @@ type Keybindings struct {
 	// Global
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
+	Cancel               Binding
 	Quit                 Binding
 
 	// WiFi
@@ -201,7 +199,7 @@ type Keybindings struct {
 	WifiScan             Binding
 	WifiConnectAvailable Binding
 
-	// Table navigation
+	// Navigation
 	LineUp     Binding
 	LineDown   Binding
 	GotoTop    Binding
@@ -217,7 +215,6 @@ type Keybindings struct {
 	// Password modal
 	PasswordVisibility Binding
 	PasswordSubmit     Binding
-	PasswordCancel     Binding
 }
 
 type Binding struct {

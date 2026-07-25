@@ -14,7 +14,7 @@ func (b Binding) ToBubbles() key.Binding {
 
 // converts multiple keybindings to a bubbles keybindings
 func ToBubblesBatch(keys []Binding) []key.Binding {
-	var binds []key.Binding
+	binds := make([]key.Binding, 0, len(keys))
 
 	for _, k := range keys {
 		bind := key.NewBinding(
@@ -33,65 +33,65 @@ func (k Keybindings) All() []Binding {
 		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Quit, k.WifiConnectSaved, k.WifiDisconnect,
 		k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable, k.LineUp, k.LineDown,
 		k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.CloseKeybindingsModal, k.ErrorDismiss,
-		k.PasswordSubmit, k.PasswordCancel,
+		k.PasswordSubmit, k.Cancel,
 	}
 }
 
 // Get all Keybindings and sort them by Group
 func (k Keybindings) AllGrouped() []BindingGroup {
-	var groups []BindingGroup
-	var globalGroup BindingGroup
-	var wifiGroup BindingGroup
-	var tableGroup BindingGroup
-	var kbGroup BindingGroup
-	var errGroup BindingGroup
-	var passwordGroup BindingGroup
+	groups := make([]BindingGroup, 0, 6)
+	var global BindingGroup
+	var wifi BindingGroup
+	var table BindingGroup
+	var kb BindingGroup
+	var err BindingGroup
+	var password BindingGroup
 
 	for _, b := range k.All() {
-		if b.Group == "global" {
-			globalGroup = BindingGroup{
+		if b.Group == globalGroup {
+			global = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("global"),
 			}
 		}
-		if b.Group == "wifi" {
-			wifiGroup = BindingGroup{
+		if b.Group == wifiGroup {
+			wifi = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("wifi"),
 			}
 		}
-		if b.Group == "table" {
-			tableGroup = BindingGroup{
+		if b.Group == tableGroup {
+			table = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("table"),
 			}
 		}
-		if b.Group == "keybindings" {
-			kbGroup = BindingGroup{
+		if b.Group == keybindsGroup {
+			kb = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("keybindings"),
 			}
 		}
-		if b.Group == "error" {
-			errGroup = BindingGroup{
+		if b.Group == errModalGroup {
+			err = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("error"),
 			}
 		}
-		if b.Group == "password" {
-			passwordGroup = BindingGroup{
+		if b.Group == passwordGroup {
+			password = BindingGroup{
 				Title:    b.Group,
 				Bindings: k.ByGroup("password"),
 			}
 		}
 	}
 
-	groups = append(groups, globalGroup)
-	groups = append(groups, wifiGroup)
-	groups = append(groups, tableGroup)
-	groups = append(groups, kbGroup)
-	groups = append(groups, errGroup)
-	groups = append(groups, passwordGroup)
+	groups = append(groups, global)
+	groups = append(groups, wifi)
+	groups = append(groups, table)
+	groups = append(groups, kb)
+	groups = append(groups, err)
+	groups = append(groups, password)
 	return groups
 }
 
