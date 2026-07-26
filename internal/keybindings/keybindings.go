@@ -1,21 +1,21 @@
 package keybindings
 
 const (
-	// ViewNames's
+	// ViewName
+	globalView        = "global"
 	wifiSavedView     = "wifi-saved"
 	wifiAvailableView = "wifi-available"
 	errModalView      = "error-modal"
 	passwordView      = "password-modal"
 
-	// Groups
+	// Group
 	globalGroup   = "global"
 	wifiGroup     = "wifi"
-	tableGroup    = "table"
-	keybindsGroup = "keybindings"
-	errModalGroup = "error"
-	passwordGroup = "password"
+	navGroup      = "navigation"
+	errModalGroup = "error modal"
+	passwordGroup = "password modal"
 
-	// keys
+	// Keys
 	keyEnter = "enter"
 	keyEsc   = "esc"
 )
@@ -24,7 +24,7 @@ func DefaultKeybindings() Keybindings {
 	return Keybindings{
 		// Global
 		FocusedWifiSaved: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"1"},
 			HelpKey:         "1",
@@ -32,7 +32,7 @@ func DefaultKeybindings() Keybindings {
 			Description:     "Switch focus to saved wifi connections pane",
 		},
 		FocusedWifiAvailable: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"2"},
 			HelpKey:         "2",
@@ -40,15 +40,23 @@ func DefaultKeybindings() Keybindings {
 			Description:     "Switch focus to available wifi networks pane",
 		},
 		Cancel: Binding{
-			ViewName:        "",
-			Group:           "global",
+			ViewName:        globalView,
+			Group:           globalGroup,
 			Keys:            []string{keyEsc},
 			HelpKey:         keyEsc,
 			HelpDescription: "cancel",
 			Description:     "Cancel",
 		},
+		OpenKeybindingsModal: Binding{
+			ViewName:        globalView,
+			Group:           globalGroup,
+			Keys:            []string{"?"},
+			HelpKey:         "?",
+			HelpDescription: "keybindings",
+			Description:     "Open keybindings menu",
+		},
 		Quit: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"q", "ctrl+c"},
 			HelpKey:         "q",
@@ -86,7 +94,7 @@ func DefaultKeybindings() Keybindings {
 			Group:           wifiGroup,
 			Keys:            []string{"a"},
 			HelpKey:         "a",
-			HelpDescription: "toggle auto-connect",
+			HelpDescription: "auto-connect",
 			Description:     "Toggle auto-connect state for the selected wifi connection",
 		},
 		WifiScan: Binding{
@@ -107,43 +115,33 @@ func DefaultKeybindings() Keybindings {
 		},
 
 		// Navigation
-		LineUp: Binding{
-			Group:           tableGroup,
+		Up: Binding{
+			Group:           navGroup,
 			Keys:            []string{"k", "up"},
 			HelpKey:         "↑",
-			HelpDescription: "move up",
+			HelpDescription: "up",
 			Description:     "Move up by one line",
 		},
-		LineDown: Binding{
-			Group:           tableGroup,
+		Down: Binding{
+			Group:           navGroup,
 			Keys:            []string{"j", "down"},
 			HelpKey:         "",
-			HelpDescription: "move down",
+			HelpDescription: "down",
 			Description:     "Move down by one line",
 		},
 		GotoTop: Binding{
-			Group:           tableGroup,
+			Group:           navGroup,
 			Keys:            []string{"t"},
 			HelpKey:         "t",
-			HelpDescription: "move to top",
-			Description:     "Go to the top of the table",
+			HelpDescription: "top",
+			Description:     "Move/Scroll to top",
 		},
 		GotoBottom: Binding{
-			Group:           tableGroup,
+			Group:           navGroup,
 			Keys:            []string{"b"},
 			HelpKey:         "b",
-			HelpDescription: "move to bottom",
-			Description:     "Go to the bottom of the table",
-		},
-
-		// Keybindings modal
-		OpenKeybindingsModal: Binding{
-			ViewName:        "keybindings-modal",
-			Group:           "keybindings",
-			Keys:            []string{"?"},
-			HelpKey:         "?",
-			HelpDescription: "keybindings",
-			Description:     "Open keybindings menu",
+			HelpDescription: "bottom",
+			Description:     "Move/Scroll to bottom",
 		},
 
 		// Error modal
@@ -184,6 +182,7 @@ type Keybindings struct {
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
 	Cancel               Binding
+	OpenKeybindingsModal Binding // NOTE: Cancel is used to close the modal
 	Quit                 Binding
 
 	// WiFi
@@ -195,14 +194,10 @@ type Keybindings struct {
 	WifiConnectAvailable Binding
 
 	// Navigation
-	LineUp     Binding
-	LineDown   Binding
+	Up         Binding
+	Down       Binding
 	GotoTop    Binding
 	GotoBottom Binding
-
-	// Keybindings modal
-	// NOTE: Cancel is used to close the modal
-	OpenKeybindingsModal Binding
 
 	// Error modal
 	ErrorDismiss Binding

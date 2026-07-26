@@ -32,7 +32,7 @@ func (k Keybindings) All() []Binding {
 	return []Binding{
 		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Cancel, k.Quit, k.WifiConnectSaved,
 		k.WifiDisconnect, k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable,
-		k.LineUp, k.LineDown, k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.ErrorDismiss,
+		k.Up, k.Down, k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.ErrorDismiss,
 		k.PasswordVisibility, k.PasswordSubmit,
 	}
 }
@@ -42,8 +42,7 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 	groups := make([]BindingGroup, 0, 6)
 	var global BindingGroup
 	var wifi BindingGroup
-	var table BindingGroup
-	var kb BindingGroup
+	var nav BindingGroup
 	var err BindingGroup
 	var password BindingGroup
 
@@ -51,45 +50,38 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 		if b.Group == globalGroup {
 			global = BindingGroup{
 				Title:    b.Group,
-				Bindings: k.ByGroup("global"),
+				Bindings: k.ByGroup(globalGroup),
+			}
+		}
+		if b.Group == navGroup {
+			nav = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup(navGroup),
 			}
 		}
 		if b.Group == wifiGroup {
 			wifi = BindingGroup{
 				Title:    b.Group,
-				Bindings: k.ByGroup("wifi"),
-			}
-		}
-		if b.Group == tableGroup {
-			table = BindingGroup{
-				Title:    b.Group,
-				Bindings: k.ByGroup("table"),
-			}
-		}
-		if b.Group == keybindsGroup {
-			kb = BindingGroup{
-				Title:    b.Group,
-				Bindings: k.ByGroup("keybindings"),
+				Bindings: k.ByGroup(wifiGroup),
 			}
 		}
 		if b.Group == errModalGroup {
 			err = BindingGroup{
 				Title:    b.Group,
-				Bindings: k.ByGroup("error"),
+				Bindings: k.ByGroup(errModalGroup),
 			}
 		}
 		if b.Group == passwordGroup {
 			password = BindingGroup{
 				Title:    b.Group,
-				Bindings: k.ByGroup("password"),
+				Bindings: k.ByGroup(passwordGroup),
 			}
 		}
 	}
 
 	groups = append(groups, global)
+	groups = append(groups, nav)
 	groups = append(groups, wifi)
-	groups = append(groups, table)
-	groups = append(groups, kb)
 	groups = append(groups, err)
 	groups = append(groups, password)
 	return groups
