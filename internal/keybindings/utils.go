@@ -41,7 +41,8 @@ func (k Keybindings) All() []Binding {
 func (k Keybindings) AllGrouped() []BindingGroup {
 	groups := make([]BindingGroup, 0, 6)
 	var global BindingGroup
-	var wifi BindingGroup
+	var wifiSaved BindingGroup
+	var wifiAvailable BindingGroup
 	var nav BindingGroup
 	var err BindingGroup
 	var password BindingGroup
@@ -59,10 +60,16 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 				Bindings: k.ByGroup(navGroup),
 			}
 		}
-		if b.Group == wifiGroup {
-			wifi = BindingGroup{
+		if b.Group == wifiSavedGroup {
+			wifiSaved = BindingGroup{
 				Title:    b.Group,
-				Bindings: k.ByGroup(wifiGroup),
+				Bindings: k.ByGroup(wifiSavedGroup),
+			}
+		}
+		if b.Group == wifiAvailableGroup {
+			wifiAvailable = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup(wifiAvailableGroup),
 			}
 		}
 		if b.Group == errModalGroup {
@@ -81,7 +88,8 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 
 	groups = append(groups, global)
 	groups = append(groups, nav)
-	groups = append(groups, wifi)
+	groups = append(groups, wifiSaved)
+	groups = append(groups, wifiAvailable)
 	groups = append(groups, err)
 	groups = append(groups, password)
 	return groups

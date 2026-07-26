@@ -9,11 +9,12 @@ const (
 	passwordView      = "password-modal"
 
 	// Group
-	globalGroup   = "global"
-	wifiGroup     = "wifi"
-	navGroup      = "navigation"
-	errModalGroup = "error modal"
-	passwordGroup = "password modal"
+	globalGroup        = "global"
+	wifiSavedGroup     = "saved connections"
+	wifiAvailableGroup = "available networks"
+	navGroup           = "navigation"
+	errModalGroup      = "error modal"
+	passwordGroup      = "password modal"
 
 	// Keys
 	keyEnter = "enter"
@@ -64,54 +65,56 @@ func DefaultKeybindings() Keybindings {
 			Description:     "Quit the application",
 		},
 
-		// WiFi
+		// WiFi saved
 		WifiConnectSaved: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{keyEnter},
 			HelpKey:         keyEnter,
 			HelpDescription: "connect",
-			Description:     "Connect to a saved wifi connection",
+			Description:     "Connect",
 		},
 		WifiDisconnect: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"d"},
 			HelpKey:         "d",
 			HelpDescription: "disconnect",
-			Description:     "Disconnect from current wifi network",
+			Description:     "Disconnect from current WiFi network",
 		},
 		WifiForget: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"f"},
 			HelpKey:         "f",
 			HelpDescription: "forget",
-			Description:     "Remove the selected wifi connection",
+			Description:     "Remove the selected WiFi connection",
 		},
 		WifiAutoConnect: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"a"},
 			HelpKey:         "a",
 			HelpDescription: "auto-connect",
-			Description:     "Toggle auto-connect state for the selected wifi connection",
+			Description:     "Toggle auto-connect on/off for the selected WiFi connection",
 		},
+
+		// WiFi available
 		WifiScan: Binding{
 			ViewName:        wifiAvailableView,
-			Group:           wifiGroup,
+			Group:           wifiAvailableGroup,
 			Keys:            []string{"s"},
 			HelpKey:         "s",
 			HelpDescription: "Scan",
-			Description:     "Scan for nearby wifi networks",
+			Description:     "Scan for nearby WiFi networks",
 		},
 		WifiConnectAvailable: Binding{
 			ViewName:        wifiAvailableView,
-			Group:           wifiGroup,
+			Group:           wifiAvailableGroup,
 			Keys:            []string{keyEnter},
 			HelpKey:         keyEnter,
 			HelpDescription: "connect",
-			Description:     "Connect to a new wifi network",
+			Description:     "Connect",
 		},
 
 		// Navigation
