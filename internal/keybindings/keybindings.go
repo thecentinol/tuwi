@@ -1,15 +1,17 @@
 package keybindings
 
 const (
+	global = "global"
+
 	// ViewName
-	globalView        = "global"
+	globalView        = global
 	wifiSavedView     = "wifi-saved"
 	wifiAvailableView = "wifi-available"
 	errModalView      = "error-modal"
 	passwordView      = "password-modal"
 
 	// Group
-	globalGroup        = "global"
+	globalGroup        = global
 	wifiSavedGroup     = "saved connections"
 	wifiAvailableGroup = "available networks"
 	navGroup           = "navigation"
