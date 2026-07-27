@@ -91,7 +91,7 @@ func (m Model) HelpView() []key.Binding {
 	cancel := m.keys.Cancel.ToBubbles()
 	scrollUp := m.keys.Up.ToBubbles()
 	scrollDown := m.keys.Down.ToBubbles()
-	cancel.SetHelp(m.keys.Cancel.HelpKey, "Close/Cancel")
+	cancel.SetHelp(m.keys.Cancel.HelpKey, "Close")
 	scrollUp.SetHelp(m.keys.Up.HelpKey, "Scroll up")
 	scrollDown.SetHelp(m.keys.Down.HelpKey, "Scroll down")
 
