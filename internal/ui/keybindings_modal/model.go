@@ -150,7 +150,7 @@ func (m *Model) renderContent() {
 		)
 
 		// WriteString returns a nil error, the `revive` linter will complain about not handling the
-		// the error's for the below WriteString's. So just like the liberals, we tell em to shut up.
+		// error's for the below WriteString's. So just like the liberals, we tell em to shut up.
 		builder.WriteString(section) //nolint:revive
 		builder.WriteString("\n")    //nolint:revive
 	}
