@@ -69,9 +69,9 @@ func (t *TableModel) Update(msg tea.Msg) (TableModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, t.keys.LineUp.ToBubbles()):
+		case key.Matches(msg, t.keys.Up.ToBubbles()):
 			t.table.MoveUp(1)
-		case key.Matches(msg, t.keys.LineDown.ToBubbles()):
+		case key.Matches(msg, t.keys.Down.ToBubbles()):
 			t.table.MoveDown(1)
 		case key.Matches(msg, t.keys.GotoTop.ToBubbles()):
 			t.table.GotoTop()
@@ -90,8 +90,8 @@ func (t *TableModel) View() tea.View {
 
 func (t TableModel) HelpView() []key.Binding {
 	return []key.Binding{
-		t.keys.LineUp.ToBubbles(),
-		t.keys.LineDown.ToBubbles(),
+		t.keys.Up.ToBubbles(),
+		t.keys.Down.ToBubbles(),
 		t.keys.GotoTop.ToBubbles(),
 		t.keys.GotoBottom.ToBubbles(),
 	}

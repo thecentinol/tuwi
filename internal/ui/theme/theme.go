@@ -13,11 +13,12 @@ type Theme struct {
 
 	Success color.Color
 
-	Table    TableTheme
-	Error    ErrorTheme
-	Password PasswordTheme
-	Input    InputTheme
-	Help     HelpTheme
+	Table         TableTheme
+	Error         ErrorTheme
+	Password      PasswordTheme
+	Input         InputTheme
+	KeybindsModal KeybindsModalTheme
+	Help          HelpTheme
 }
 
 type TableTheme struct {
@@ -53,6 +54,14 @@ type InputTheme struct {
 	PromptBlurred,
 
 	Cursor color.Color
+}
+
+type KeybindsModalTheme struct {
+	Border,
+	BorderContent,
+	GroupText,
+	KeybindsText,
+	DescriptionText color.Color
 }
 
 // the help view

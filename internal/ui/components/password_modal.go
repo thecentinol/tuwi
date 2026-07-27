@@ -75,7 +75,7 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 			password := p.Input.Value()
 			p.Input.Reset()
 			return p, handlePasswordSubmit(password)
-		case key.Matches(msg, p.keys.PasswordCancel.ToBubbles()):
+		case key.Matches(msg, p.keys.Cancel.ToBubbles()):
 			p.Input.Reset()
 			return p, handlePasswordClose()
 		}
@@ -101,7 +101,7 @@ func (p PasswordModel) HelpView() []key.Binding {
 	help := []key.Binding{
 		p.keys.PasswordVisibility.ToBubbles(),
 		p.keys.PasswordSubmit.ToBubbles(),
-		p.keys.PasswordCancel.ToBubbles(),
+		p.keys.Cancel.ToBubbles(),
 	}
 	return help
 }

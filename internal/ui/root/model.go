@@ -11,6 +11,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	kbmodal "github.com/thecentinol/tuwi/internal/ui/keybindings_modal"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
@@ -18,12 +19,12 @@ import (
 
 type Focused string
 
-// make sure these match Keybindings ViewName's
 const (
-	FocusSaved         Focused = "wifi-saved"
-	FocusAvailable     Focused = "wifi-available"
-	FocusPasswordModal Focused = "password-modal"
-	FocusErrorModal    Focused = "error-modal"
+	FocusWifiSaved        Focused = "wifi-saved"
+	FocusWifiAvailable    Focused = "wifi-available"
+	FocusKeybindingsModal Focused = "keybindings-modal"
+	FocusPasswordModal    Focused = "password-modal"
+	FocusErrorModal       Focused = "error-modal"
 )
 
 type Model struct {
@@ -39,6 +40,9 @@ type Model struct {
 	wifiAvailable   wifiui.AvailableModel
 	selectedNetwork *nm.AccessPoint
 
+	keybindingsModal     kbmodal.Model
+	showKeybindingsModal bool
+
 	passwordModal     comp.PasswordModel
 	showPasswordModal bool
 
@@ -49,16 +53,18 @@ type Model struct {
 func NewModel(client *dbus.Client, keys keybindings.Keybindings) Model {
 	th := theme.Default
 	state := &wifidomain.State{}
+
 	return Model{
-		Client:        client,
-		focus:         FocusSaved,
-		help:          help.New(),
-		wifiSaved:     wifiui.NewWifiSavedModel(client, state, keys, &th),
-		wifiAvailable: wifiui.NewWifiAvailableModel(client, state, keys, &th),
-		passwordModal: comp.NewPasswordModal(&th, keys),
-		errorModal:    comp.NewErrorModal(&th, keys),
-		keys:          keys,
-		theme:         &th,
+		Client:           client,
+		focus:            FocusWifiSaved,
+		help:             help.New(),
+		wifiSaved:        wifiui.NewWifiSavedModel(client, state, keys, &th),
+		wifiAvailable:    wifiui.NewWifiAvailableModel(client, state, keys, &th),
+		keybindingsModal: kbmodal.NewKeybindsModal(&th, keys),
+		passwordModal:    comp.NewPasswordModal(&th, keys),
+		errorModal:       comp.NewErrorModal(&th, keys),
+		keys:             keys,
+		theme:            &th,
 	}
 }
 
@@ -82,6 +88,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.sizeComponents()
+
+	case events.OpenKeybindsModalMsg:
+		m.showKeybindingsModal = true
+		return m, m.keybindingsModal.Init()
+
+	case events.CloseKeybindsModalMsg:
+		m.showKeybindingsModal = false
+		// TODO: get previous focus before the keybindingsModal was opened and switch back to that.
+		m.focus = FocusWifiAvailable
 
 	case events.ShowPasswordModalMsg:
 		m.showPasswordModal = true
@@ -125,10 +140,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.errorModal, cmd = m.errorModal.Update(msg)
 			cmds = append(cmds, cmd)
 		}
+		if m.showKeybindingsModal {
+			m.keybindingsModal, cmd = m.keybindingsModal.Update(msg)
+			cmds = append(cmds, cmd)
+		}
 	}
 
-	m.wifiSaved.IsFocused = m.focus == FocusSaved
-	m.wifiAvailable.IsFocused = m.focus == FocusAvailable
+	m.wifiSaved.IsFocused = m.focus == FocusWifiSaved
+	m.wifiAvailable.IsFocused = m.focus == FocusWifiAvailable
+	m.keybindingsModal.IsFocused = m.focus == FocusKeybindingsModal
 
 	return m, tea.Batch(cmds...)
 }
@@ -137,6 +157,7 @@ func (m Model) View() tea.View {
 	var view tea.View
 	wifiSavedView := m.wifiSaved.View().Content
 	wifiAvailableView := m.wifiAvailable.View().Content
+	kbView := m.keybindingsModal.View().Content
 	helpView := m.HelpView()
 	passwordView := m.passwordModal.View().Content
 	errorModalView := m.errorModal.View().Content
@@ -175,6 +196,15 @@ func (m Model) View() tea.View {
 		layers = append(layers, errorModal)
 	}
 
+	if m.showKeybindingsModal && !m.showErrorModal && !m.showPasswordModal {
+		kbModal := lipgloss.NewLayer(kbView).
+			Z(1).
+			X(m.keybindingsModal.X).
+			Y(m.keybindingsModal.Y)
+
+		layers = append(layers, kbModal)
+	}
+
 	comp := lipgloss.NewCompositor(layers...)
 	view.SetContent(comp.Render())
 	view.BackgroundColor = m.theme.BG
@@ -184,7 +214,7 @@ func (m Model) View() tea.View {
 
 func (m *Model) sizeComponents() {
 	halfWidth := m.width / 2
-	// halfHeight := m.height / 2
+	halfHeight := m.height / 2
 	helpHeight := 2
 	modalWidth := m.width / 3
 	tableHeight := m.height - helpHeight - 2
@@ -198,6 +228,11 @@ func (m *Model) sizeComponents() {
 	m.wifiAvailable.Setheight(m.height - helpHeight)
 	m.wifiAvailable.Table.SetWidth(halfWidth)
 	m.wifiAvailable.Table.SetHeight(tableHeight)
+
+	// Keybindings modal
+	m.keybindingsModal.SetSize(halfWidth, (m.height*3)/4)
+	m.keybindingsModal.X = halfWidth - (m.keybindingsModal.Width / 2)
+	m.keybindingsModal.Y = halfHeight - (m.keybindingsModal.Height / 2)
 
 	// Password Modal
 	iconWidth := 2
@@ -232,11 +267,18 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	case m.showErrorModal:
 		m.errorModal, cmd = m.errorModal.Update(msg)
 
+	case key.Matches(msg, m.keys.OpenKeybindingsModal.ToBubbles()):
+		m.focus = FocusKeybindingsModal
+		return events.OpenKeybindsModal()
+
+	case m.showKeybindingsModal:
+		m.keybindingsModal, cmd = m.keybindingsModal.Update(msg)
+
 	case key.Matches(msg, m.keys.FocusedWifiSaved.ToBubbles()):
-		m.focus = FocusSaved
+		m.focus = FocusWifiSaved
 
 	case key.Matches(msg, m.keys.FocusedWifiAvailable.ToBubbles()):
-		m.focus = FocusAvailable
+		m.focus = FocusWifiAvailable
 
 	case m.wifiSaved.IsFocused:
 		m.wifiSaved, cmd = m.wifiSaved.Update(msg)
@@ -254,14 +296,22 @@ func (m Model) HelpView() string {
 	if m.showPasswordModal {
 		help = append(help, m.passwordModal.HelpView()...)
 	}
-	if m.focus == FocusSaved {
+	if m.showKeybindingsModal {
+		help = append(help, m.keybindingsModal.HelpView()...)
+	}
+	if m.focus == FocusWifiSaved {
 		help = append(help, m.wifiSaved.HelpView()...)
 	}
-	if m.focus == FocusAvailable && !m.showPasswordModal {
+	if m.focus == FocusWifiAvailable && !m.showPasswordModal {
 		help = append(help, m.wifiAvailable.HelpView()...)
 	}
 
 	help = append(help, m.keys.Quit.ToBubbles())
+
+	if !m.showKeybindingsModal {
+		help = append(help, m.keys.OpenKeybindingsModal.ToBubbles())
+	}
+
 	render := m.help
 	render.Styles.Ellipsis = lipgloss.NewStyle().
 		Foreground(m.theme.Help.Ellipsis)

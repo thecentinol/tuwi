@@ -1,45 +1,65 @@
 package keybindings
 
-import (
-	"charm.land/bubbles/v2/key"
-)
-
 const (
-	// ViewNames's
+	global = "global"
+
+	// ViewName
+	globalView        = global
 	wifiSavedView     = "wifi-saved"
 	wifiAvailableView = "wifi-available"
 	errModalView      = "error-modal"
 	passwordView      = "password-modal"
 
-	// Groups
-	globalGroup   = "global"
-	wifiGroup     = "wifi"
-	tableGroup    = "table"
-	errModalGroup = "error"
-	passwordGroup = "password"
+	// Group
+	globalGroup        = global
+	wifiSavedGroup     = "saved connections"
+	wifiAvailableGroup = "available networks"
+	navGroup           = "navigation"
+	errModalGroup      = "error modal"
+	passwordGroup      = "password modal"
+
+	// Keys
+	keyEnter = "enter"
+	keyEsc   = "esc"
 )
 
 func DefaultKeybindings() Keybindings {
 	return Keybindings{
 		// Global
 		FocusedWifiSaved: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"1"},
-			HelpKey:         "",
+			HelpKey:         "1",
 			HelpDescription: "",
 			Description:     "Switch focus to saved wifi connections pane",
 		},
 		FocusedWifiAvailable: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"2"},
-			HelpKey:         "",
+			HelpKey:         "2",
 			HelpDescription: "",
 			Description:     "Switch focus to available wifi networks pane",
 		},
+		Cancel: Binding{
+			ViewName:        globalView,
+			Group:           globalGroup,
+			Keys:            []string{keyEsc},
+			HelpKey:         keyEsc,
+			HelpDescription: "cancel",
+			Description:     "Cancel",
+		},
+		OpenKeybindingsModal: Binding{
+			ViewName:        globalView,
+			Group:           globalGroup,
+			Keys:            []string{"?"},
+			HelpKey:         "?",
+			HelpDescription: "keybindings",
+			Description:     "Open keybindings menu",
+		},
 		Quit: Binding{
-			ViewName:        "",
+			ViewName:        globalView,
 			Group:           globalGroup,
 			Keys:            []string{"q", "ctrl+c"},
 			HelpKey:         "q",
@@ -47,93 +67,94 @@ func DefaultKeybindings() Keybindings {
 			Description:     "Quit the application",
 		},
 
-		// WiFi
+		// WiFi saved
 		WifiConnectSaved: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "Enter",
+			Group:           wifiSavedGroup,
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "connect",
-			Description:     "Connect to a saved wifi connection",
+			Description:     "Connect",
 		},
 		WifiDisconnect: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"d"},
 			HelpKey:         "d",
-			HelpDescription: "diconnect",
-			Description:     "Disconnect from current wifi network",
+			HelpDescription: "disconnect",
+			Description:     "Disconnect from current WiFi network",
 		},
 		WifiForget: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"f"},
 			HelpKey:         "f",
 			HelpDescription: "forget",
-			Description:     "Remove the selected wifi connection",
+			Description:     "Remove the selected WiFi connection",
 		},
 		WifiAutoConnect: Binding{
 			ViewName:        wifiSavedView,
-			Group:           wifiGroup,
+			Group:           wifiSavedGroup,
 			Keys:            []string{"a"},
 			HelpKey:         "a",
-			HelpDescription: "toggle auto-connect",
-			Description:     "Toggle auto-connect state for the selected wifi connection",
+			HelpDescription: "auto-connect",
+			Description:     "Toggle auto-connect on/off for the selected WiFi connection",
 		},
+
+		// WiFi available
 		WifiScan: Binding{
 			ViewName:        wifiAvailableView,
-			Group:           wifiGroup,
+			Group:           wifiAvailableGroup,
 			Keys:            []string{"s"},
 			HelpKey:         "s",
 			HelpDescription: "Scan",
-			Description:     "Scan for nearby wifi networks",
+			Description:     "Scan for nearby WiFi networks",
 		},
 		WifiConnectAvailable: Binding{
 			ViewName:        wifiAvailableView,
-			Group:           wifiGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "enter",
+			Group:           wifiAvailableGroup,
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "connect",
-			Description:     "Connect to a new wifi network",
+			Description:     "Connect",
 		},
 
-		// table navigation
-		// ViewName is left nil because multiple models will use a table.
-		LineUp: Binding{
-			Group:           tableGroup,
+		// Navigation
+		Up: Binding{
+			Group:           navGroup,
 			Keys:            []string{"k", "up"},
 			HelpKey:         "↑",
-			HelpDescription: "move up",
+			HelpDescription: "up",
 			Description:     "Move up by one line",
 		},
-		LineDown: Binding{
-			Group:           tableGroup,
+		Down: Binding{
+			Group:           navGroup,
 			Keys:            []string{"j", "down"},
 			HelpKey:         "",
-			HelpDescription: "move down",
+			HelpDescription: "down",
 			Description:     "Move down by one line",
 		},
 		GotoTop: Binding{
-			Group:           tableGroup,
+			Group:           navGroup,
 			Keys:            []string{"t"},
 			HelpKey:         "t",
-			HelpDescription: "move to top",
-			Description:     "Go to the top of the table",
+			HelpDescription: "top",
+			Description:     "Move/Scroll to top",
 		},
 		GotoBottom: Binding{
-			Group:           tableGroup,
+			Group:           navGroup,
 			Keys:            []string{"b"},
 			HelpKey:         "b",
-			HelpDescription: "move to bottom",
-			Description:     "Go to the bottom of the table",
+			HelpDescription: "bottom",
+			Description:     "Move/Scroll to bottom",
 		},
 
 		// Error modal
 		ErrorDismiss: Binding{
 			ViewName:        errModalView,
 			Group:           errModalGroup,
-			Keys:            []string{"esc", "enter"},
-			HelpKey:         "esc",
+			Keys:            []string{keyEsc, keyEnter},
+			HelpKey:         keyEsc,
 			HelpDescription: "dismiss",
 			Description:     "Dismiss the error modal",
 		},
@@ -145,23 +166,15 @@ func DefaultKeybindings() Keybindings {
 			Keys:            []string{"ctrl+t"},
 			HelpKey:         "ctrl+t",
 			HelpDescription: "hide/show password",
-			Description:     "Toggle the password inputs hidden state",
+			Description:     "Toggle the password input's hidden state",
 		},
 		PasswordSubmit: Binding{
 			ViewName:        passwordView,
 			Group:           passwordGroup,
-			Keys:            []string{"enter"},
-			HelpKey:         "enter",
+			Keys:            []string{keyEnter},
+			HelpKey:         keyEnter,
 			HelpDescription: "submit",
 			Description:     "Submit password",
-		},
-		PasswordCancel: Binding{
-			ViewName:        passwordView,
-			Group:           passwordGroup,
-			Keys:            []string{"esc"},
-			HelpKey:         "esc",
-			HelpDescription: "cancel",
-			Description:     "Cancel",
 		},
 	}
 }
@@ -173,6 +186,8 @@ type Keybindings struct {
 	// Global
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
+	Cancel               Binding
+	OpenKeybindingsModal Binding // NOTE: Cancel is used to close the modal
 	Quit                 Binding
 
 	// WiFi
@@ -183,9 +198,9 @@ type Keybindings struct {
 	WifiScan             Binding
 	WifiConnectAvailable Binding
 
-	// Table navigation
-	LineUp     Binding
-	LineDown   Binding
+	// Navigation
+	Up         Binding
+	Down       Binding
 	GotoTop    Binding
 	GotoBottom Binding
 
@@ -195,7 +210,6 @@ type Keybindings struct {
 	// Password modal
 	PasswordVisibility Binding
 	PasswordSubmit     Binding
-	PasswordCancel     Binding
 }
 
 type Binding struct {
@@ -211,30 +225,7 @@ type Binding struct {
 	Description     string // the longer full description displayed in the keybindings modal
 }
 
-// converts the keybind to a bubbles keybinding
-func (b Binding) ToBubbles() key.Binding {
-	return key.NewBinding(
-		key.WithKeys(b.Keys...),
-		key.WithHelp(b.HelpKey, b.HelpDescription),
-	)
-}
-
-// returns all keybindings
-func (k Keybindings) All() []Binding {
-	return []Binding{
-		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Quit, k.WifiConnectSaved, k.WifiDisconnect,
-		k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable, k.LineUp, k.LineDown,
-		k.GotoTop, k.GotoBottom, k.ErrorDismiss, k.PasswordSubmit, k.PasswordCancel,
-	}
-}
-
-// get keybindings by ViewName
-func (k Keybindings) ByView(viewName string) []Binding {
-	var binds []Binding
-	for _, b := range k.All() {
-		if b.ViewName == viewName {
-			binds = append(binds, b)
-		}
-	}
-	return binds
+type BindingGroup struct {
+	Title    string
+	Bindings []Binding
 }
