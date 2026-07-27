@@ -6,9 +6,12 @@ A TUI for managing WiFi on Linux
 </p>
 
 ## Features
-- Manage saved WiFi connections.
-- Scan, browse and connect to nearby WiFi networks.
-- Support hidden networks.
+- **Browse available networks** — scan and view nearby WiFi networks with signal strength, security type and frequency
+- **Connect to networks** — connect to open, secured (WPA/WPA2/WPA3) and hidden networks
+- **Manage saved connections** — view, connect to and forget saved WiFi profiles
+- **Real-time updates** — network list updates automatically via NetworkManager D-Bus signals without manual scanning
+- **Security detection** — accurately identifies WEP, WPA, WPA2, WPA3, WPA2/WPA3 transition, Enterprise and OWE networks
+- **Keyboard driven** — fully navigable without a mouse
 
 ## Prerequisites
 - A Linux based OS.
