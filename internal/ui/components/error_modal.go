@@ -22,8 +22,8 @@ type ErrorModel struct {
 	X         int
 	Y         int
 
-	keys    keybindings.Keybindings
-	Focused bool
+	keys      keybindings.Keybindings
+	IsFocused bool
 }
 
 func NewErrorModal(theme *theme.Theme, keys keybindings.Keybindings) ErrorModel {

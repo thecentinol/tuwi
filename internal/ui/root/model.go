@@ -118,8 +118,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case events.ShowErrorMsg:
-		m.errorModal.SetText(msg.Err.Error())
 		m.showErrorModal = true
+		m.focus = FocusErrorModal
+		m.errorModal.SetText(msg.Err.Error())
 		return m, m.errorModal.Init()
 
 	case events.DismissErrorMsg:
@@ -265,6 +266,7 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		return tea.Quit
 
 	case m.showErrorModal:
+		m.focus = FocusErrorModal
 		m.errorModal, cmd = m.errorModal.Update(msg)
 
 	case key.Matches(msg, m.keys.OpenKeybindingsModal.ToBubbles()):
@@ -298,6 +300,9 @@ func (m Model) HelpView() string {
 	}
 	if m.showKeybindingsModal {
 		help = append(help, m.keybindingsModal.HelpView()...)
+	}
+	if m.focus == FocusErrorModal {
+		help = append(help, m.errorModal.HelpView()...)
 	}
 	if m.focus == FocusWifiSaved {
 		help = append(help, m.wifiSaved.HelpView()...)
