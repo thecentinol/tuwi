@@ -313,7 +313,7 @@ func (m Model) HelpView() string {
 
 	help = append(help, m.keys.Quit.ToBubbles())
 
-	if !m.showKeybindingsModal {
+	if !m.showKeybindingsModal && !m.showErrorModal && !m.showPasswordModal {
 		help = append(help, m.keys.OpenKeybindingsModal.ToBubbles())
 	}
 
