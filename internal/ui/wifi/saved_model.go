@@ -192,7 +192,7 @@ func (s *SavedModel) setSavedColumns() {
 		{Title: "Status", Width: colWidth},
 		{Title: "Security", Width: colWidth},
 		{Title: "Hidden", Width: colWidth},
-		{Title: "Strength", Width: colWidth - 10},
+		{Title: "Signal", Width: colWidth - 10},
 	}
 	s.Table.SetColumns(cols)
 }
