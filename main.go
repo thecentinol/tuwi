@@ -1,11 +1,15 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"os"
 
 	tea "charm.land/bubbletea/v2"
 	godbus "github.com/godbus/dbus/v5"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
@@ -20,8 +24,22 @@ func main() {
 	}
 	defer client.Close()
 
+	// load config
+	cfg, errCfg := config.Load()
+	if !errors.Is(errCfg, os.ErrNotExist) && !errors.Is(errCfg, os.ErrPermission) && errCfg != nil {
+		log.Fatal(err)
+	}
+
 	keys := keybindings.DefaultKeybindings()
-	p := tea.NewProgram(root.NewModel(client, keys))
+	model := root.NewModel(client, keys, *cfg)
+
+	if errors.Is(errCfg, os.ErrPermission) {
+		model = model.SetStartupError(
+			fmt.Errorf("permission error when trying to read config file, falling back to default config"),
+		)
+	}
+
+	p := tea.NewProgram(model)
 
 	cb := nm.SignalCallbacks{
 		OnAccessPointAdded: func(ap nm.AccessPoint) {
