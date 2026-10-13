@@ -185,14 +185,14 @@ func (s *SavedModel) selectedSavedNetwork() *nm.NearbyConnection {
 }
 
 func (s *SavedModel) setSavedColumns() {
-	colWidth := s.width / 5
+	colWidth := (s.width / 5) - 3
 
 	cols := []table.Column{
 		{Title: "SSID", Width: colWidth},
-		{Title: "Status", Width: colWidth},
 		{Title: "Security", Width: colWidth},
-		{Title: "Hidden", Width: colWidth},
-		{Title: "Signal", Width: colWidth - 10},
+		{Title: "Freq", Width: colWidth},
+		{Title: "Signal", Width: colWidth},
+		{Title: "Channel", Width: colWidth},
 	}
 	s.Table.SetColumns(cols)
 }

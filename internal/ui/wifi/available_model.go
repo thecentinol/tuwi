@@ -27,8 +27,9 @@ type AvailableModel struct {
 	displayedNetworks []nm.AccessPoint
 	Table             comp.TableModel
 
-	width  int
-	height int
+	width     int
+	height    int
+	frameSize [2]int
 
 	keys      keybindings.Keybindings
 	IsFocused bool
@@ -175,6 +176,8 @@ func (a AvailableModel) View() tea.View {
 	}
 
 	title := comp.NewBorderContent(borderColor, borderContent, a.height)
+	h, v := title.ContentStyle.GetFrameSize()
+	a.frameSize = [2]int{h, v}
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
 }
 
@@ -224,14 +227,14 @@ func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableMode
 }
 
 func (a *AvailableModel) setAvailableColumns() {
-	colWidth := a.width / 5
+	colWidth := (a.width / 5) - 3
 
 	cols := []table.Column{
 		{Title: "SSID", Width: colWidth},
 		{Title: "Security", Width: colWidth},
 		{Title: "Freq", Width: colWidth},
 		{Title: "Signal", Width: colWidth},
-		{Title: "Channel", Width: colWidth - 10},
+		{Title: "Channel", Width: colWidth},
 	}
 	a.Table.SetColumns(cols)
 }
