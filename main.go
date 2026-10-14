@@ -12,7 +12,6 @@ import (
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/ui/root"
 )
@@ -27,11 +26,10 @@ func main() {
 	// load config
 	cfg, errCfg := config.Load()
 	if !errors.Is(errCfg, os.ErrNotExist) && !errors.Is(errCfg, os.ErrPermission) && errCfg != nil {
-		log.Fatal(err)
+		log.Fatal(errCfg)
 	}
 
-	keys := keybindings.DefaultKeybindings()
-	model := root.NewModel(client, keys, *cfg)
+	model := root.NewModel(client, *cfg)
 
 	if errors.Is(errCfg, os.ErrPermission) {
 		model = model.SetStartupError(

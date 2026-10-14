@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
@@ -26,10 +27,10 @@ type ErrorModel struct {
 	IsFocused bool
 }
 
-func NewErrorModal(theme *theme.Theme, keys keybindings.Keybindings) ErrorModel {
+func NewErrorModal(cfg config.AppConfig) ErrorModel {
 	return ErrorModel{
-		theme: theme,
-		keys:  keys,
+		theme: &cfg.Theme,
+		keys:  cfg.Keybinds,
 	}
 }
 

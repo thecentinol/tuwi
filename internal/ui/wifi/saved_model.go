@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
@@ -26,27 +27,26 @@ type SavedModel struct {
 	width  int
 	height int
 
-	keys      keybindings.Keybindings
+	keys      *keybindings.Keybindings
 	IsFocused bool
 }
 
 func NewWifiSavedModel(
 	c *dbus.Client,
 	state *wifidomain.State,
-	keys keybindings.Keybindings,
-	theme *theme.Theme,
+	cfg config.AppConfig,
 ) SavedModel {
 	return SavedModel{
 		client: c,
 		state:  state,
-		theme:  theme,
+		theme:  &cfg.Theme,
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
-			keys,
-			theme,
+			cfg.Keybinds,
+			&cfg.Theme,
 		),
-		keys: keys,
+		keys: &cfg.Keybinds,
 	}
 }
 

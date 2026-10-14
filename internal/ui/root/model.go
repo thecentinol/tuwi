@@ -53,19 +53,19 @@ type Model struct {
 	startupErr error
 }
 
-func NewModel(client *dbus.Client, keys keybindings.Keybindings, cfg config.AppConfig) Model {
+func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
 	state := &wifidomain.State{}
 
 	return Model{
 		Client:           client,
 		focus:            FocusWifiSaved,
 		help:             help.New(),
-		wifiSaved:        wifiui.NewWifiSavedModel(client, state, keys, &cfg.Theme),
-		wifiAvailable:    wifiui.NewWifiAvailableModel(client, state, keys, &cfg.Theme),
-		keybindingsModal: kbmodal.NewKeybindsModal(&cfg.Theme, keys),
-		passwordModal:    comp.NewPasswordModal(&cfg.Theme, keys),
-		errorModal:       comp.NewErrorModal(&cfg.Theme, keys),
-		keys:             keys,
+		wifiSaved:        wifiui.NewWifiSavedModel(client, state, cfg),
+		wifiAvailable:    wifiui.NewWifiAvailableModel(client, state, cfg),
+		keybindingsModal: kbmodal.NewKeybindsModal(cfg),
+		passwordModal:    comp.NewPasswordModal(cfg),
+		errorModal:       comp.NewErrorModal(cfg),
+		keys:             cfg.Keybinds,
 		theme:            &cfg.Theme,
 	}
 }

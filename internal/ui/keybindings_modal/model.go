@@ -9,6 +9,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
 	kb "github.com/thecentinol/tuwi/internal/keybindings"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
@@ -27,11 +28,11 @@ type Model struct {
 	IsFocused     bool
 }
 
-func NewKeybindsModal(theme *theme.Theme, keys kb.Keybindings) Model {
+func NewKeybindsModal(cfg config.AppConfig) Model {
 	m := Model{
-		theme: theme,
+		theme: &cfg.Theme,
 		vp:    viewport.New(),
-		keys:  keys,
+		keys:  cfg.Keybinds,
 		help:  help.New(),
 	}
 
