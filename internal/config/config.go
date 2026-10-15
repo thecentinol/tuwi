@@ -97,6 +97,8 @@ func applyCfg(cfg *config) *AppConfig {
 	switch cfg.Theme {
 	case "rose-pine":
 		appCfg.Theme = theme.RosePine
+	case "rose-pine-moon":
+		appCfg.Theme = theme.RosePineMoon
 	}
 
 	applyKeys := func(dst *kb.Binding, keys []string) {

@@ -199,6 +199,34 @@ func TestLoadFromPathReturns(t *testing.T) {
 			`,
 			wantTheme: theme.Default,
 		},
+		{
+			name: "valid theme without keybinds",
+			content: `
+            theme = "rose-pine-moon"
+			`,
+			wantTheme: theme.RosePineMoon,
+		},
+		{
+			name: "valid theme valid keybinds",
+			content: `
+            theme = "rose-pine-moon"
+			[keybinds]
+			connect_saved = ["enter"]
+			disconnect = ["d"]
+			forget = ["f"]
+			auto_connect = ["a"]
+			scan = ["s"]
+			connect_available = ["enter"]
+			up = ["k", "up"]
+			down = ["j", "down"]
+			go_to_top = ["t"]
+			go_to_bottom = ["b"]
+			dismiss_error = ["esc"]
+			cancel = ["esc"]
+			quit = ["q", "ctrl+c"]
+			`,
+			wantTheme: theme.RosePineMoon,
+		},
 	}
 
 	for _, tc := range tests {
