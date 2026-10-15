@@ -151,7 +151,7 @@ func (s SavedModel) View() tea.View {
 		borderContent = s.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, s.height)
+	title := comp.NewBorderContent(borderColor.Color, borderContent.Color, s.height)
 
 	return tea.NewView(title.Render("[1]-Saved connections", s.Table.View().Content, s.width))
 }

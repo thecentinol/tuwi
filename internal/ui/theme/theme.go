@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"errors"
 	"image/color"
 
 	"charm.land/lipgloss/v2"
@@ -36,15 +37,15 @@ func (h HexColor) RGBA() (r, g, b, a uint32) {
 }
 
 type Theme struct {
-	BG,
-	FG,
+	BG HexColor
+	FG HexColor
 
-	Border,
-	BorderFocused,
-	BorderContent,
-	BorderContentFocused,
+	Border               HexColor
+	BorderFocused        HexColor
+	BorderContent        HexColor
+	BorderContentFocused HexColor
 
-	Success color.Color
+	Success HexColor
 
 	Table         TableTheme
 	Error         ErrorTheme
@@ -55,55 +56,55 @@ type Theme struct {
 }
 
 type TableTheme struct {
-	HeaderBG,
-	HeaderFG,
-	CellBG,
-	CellFG,
-	SelectedBG,
-	SelectedFG color.Color
+	HeaderBG   HexColor `toml:"header-bg"`
+	HeaderFG   HexColor `toml:"header-fg"`
+	CellBG     HexColor `toml:"cell-bg"`
+	CellFG     HexColor `toml:"cell-fg"`
+	SelectedBG HexColor `toml:"selected-bg"`
+	SelectedFG HexColor `toml:"selected-fg"`
 }
 
 // error modal
 type ErrorTheme struct {
-	Text,
-	Border,
-	BorderContent color.Color
+	Text          HexColor `toml:"text"`
+	Border        HexColor `toml:"border"`
+	BorderContent HexColor `toml:"border-content"`
 }
 
 // password modal
 type PasswordTheme struct {
-	Border,
-	BorderContent color.Color
+	Border        HexColor `toml:"border"`
+	BorderContent HexColor `toml:"border-content"`
 }
 
 type InputTheme struct {
-	TextFocused,
-	TextBlurred,
+	TextFocused HexColor `toml:"text-focused"`
+	TextBlurred HexColor `toml:"text-muted"`
 
-	PlaceholderFocused,
-	PlaceholderBlurred,
+	PlaceholderFocused HexColor `toml:"placeholder-focused"`
+	PlaceholderBlurred HexColor `toml:"placeholder-muted"`
 
-	PromptFocused,
-	PromptBlurred,
+	PromptFocused HexColor `toml:"prompt-focused"`
+	PromptBlurred HexColor `toml:"prompt-muted"`
 
-	Cursor color.Color
+	Cursor HexColor `toml:"cursor"`
 }
 
 type KeybindsModalTheme struct {
-	Border,
-	BorderContent,
-	GroupText,
-	KeybindsText,
-	DescriptionText color.Color
+	Border          HexColor `toml:"border"`
+	BorderContent   HexColor `toml:"border-content"`
+	GroupText       HexColor `toml:"group-text"`
+	KeybindsText    HexColor `toml:"keybinds-text"`
+	DescriptionText HexColor `toml:"description-text"`
 }
 
 // the help view
 type HelpTheme struct {
-	Ellipsis,
-	ShortKey,
-	ShortDesc,
-	ShortSeparator,
-	FullKey,
-	FullDesc,
-	FullSeparator color.Color
+	Ellipsis       HexColor `toml:"ellipsis"`
+	ShortKey       HexColor `toml:"short-key"`
+	ShortDesc      HexColor `toml:"short-description"`
+	ShortSeparator HexColor `toml:"short-separator"`
+	FullKey        HexColor `toml:"full-key"`
+	FullDesc       HexColor `toml:"full-description"`
+	FullSeparator  HexColor `toml:"full-separator"`
 }

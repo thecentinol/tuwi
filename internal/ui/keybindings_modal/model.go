@@ -76,8 +76,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 func (m Model) View() tea.View {
 	container := comp.NewBorderContent(
-		m.theme.KeybindsModal.Border,
-		m.theme.KeybindsModal.BorderContent,
+		m.theme.KeybindsModal.Border.Color,
+		m.theme.KeybindsModal.BorderContent.Color,
 		m.Height,
 	)
 
@@ -118,7 +118,7 @@ func (m *Model) renderContent() {
 
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(m.theme.KeybindsModal.GroupText).
+		Foreground(m.theme.KeybindsModal.GroupText.Color).
 		MarginBottom(1)
 
 	groupStyle := lipgloss.NewStyle().
@@ -130,10 +130,10 @@ func (m *Model) renderContent() {
 	// styling the bindings
 	help := m.help
 	help.Styles.FullKey = lipgloss.NewStyle().
-		Foreground(m.theme.KeybindsModal.KeybindsText)
+		Foreground(m.theme.KeybindsModal.KeybindsText.Color)
 
 	help.Styles.FullDesc = lipgloss.NewStyle().
-		Foreground(m.theme.KeybindsModal.DescriptionText)
+		Foreground(m.theme.KeybindsModal.DescriptionText.Color)
 
 	for _, group := range groups {
 		title := titleStyle.Render("── " + group.Title + " ──")
@@ -151,7 +151,7 @@ func (m *Model) renderContent() {
 		)
 
 		// WriteString returns a nil error, the `revive` linter will complain about not handling the
-		// error's for the below WriteString's. So just like the liberals, we tell em to shut up.
+		// error's for the below WriteString's. So just like the liberals, we tell em to shut up
 		builder.WriteString(section) //nolint:revive
 		builder.WriteString("\n")    //nolint:revive
 	}

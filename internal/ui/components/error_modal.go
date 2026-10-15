@@ -55,11 +55,13 @@ func (e ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 func (e ErrorModel) View() tea.View {
 	// wrap the text.
 	wrapped := lipgloss.NewStyle().
-		Foreground(e.theme.Error.Text).
+		Foreground(e.theme.Error.Text.Color).
 		Width(e.Width - 2).
 		Render(e.Text)
 
-	container := NewBorderContent(e.theme.Error.Border, e.theme.Error.BorderContent, e.Height-2)
+	container := NewBorderContent(
+		e.theme.Error.Border.Color, e.theme.Error.BorderContent.Color, e.Height-2,
+	)
 	return tea.NewView(container.Render("Error:", wrapped, e.Width))
 }
 

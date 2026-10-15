@@ -34,16 +34,16 @@ func NewPasswordModal(cfg config.AppConfig) PasswordModel {
 
 	s := i.Styles()
 	s.Focused.Text = lipgloss.NewStyle().
-		Foreground(cfg.Theme.Input.TextFocused)
+		Foreground(cfg.Theme.Input.TextFocused.Color)
 
 	s.Focused.Placeholder = lipgloss.NewStyle().
-		Foreground(cfg.Theme.Input.PlaceholderFocused)
+		Foreground(cfg.Theme.Input.PlaceholderFocused.Color)
 
 	s.Blurred.Text = lipgloss.NewStyle().
-		Foreground(cfg.Theme.Input.TextBlurred)
+		Foreground(cfg.Theme.Input.TextBlurred.Color)
 
 	s.Blurred.Placeholder = lipgloss.NewStyle().
-		Foreground(cfg.Theme.Input.PlaceholderBlurred)
+		Foreground(cfg.Theme.Input.PlaceholderBlurred.Color)
 
 	s.Cursor.Color = cfg.Theme.Input.Cursor
 	s.Cursor.Blink = true
@@ -87,7 +87,9 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 }
 
 func (p PasswordModel) View() tea.View {
-	container := NewBorderContent(p.theme.Password.Border, p.theme.Password.BorderContent, 0)
+	container := NewBorderContent(
+		p.theme.Password.Border.Color, p.theme.Password.BorderContent.Color, 0,
+	)
 
 	input := lipgloss.JoinHorizontal(
 		lipgloss.Left,

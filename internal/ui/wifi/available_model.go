@@ -175,7 +175,7 @@ func (a AvailableModel) View() tea.View {
 		borderContent = a.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, a.height)
+	title := comp.NewBorderContent(borderColor.Color, borderContent.Color, a.height)
 	h, v := title.ContentStyle.GetFrameSize()
 	a.frameSize = [2]int{h, v}
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
