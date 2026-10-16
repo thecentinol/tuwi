@@ -1,39 +1,39 @@
 name: Continuous Integration
 
 on:
-    push:
-        branches:
-            - main
-            - dev
-    pull_request:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
 
 jobs:
-    unit-tests:
-        name: Run unit tests
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v7
-            - name: Setup Go
-              uses: actions/setup-go@v6
-              with:
-                  go-version: 1.26.x
-            - name: Test code
-              run: go test ./...
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.x
+      - name: Test code
+        run: go test ./...
 
-    lint:
-        name: Run golangci-lint
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v7
-            - name: Setup Go
-              uses: actions/setup-go@v6
-              with:
-                  go-version: 1.26.x
-            - name: Check formatting
-              run: go tool gofumpt -l -extra .
-            - name: lint
-              uses: golangci/golangci-lint-action@v9
-              with:
-                  version: v2.12
+  lint:
+    name: Run golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.x
+      - name: Check formatting
+        run: go tool gofumpt -l -extra .
+      - name: lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.14
