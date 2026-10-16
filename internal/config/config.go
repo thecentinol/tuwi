@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -124,8 +125,13 @@ func loadFile(path string) (*config, error) {
 	decoder := toml.NewDecoder(file)
 	decoder.DisallowUnknownFields()
 	decoder.EnableUnmarshalerInterface()
-	if err := decoder.Decode(&cfg); err != nil {
-		return nil, err
+
+	var derr *toml.DecodeError
+
+	errDec := decoder.Decode(&cfg)
+	if errors.As(errDec, &derr) {
+		row, col := derr.Position()
+		return nil, fmt.Errorf("error %s occurred at row %v column %v", derr.String(), row, col)
 	}
 
 	return &cfg, nil
