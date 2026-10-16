@@ -160,21 +160,24 @@ func TestLoadFromPathReturns(t *testing.T) {
 		{
 			name: "invalid theme falls back to default",
 			content: `
-			theme = "invalid"
+            [theme]
+            preset = "invalid"
 			`,
 			wantTheme: theme.Default,
 		},
 		{
 			name: "valid theme",
 			content: `
-			theme = "rose-pine"
+            [theme]
+            preset = "rose-pine"
 			`,
 			wantTheme: theme.RosePine,
 		},
 		{
 			name: "valid theme with invalid keybind field",
 			content: `
-			theme = "rose-pine"
+            [theme]
+            preset = "rose-pine"
 			[keybinds]
 			auto_connecttt = ["a"]
 			`,
@@ -184,7 +187,8 @@ func TestLoadFromPathReturns(t *testing.T) {
 		{
 			name: "valid theme with malformed keybind",
 			content: `
-			theme = "rose-pine"
+            [theme]
+            preset = "rose-pine"
 			[keybinds]
 			go_to_top = ["t]
 			`,
@@ -202,14 +206,16 @@ func TestLoadFromPathReturns(t *testing.T) {
 		{
 			name: "valid theme without keybinds",
 			content: `
-            theme = "rose-pine-moon"
+            [theme]
+            preset = "rose-pine-moon"
 			`,
 			wantTheme: theme.RosePineMoon,
 		},
 		{
 			name: "valid theme valid keybinds",
 			content: `
-            theme = "rose-pine-moon"
+            [theme]
+            preset = "rose-pine-moon"
 			[keybinds]
 			connect_saved = ["enter"]
 			disconnect = ["d"]

@@ -11,11 +11,31 @@ import (
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
-// temporary config for decoding into, see Load()
+// temporary config for decoding into, see loadFile()
 type config struct {
 	// NOTE: unexported fields can't be populated by toml decoder
-	Theme    string   `toml:"theme"`
-	Keybinds keybinds `toml:"keybinds"`
+	Theme    customTheme `toml:"theme"`
+	Keybinds keybinds    `toml:"keybinds"`
+}
+
+type customTheme struct {
+	Preset string         `toml:"preset"`
+	BG     theme.HexColor `toml:"bg"`
+	FG     theme.HexColor `toml:"fg"`
+
+	Border               theme.HexColor `toml:"border"`
+	BorderFocused        theme.HexColor `toml:"border-focused"`
+	BorderContent        theme.HexColor `toml:"border-content"`
+	BorderContentFocused theme.HexColor `toml:"border-content-focused"`
+
+	Success theme.HexColor `toml:"success"`
+
+	Table         theme.TableTheme         `toml:"table"`
+	Error         theme.ErrorTheme         `toml:"error-modal"`
+	Password      theme.PasswordTheme      `toml:"password-modal"`
+	Input         theme.InputTheme         `toml:"input"`
+	KeybindsModal theme.KeybindsModalTheme `toml:"keybinds-modal"`
+	Help          theme.HelpTheme          `toml:"help-view"`
 }
 
 type keybinds struct {
@@ -41,6 +61,32 @@ type keybinds struct {
 type AppConfig struct {
 	Theme    theme.Theme
 	Keybinds kb.Keybindings
+}
+
+// applies non-nil colors to the *theme.Theme for the following fields exclusively:
+// BG, FG, Border, BorderFocused, BorderContent, BorderContentFocused, Success
+func (c *customTheme) applyTo(t *theme.Theme) {
+	if c.BG.Color != nil {
+		t.BG = c.BG
+	}
+	if c.FG.Color != nil {
+		t.FG = c.FG
+	}
+	if c.Border.Color != nil {
+		t.Border = c.Border
+	}
+	if c.BorderFocused.Color != nil {
+		t.BorderFocused = c.BorderFocused
+	}
+	if c.BorderContent.Color != nil {
+		t.BorderContent = c.BorderContent
+	}
+	if c.BorderContentFocused.Color != nil {
+		t.BorderContentFocused = c.BorderContentFocused
+	}
+	if c.Success.Color != nil {
+		t.Success = c.Success
+	}
 }
 
 func Load() (*AppConfig, error) {
@@ -77,6 +123,7 @@ func loadFile(path string) (*config, error) {
 
 	decoder := toml.NewDecoder(file)
 	decoder.DisallowUnknownFields()
+	decoder.EnableUnmarshalerInterface()
 	if err := decoder.Decode(&cfg); err != nil {
 		return nil, err
 	}
@@ -94,12 +141,8 @@ func defaultConfig() *AppConfig {
 func applyCfg(cfg *config) *AppConfig {
 	appCfg := defaultConfig()
 
-	switch cfg.Theme {
-	case "rose-pine":
-		appCfg.Theme = theme.RosePine
-	case "rose-pine-moon":
-		appCfg.Theme = theme.RosePineMoon
-	}
+	t := applyTheme(&cfg.Theme)
+	appCfg.Theme = *t
 
 	applyKeys := func(dst *kb.Binding, keys []string) {
 		if len(keys) > 0 && keys[0] != "" {
@@ -126,4 +169,28 @@ func applyCfg(cfg *config) *AppConfig {
 	applyKeys(&appCfg.Keybinds.Quit, cfg.Keybinds.Quit)
 
 	return appCfg
+}
+
+func applyTheme(ct *customTheme) *theme.Theme {
+	var t theme.Theme
+	switch ct.Preset {
+	case "rose-pine":
+		t = theme.RosePine
+	case "rose-pine-moon":
+		t = theme.RosePineMoon
+	case "custom":
+		// allows full custom theming
+	default:
+		t = theme.Default
+	}
+
+	ct.applyTo(&t)
+	ct.Table.ApplyTo(&t)
+	ct.Error.ApplyTo(&t)
+	ct.Password.ApplyTo(&t)
+	ct.Input.ApplyTo(&t)
+	ct.KeybindsModal.ApplyTo(&t)
+	ct.Help.ApplyTo(&t)
+
+	return &t
 }
