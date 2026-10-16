@@ -40,20 +40,20 @@ type customTheme struct {
 }
 
 type keybinds struct {
-	ConnectSaved             []string `toml:"connect_saved"`
+	ConnectSaved             []string `toml:"connect-saved"`
 	Disconnect               []string `toml:"disconnect"`
 	Forget                   []string `toml:"forget"`
-	AutoConnect              []string `toml:"auto_connect"`
+	AutoConnect              []string `toml:"auto-connect"`
 	Scan                     []string `toml:"scan"`
-	ConnectAvailable         []string `toml:"connect_available"`
+	ConnectAvailable         []string `toml:"connect-available"`
 	Up                       []string `toml:"up"`
 	Down                     []string `toml:"down"`
-	GoToTop                  []string `toml:"go_to_top"`
-	GoToBottom               []string `toml:"go_to_bottom"`
-	DismissError             []string `toml:"dismiss_error"`
-	OpenKeybindsModal        []string `toml:"open_keybinds_modal"`
-	TogglePasswordVisibility []string `toml:"toggle_password_visibility"`
-	SubmitPassword           []string `toml:"submit_password"`
+	GoToTop                  []string `toml:"go-to-top"`
+	GoToBottom               []string `toml:"go-to-bottom"`
+	DismissError             []string `toml:"dismiss-error"`
+	OpenKeybindsModal        []string `toml:"open-keybinds-modal"`
+	TogglePasswordVisibility []string `toml:"toggle-password-visibility"`
+	SubmitPassword           []string `toml:"submit-password"`
 	Cancel                   []string `toml:"cancel"`
 	Quit                     []string `toml:"quit"`
 }

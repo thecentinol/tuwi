@@ -20,17 +20,17 @@ func TestDecodeKeybinds(t *testing.T) {
 	// the default keybinds that users can configure
 	cfgInput := `
     [keybinds]
-    connect_saved = ["enter"]
+    connect-saved = ["enter"]
     disconnect = ["d"]
     forget = ["f"]
-    auto_connect = ["a"]
+    auto-connect = ["a"]
     scan = ["s"]
-    connect_available = ["enter"]
+    connect-available = ["enter"]
     up = ["k", "up"]
     down = ["j", "down"]
-    go_to_top = ["t"]
-    go_to_bottom = ["b"]
-    dismiss_error = ["esc"]
+    go-to-top = ["t"]
+    go-to-bottom = ["b"]
+    dismiss-error = ["esc"]
     cancel = ["esc"]
     quit = ["q", "ctrl+c"]
     `
@@ -44,7 +44,7 @@ func TestDecodeKeybinds(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(cfg.Keybinds.ConnectSaved, []string{"enter"}) {
-		t.Errorf("unexpected connect_saved keybinds: %v", cfg.Keybinds.ConnectSaved)
+		t.Errorf("unexpected connect-saved keybinds: %v", cfg.Keybinds.ConnectSaved)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.Disconnect, []string{"d"}) {
 		t.Errorf("unexpected disconnect keybinds: %v", cfg.Keybinds.Disconnect)
@@ -53,13 +53,13 @@ func TestDecodeKeybinds(t *testing.T) {
 		t.Errorf("unexpected forget keybinds: %v", cfg.Keybinds.Forget)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.AutoConnect, []string{"a"}) {
-		t.Errorf("unexpected auto_connect keybinds: %v", cfg.Keybinds.AutoConnect)
+		t.Errorf("unexpected auto-connect keybinds: %v", cfg.Keybinds.AutoConnect)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.Scan, []string{"s"}) {
 		t.Errorf("unexpected scan keybinds: %v", cfg.Keybinds.Scan)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.ConnectAvailable, []string{"enter"}) {
-		t.Errorf("unexpected connect_available keybinds: %v", cfg.Keybinds.ConnectAvailable)
+		t.Errorf("unexpected connect-available keybinds: %v", cfg.Keybinds.ConnectAvailable)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.Up, []string{"k", "up"}) {
 		t.Errorf("unexpected up keybinds: %v", cfg.Keybinds.Up)
@@ -68,13 +68,13 @@ func TestDecodeKeybinds(t *testing.T) {
 		t.Errorf("unexpected down keybinds: %v", cfg.Keybinds.Down)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.GoToTop, []string{"t"}) {
-		t.Errorf("unexpected go_to_top keybinds: %v", cfg.Keybinds.GoToTop)
+		t.Errorf("unexpected go-to-top keybinds: %v", cfg.Keybinds.GoToTop)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.GoToBottom, []string{"b"}) {
-		t.Errorf("unexpected go_to_bottom keybinds: %v", cfg.Keybinds.GoToBottom)
+		t.Errorf("unexpected go-to-bottom keybinds: %v", cfg.Keybinds.GoToBottom)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.DismissError, []string{"esc"}) {
-		t.Errorf("unexpected dismiss_error keybinds: %v", cfg.Keybinds.DismissError)
+		t.Errorf("unexpected dismiss-error keybinds: %v", cfg.Keybinds.DismissError)
 	}
 	if !reflect.DeepEqual(cfg.Keybinds.Cancel, []string{"esc"}) {
 		t.Errorf("unexpected cancel keybinds: %v", cfg.Keybinds.Cancel)
@@ -125,7 +125,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			name: "missing double quote",
 			content: `
 			[keybinds]
-			connect_saved = ["enter]
+			connect-saved = ["enter]
 			`,
 			wantErr:   true,
 			wantTheme: theme.Default,
@@ -134,17 +134,17 @@ func TestLoadFromPathReturns(t *testing.T) {
 			name: "incorrect keybind field name",
 			content: `
 			[keybinds]
-			connectttt_saved = ["enter"]
+			connectttt-saved = ["enter"]
 			disconnect = ["d"]
 			forget = ["f"]
-			auto_connect = ["a"]
+			auto-connect = ["a"]
 			scan = ["s"]
-			connect_available = ["enter"]
+			connect-available = ["enter"]
 			up = ["k", "up"]
 			down = ["j", "down"]
-			go_to_top = ["t"]
-			go_to_bottom = ["b"]
-			dismiss_error = ["esc"]
+			go-to-top = ["t"]
+			go-to-bottom = ["b"]
+			dismiss-error = ["esc"]
 			cancel = ["esc"]
 			quit = ["q", "ctrl+c"]
 			`,
@@ -173,7 +173,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             [theme]
             preset = "rose-pine"
 			[keybinds]
-			auto_connecttt = ["a"]
+			auto-connecttt = ["a"]
 			`,
 			wantErr:   true,
 			wantTheme: theme.Default,
@@ -184,7 +184,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             [theme]
             preset = "rose-pine"
 			[keybinds]
-			go_to_top = ["t]
+			go-to-top = ["t]
 			`,
 			wantErr:   true,
 			wantTheme: theme.Default,
@@ -193,7 +193,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			name: "empty dismiss error keybind",
 			content: `
 			[keybinds]
-			dismiss_error = [""]
+			dismiss-error = [""]
 			`,
 			wantTheme: theme.Default,
 		},
@@ -211,17 +211,17 @@ func TestLoadFromPathReturns(t *testing.T) {
             [theme]
             preset = "rose-pine-moon"
 			[keybinds]
-			connect_saved = ["enter"]
+			connect-saved = ["enter"]
 			disconnect = ["d"]
 			forget = ["f"]
-			auto_connect = ["a"]
+			auto-connect = ["a"]
 			scan = ["s"]
-			connect_available = ["enter"]
+			connect-available = ["enter"]
 			up = ["k", "up"]
 			down = ["j", "down"]
-			go_to_top = ["t"]
-			go_to_bottom = ["b"]
-			dismiss_error = ["esc"]
+			go-to-top = ["t"]
+			go-to-bottom = ["b"]
+			dismiss-error = ["esc"]
 			cancel = ["esc"]
 			quit = ["q", "ctrl+c"]
 			`,
