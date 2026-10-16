@@ -1,8 +1,9 @@
 package theme
 
 import (
-	"errors"
+	"fmt"
 	"image/color"
+	"regexp"
 
 	"charm.land/lipgloss/v2"
 )
@@ -22,9 +23,13 @@ func (h *HexColor) UnmarshalText(text []byte) error {
 }
 
 func parseHexColor(hex string) (color.Color, error) {
-	if hex == "" {
-		return nil, errors.New("parseHexColor: nil hex string")
+	matched, err := regexp.MatchString(`^#[0-9a-fA-F]{6}$`, hex)
+	if err != nil {
+		return nil, err
+	} else if !matched {
+		return nil, fmt.Errorf("invalid hex code")
 	}
+
 	return lipgloss.Color(hex), nil
 }
 
