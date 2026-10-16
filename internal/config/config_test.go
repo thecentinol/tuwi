@@ -107,9 +107,9 @@ func TestMissingConfigReturnsDefault(t *testing.T) {
 	}
 }
 
-// If an incorrect theme is provided but the rest of the config is valid, the default theme must be
-// set. Irrespective of theme validity, if the provided keybinds are invalid then an error must be
-// returned with a nil config - same vice versa.
+// If an incorrect theme is provided but the rest of the config is valid, the default theme must
+// NOT be set and an error must be returned. With a valid theme if the provided keybinds are
+// invalid then an error must be returned with a nil config - same vice versa.
 func TestLoadFromPathReturns(t *testing.T) {
 	t.Parallel()
 
@@ -154,14 +154,6 @@ func TestLoadFromPathReturns(t *testing.T) {
 			content: `
 			[keybinds]
 			disconnect = [""]
-			`,
-			wantTheme: theme.Default,
-		},
-		{
-			name: "invalid theme falls back to default",
-			content: `
-            [theme]
-            preset = "invalid"
 			`,
 			wantTheme: theme.Default,
 		},
@@ -232,6 +224,64 @@ func TestLoadFromPathReturns(t *testing.T) {
 			quit = ["q", "ctrl+c"]
 			`,
 			wantTheme: theme.RosePineMoon,
+		},
+		{
+			name: "default theme",
+			content: `
+            [theme]
+            preset = "default"
+			`,
+			wantErr:   false,
+			wantTheme: theme.Default,
+		},
+		{
+			name: "defaultt theme",
+			content: `
+            [theme]
+            preset = "defaultt"
+			`,
+			wantErr: true,
+		},
+		{
+			name: "invalid theme",
+			content: `
+            [theme]
+            preset = "invalid"
+			`,
+			wantErr: true,
+		},
+		{
+			name: "rosee-pine theme",
+			content: `
+            [theme]
+            preset = "rosee-pine"
+			`,
+			wantErr: true,
+		},
+		{
+			name: "rose-pine-moon theme",
+			content: `
+            [theme]
+            preset = "rose-pine-moon"
+			`,
+			wantErr:   false,
+			wantTheme: theme.RosePineMoon,
+		},
+		{
+			name: "rose-pine-sun",
+			content: `
+            [theme]
+            preset = "rose-pine-sun"
+			`,
+			wantErr: true,
+		},
+		{
+			name: "random-theme-name",
+			content: `
+            [theme]
+            preset = "random-theme-name"
+			`,
+			wantErr: true,
 		},
 	}
 

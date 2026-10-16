@@ -133,6 +133,15 @@ func loadFile(path string) (*config, error) {
 		row, col := derr.Position()
 		return nil, fmt.Errorf("error %s occurred at row %v column %v", derr.String(), row, col)
 	}
+	validThemes := map[string]struct{}{
+		"default":        {},
+		"rose-pine":      {},
+		"rose-pine-moon": {},
+		"custom":         {},
+	}
+	if _, valid := validThemes[cfg.Theme.Preset]; !valid && cfg.Theme.Preset != "" {
+		return nil, fmt.Errorf("invalid theme preset")
+	}
 
 	return &cfg, nil
 }
