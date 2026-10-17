@@ -1,4 +1,5 @@
 # Tuwi
+
 A TUI for managing WiFi on Linux
 
 <p>
@@ -6,6 +7,7 @@ A TUI for managing WiFi on Linux
 </p>
 
 ## Features
+
 - **Browse available networks** — scan and view nearby WiFi networks with signal strength, security type and frequency
 - **Connect to networks** — connect to open, secured (WPA/WPA2/WPA3) and hidden networks
 - **Manage saved connections** — view, connect to and forget saved WiFi profiles
@@ -14,16 +16,20 @@ A TUI for managing WiFi on Linux
 - **Keyboard driven** — fully navigable without a mouse
 
 ## Prerequisites
+
 - A Linux based OS.
 - NetworkManager running.
 
 > [!INFO] Support for iwd backend has not been added yet.
 
 ## Installation
+
 ### Binary releases (recommended)
+
 Download a binary from the Releases page [here](https://github.com/thecentinol/tuwi/releases)
 
 ### Build from source
+
 - Make sure [Go](https://go.dev/doc/install) is installed.
 
 ```bash
@@ -31,11 +37,33 @@ git clone https://github.com/thecentinol/tuwi
 cd tuwi
 make install
 ```
+
 `make install` installs the `tuwi` binary into `/usr/bin`. To install to a different location, edit the `PREFIX` and `BINDIR` variables in the [Makefile](https://github.com/thecentinol/tuwi/Makefile).
 
 ## Usage
+
 Run:
+
 ```bash
 tuwi
 ```
+
 Key bindings are displayed at the bottom of the interface.
+
+## Uninstalling
+
+Use this make command:
+
+```bash
+make uninstall
+```
+
+### Manually
+
+You can manually remove the binary and config dir/file from `usr/bin` and `~/.config/tuwi`:
+
+```bash
+# if you changed the installation location of the binary, use that instead
+rm -f /usr/bin/tuwi
+rm -rf ~/.config/tuwi
+```
