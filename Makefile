@@ -15,12 +15,15 @@ build:
 install: build
 	@sudo install -m 755 ./$(BINARY_NAME) /usr/bin
 	@rm -f ./$(BINARY_NAME)
+	@mkdir -p ~/.config/tuwi
+	@touch ~/.config/tuwi/config.toml
 
 install-local:
 	@go install
 
 uninstall:
 	@sudo rm -f $(BINDIR)/$(BINARY_NAME)
+	@rm -rf ~/.config/tuwi
 
 run-dev:
 	@go run main.go
@@ -71,8 +74,8 @@ help:
 	@echo ""
 	@echo "  Builds:"
 	@echo "    make build          — Compile the binary into repo root"
-	@echo "    make install        — Combile binary and move into $(BINDIR)"
-	@echo "    make uninstall      — Remove the binary from $(BINDIR)"
+	@echo "    make install        — Combile binary and move into $(BINDIR)" and create the config directory and blank config file in ~/.config/tuwi/config.toml
+	@echo "    make uninstall      — Remove the binary from $(BINDIR)" and delete the ~/.config/tuwi directory
 	@echo "    make run            — Build and execute the compiled binary"
 	@echo "    make clean          — Remove clear cache, remove binary from $GOPATH/bin/ & $(BINDIR)"
 	@echo ""

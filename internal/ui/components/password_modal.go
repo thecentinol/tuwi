@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
@@ -24,7 +25,7 @@ type PasswordModel struct {
 	Focused bool
 }
 
-func NewPasswordModal(theme *theme.Theme, keys keybindings.Keybindings) PasswordModel {
+func NewPasswordModal(cfg config.AppConfig) PasswordModel {
 	i := textinput.New()
 	i.Placeholder = "Enter Password"
 	i.SetVirtualCursor(true)
@@ -33,25 +34,25 @@ func NewPasswordModal(theme *theme.Theme, keys keybindings.Keybindings) Password
 
 	s := i.Styles()
 	s.Focused.Text = lipgloss.NewStyle().
-		Foreground(theme.Input.TextFocused)
+		Foreground(cfg.Theme.Input.TextFocused.Color)
 
 	s.Focused.Placeholder = lipgloss.NewStyle().
-		Foreground(theme.Input.PlaceholderFocused)
+		Foreground(cfg.Theme.Input.PlaceholderFocused.Color)
 
 	s.Blurred.Text = lipgloss.NewStyle().
-		Foreground(theme.Input.TextBlurred)
+		Foreground(cfg.Theme.Input.TextBlurred.Color)
 
 	s.Blurred.Placeholder = lipgloss.NewStyle().
-		Foreground(theme.Input.PlaceholderBlurred)
+		Foreground(cfg.Theme.Input.PlaceholderBlurred.Color)
 
-	s.Cursor.Color = theme.Input.Cursor
+	s.Cursor.Color = cfg.Theme.Input.Cursor
 	s.Cursor.Blink = true
 	i.SetStyles(s)
 
 	return PasswordModel{
-		theme: theme,
+		theme: &cfg.Theme,
 		Input: i,
-		keys:  keys,
+		keys:  cfg.Keybinds,
 	}
 }
 
@@ -86,7 +87,9 @@ func (p PasswordModel) Update(msg tea.Msg) (PasswordModel, tea.Cmd) {
 }
 
 func (p PasswordModel) View() tea.View {
-	container := NewBorderContent(p.theme.Password.Border, p.theme.Password.BorderContent, 0)
+	container := NewBorderContent(
+		p.theme.Password.Border.Color, p.theme.Password.BorderContent.Color, 0,
+	)
 
 	input := lipgloss.JoinHorizontal(
 		lipgloss.Left,

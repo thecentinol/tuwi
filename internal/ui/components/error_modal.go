@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
@@ -26,10 +27,10 @@ type ErrorModel struct {
 	IsFocused bool
 }
 
-func NewErrorModal(theme *theme.Theme, keys keybindings.Keybindings) ErrorModel {
+func NewErrorModal(cfg config.AppConfig) ErrorModel {
 	return ErrorModel{
-		theme: theme,
-		keys:  keys,
+		theme: &cfg.Theme,
+		keys:  cfg.Keybinds,
 	}
 }
 
@@ -54,11 +55,13 @@ func (e ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 func (e ErrorModel) View() tea.View {
 	// wrap the text.
 	wrapped := lipgloss.NewStyle().
-		Foreground(e.theme.Error.Text).
+		Foreground(e.theme.Error.Text.Color).
 		Width(e.Width - 2).
 		Render(e.Text)
 
-	container := NewBorderContent(e.theme.Error.Border, e.theme.Error.BorderContent, e.Height-2)
+	container := NewBorderContent(
+		e.theme.Error.Border.Color, e.theme.Error.BorderContent.Color, e.Height-2,
+	)
 	return tea.NewView(container.Render("Error:", wrapped, e.Width))
 }
 

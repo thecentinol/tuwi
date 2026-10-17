@@ -30,12 +30,12 @@ func NewTable(
 
 	s := table.DefaultStyles()
 	s.Header = s.Header.
-		Background(theme.Table.HeaderBG).
-		Foreground(theme.Table.HeaderFG)
+		Background(theme.Table.HeaderBG.Color).
+		Foreground(theme.Table.HeaderFG.Color)
 
 	s.Selected = s.Selected.
-		Background(theme.Table.SelectedBG).
-		Foreground(theme.Table.SelectedFG)
+		Background(theme.Table.SelectedBG.Color).
+		Foreground(theme.Table.SelectedFG.Color)
 
 	t.SetStyles(s)
 

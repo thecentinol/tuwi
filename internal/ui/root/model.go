@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
@@ -48,28 +49,42 @@ type Model struct {
 
 	errorModal     comp.ErrorModel
 	showErrorModal bool
+
+	startupErr error
 }
 
-func NewModel(client *dbus.Client, keys keybindings.Keybindings) Model {
-	th := theme.Default
+func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
 	state := &wifidomain.State{}
 
 	return Model{
 		Client:           client,
 		focus:            FocusWifiSaved,
 		help:             help.New(),
-		wifiSaved:        wifiui.NewWifiSavedModel(client, state, keys, &th),
-		wifiAvailable:    wifiui.NewWifiAvailableModel(client, state, keys, &th),
-		keybindingsModal: kbmodal.NewKeybindsModal(&th, keys),
-		passwordModal:    comp.NewPasswordModal(&th, keys),
-		errorModal:       comp.NewErrorModal(&th, keys),
-		keys:             keys,
-		theme:            &th,
+		wifiSaved:        wifiui.NewWifiSavedModel(client, state, cfg),
+		wifiAvailable:    wifiui.NewWifiAvailableModel(client, state, cfg),
+		keybindingsModal: kbmodal.NewKeybindsModal(cfg),
+		passwordModal:    comp.NewPasswordModal(cfg),
+		errorModal:       comp.NewErrorModal(cfg),
+		keys:             cfg.Keybinds,
+		theme:            &cfg.Theme,
 	}
+}
+
+func (m Model) SetStartupError(err error) Model {
+	m.startupErr = err
+	return m
+}
+
+func (m Model) showStartupError() tea.Cmd {
+	if m.startupErr != nil {
+		return events.ShowError(m.startupErr)
+	}
+	return nil
 }
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
+		m.showStartupError(),
 		m.wifiSaved.Init(),
 		m.wifiAvailable.Init(),
 	)

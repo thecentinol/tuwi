@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
@@ -38,20 +39,19 @@ type AvailableModel struct {
 func NewWifiAvailableModel(
 	c *dbus.Client,
 	state *wifidomain.State,
-	keys keybindings.Keybindings,
-	theme *theme.Theme,
+	cfg config.AppConfig,
 ) AvailableModel {
 	return AvailableModel{
 		client: c,
 		state:  state,
-		theme:  theme,
+		theme:  &cfg.Theme,
 		Table: comp.NewTable(
 			[]table.Column{},
 			[]table.Row{},
-			keys,
-			theme,
+			cfg.Keybinds,
+			&cfg.Theme,
 		),
-		keys: keys,
+		keys: cfg.Keybinds,
 	}
 }
 
@@ -175,7 +175,7 @@ func (a AvailableModel) View() tea.View {
 		borderContent = a.theme.BorderContentFocused
 	}
 
-	title := comp.NewBorderContent(borderColor, borderContent, a.height)
+	title := comp.NewBorderContent(borderColor.Color, borderContent.Color, a.height)
 	h, v := title.ContentStyle.GetFrameSize()
 	a.frameSize = [2]int{h, v}
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
@@ -185,6 +185,7 @@ func (a AvailableModel) HelpView() []key.Binding {
 	bindings := append(
 		a.Table.HelpView(),
 		a.keys.WifiConnectAvailable.ToBubbles(),
+		a.keys.WifiScan.ToBubbles(),
 	)
 	return bindings
 }
