@@ -19,8 +19,5 @@ func NewClient() (*Client, error) {
 }
 
 func (c *Client) Close() error {
-	if c.Conn != nil {
-		return c.Conn.Close()
-	}
-	return nil
+	return c.Conn.Close()
 }

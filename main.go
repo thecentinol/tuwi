@@ -13,7 +13,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
-	"github.com/thecentinol/tuwi/internal/ui/root"
+	"github.com/thecentinol/tuwi/internal/ui"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(errCfg)
 	}
 
-	model := root.NewModel(client, *cfg)
+	model := ui.NewModel(client, *cfg)
 
 	if errors.Is(errCfg, os.ErrPermission) {
 		model = model.SetStartupError(
