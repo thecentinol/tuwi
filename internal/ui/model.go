@@ -11,11 +11,11 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	kbmodal "github.com/thecentinol/tuwi/internal/ui/keybindings_modal"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
-	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type Focused string
@@ -54,7 +54,7 @@ type Model struct {
 }
 
 func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
-	state := &wifidomain.State{}
+	state := &service.State{}
 
 	return Model{
 		Client:           client,

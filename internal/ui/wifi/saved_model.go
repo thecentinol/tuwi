@@ -12,14 +12,14 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
-	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type SavedModel struct {
 	client *dbus.Client
-	state  *wifidomain.State
+	state  *service.State
 	theme  *theme.Theme
 
 	Table comp.TableModel
@@ -33,7 +33,7 @@ type SavedModel struct {
 
 func NewWifiSavedModel(
 	c *dbus.Client,
-	state *wifidomain.State,
+	state *service.State,
 	cfg config.AppConfig,
 ) SavedModel {
 	return SavedModel{
@@ -51,7 +51,7 @@ func NewWifiSavedModel(
 }
 
 func (s SavedModel) Init() tea.Cmd {
-	an, err := wifidomain.GetActiveNetwork(s.client)
+	an, err := service.GetActiveNetwork(s.client)
 	if err != nil {
 		return events.ShowError(err)
 	}
@@ -60,7 +60,7 @@ func (s SavedModel) Init() tea.Cmd {
 	}
 
 	return func() tea.Msg {
-		saved, err := wifidomain.GetSavedNetworks(s.client)
+		saved, err := service.GetSavedNetworks(s.client)
 		if err != nil {
 			return events.ShowError(err)
 		}
@@ -80,13 +80,13 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
-			_, err := wifidomain.ConnectSaved(s.client, *selected)
+			_, err := service.ConnectSaved(s.client, *selected)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
 
 		case key.Matches(msg, s.keys.WifiDisconnect.ToBubbles()):
-			err := wifidomain.Disconnect(s.client)
+			err := service.Disconnect(s.client)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
@@ -96,7 +96,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
-			err := wifidomain.Forget(s.client, selected.Connection.ConnectionPath)
+			err := service.Forget(s.client, selected.Connection.ConnectionPath)
 			if err != nil {
 				return s, events.ShowError(err)
 			}
@@ -111,7 +111,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.NewConnectionMsg:
-		conn, err := wifidomain.BuildNewConnection(s.client, msg.ConnectionPath)
+		conn, err := service.BuildNewConnection(s.client, msg.ConnectionPath)
 		if err != nil {
 			return s, events.ShowError(err)
 		}
@@ -123,7 +123,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 
 	case events.UpdateActiveConnectionMsg:
-		an, err := wifidomain.GetActiveNetwork(s.client)
+		an, err := service.GetActiveNetwork(s.client)
 		if err != nil {
 			return s, events.ShowError(err)
 		}

@@ -6,7 +6,7 @@ import (
 	"charm.land/bubbles/v2/table"
 
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
-	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
+	"github.com/thecentinol/tuwi/internal/service"
 )
 
 func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
@@ -23,7 +23,7 @@ func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table
 		}
 
 		if isNearby {
-			security = wifidomain.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
+			security = service.DetermineSecurityType(n.AP.Flags, n.AP.WpaFlags, n.AP.RsnFlags)
 			strength = n.AP.Strength
 		} else {
 			security = n.Connection.KeyMgmt
@@ -32,10 +32,10 @@ func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table
 
 		rows = append(rows, table.Row{
 			n.Connection.SSID,
-			wifidomain.DetermineStatus(isNearby, isActive),
+			service.DetermineStatus(isNearby, isActive),
 			security,
 			strconv.FormatBool(n.Connection.Hidden),
-			wifidomain.FormatStrength(strength),
+			service.FormatStrength(strength),
 		})
 	}
 
@@ -47,15 +47,15 @@ func setAvailableRows(networks []nm.AccessPoint) []table.Row {
 
 	for _, n := range networks {
 		strength := strconv.FormatInt(int64(n.Strength), 10)
-		securityType := wifidomain.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
-		channel := wifidomain.DetermineChannel(n.Frequency)
+		securityType := service.DetermineSecurityType(n.Flags, n.WpaFlags, n.RsnFlags)
+		channel := service.DetermineChannel(n.Frequency)
 
 		rows = append(rows, table.Row{
-			wifidomain.FormatSSID(n.SSID),
+			service.FormatSSID(n.SSID),
 			securityType,
-			wifidomain.DetermineFrequency(n.Frequency),
+			service.DetermineFrequency(n.Frequency),
 			strength + "%",
-			wifidomain.FormatChannel(channel),
+			service.FormatChannel(channel),
 		})
 	}
 

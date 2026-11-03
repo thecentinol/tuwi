@@ -5,12 +5,12 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
+	"github.com/thecentinol/tuwi/internal/service"
 )
 
 func handleScan(c *dbus.Client) tea.Cmd {
 	return func() tea.Msg {
-		networks, err := wifidomain.GetAvailableNetworks(c)
+		networks, err := service.GetAvailableNetworks(c)
 		if err != nil {
 			return events.ShowError(err)
 		}

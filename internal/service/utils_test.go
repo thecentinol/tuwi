@@ -1,4 +1,4 @@
-package wifi
+package service
 
 import (
 	"testing"

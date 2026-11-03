@@ -12,14 +12,14 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
-	wifidomain "github.com/thecentinol/tuwi/internal/wifi"
 )
 
 type AvailableModel struct {
 	client *dbus.Client
-	state  *wifidomain.State
+	state  *service.State
 	theme  *theme.Theme
 
 	// displayedNetworks is used for indexing when slecting
@@ -38,7 +38,7 @@ type AvailableModel struct {
 
 func NewWifiAvailableModel(
 	c *dbus.Client,
-	state *wifidomain.State,
+	state *service.State,
 	cfg config.AppConfig,
 ) AvailableModel {
 	return AvailableModel{
@@ -57,7 +57,7 @@ func NewWifiAvailableModel(
 
 func (a AvailableModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		networks, err := wifidomain.GetAvailableNetworks(a.client)
+		networks, err := service.GetAvailableNetworks(a.client)
 		if err != nil {
 			return events.ShowError(err)
 		}
@@ -85,12 +85,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		}
 
 	case events.AvailableWifiMsg:
-		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifidomain.DisplayAvailableAPs(
+		aps := service.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -99,12 +99,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
-		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifidomain.DisplayAvailableAPs(
+		aps := service.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -113,12 +113,12 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
-		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifidomain.DisplayAvailableAPs(
+		aps := service.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -126,7 +126,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
 
 	case events.WifiConnectReqMsg:
-		err := wifidomain.ConnectSecured(
+		err := service.ConnectSecured(
 			a.client,
 			msg.Network,
 			msg.Password,
@@ -136,24 +136,24 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		}
 
 	case events.NewConnectionMsg:
-		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifidomain.DisplayAvailableAPs(
+		aps := service.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
 		a.Table.SetRows(setAvailableRows(aps))
 
 	case events.ConnectionRemovedMsg:
-		nearbySaved, err := wifidomain.GetNearbySavedNetworks(a.client)
+		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
 			return a, events.ShowError(err)
 		}
 
-		aps := wifidomain.DisplayAvailableAPs(
+		aps := service.DisplayAvailableAPs(
 			nearbySaved,
 			a.state.Available,
 		)
@@ -209,7 +209,7 @@ func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 }
 
 func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableModel, tea.Cmd) {
-	securityType := wifidomain.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
+	securityType := service.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
 	isSecured := securityType != "open" && securityType != "unknown"
 	switch {
 	case isSecured:
@@ -218,7 +218,7 @@ func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableMode
 		}
 
 	case securityType != "open" && securityType != "unknown":
-		err := wifidomain.ConnectOpen(a.client, &connection)
+		err := service.ConnectOpen(a.client, &connection)
 		if err != nil {
 			return *a, events.ShowError(err)
 		}
