@@ -102,7 +102,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.sizeComponents()
+		m.setDimensions()
 
 	case events.OpenKeybindsModalMsg:
 		m.showKeybindingsModal = true
@@ -226,49 +226,6 @@ func (m Model) View() tea.View {
 	view.BackgroundColor = m.theme.BG
 	view.AltScreen = true
 	return view
-}
-
-func (m *Model) sizeComponents() {
-	halfWidth := m.width / 2
-	halfHeight := m.height / 2
-	helpHeight := 2
-	modalWidth := m.width / 3
-	tableHeight := m.height - helpHeight - 2
-
-	// set wifi model's width and height
-	m.wifiSaved.SetWidth(halfWidth)
-	m.wifiSaved.Setheight(m.height - helpHeight)
-	m.wifiSaved.Table.SetWidth(halfWidth)
-	m.wifiSaved.Table.SetHeight(tableHeight)
-	m.wifiAvailable.SetWidth(halfWidth)
-	m.wifiAvailable.Setheight(m.height - helpHeight)
-	m.wifiAvailable.Table.SetWidth(halfWidth)
-	m.wifiAvailable.Table.SetHeight(tableHeight)
-
-	// Keybindings modal
-	m.keybindingsModal.SetSize(halfWidth, (m.height*3)/4)
-	m.keybindingsModal.X = halfWidth - (m.keybindingsModal.Width / 2)
-	m.keybindingsModal.Y = halfHeight - (m.keybindingsModal.Height / 2)
-
-	// Password Modal
-	iconWidth := 2
-	m.passwordModal.Width = modalWidth
-	m.passwordModal.Input.SetWidth(modalWidth - iconWidth - 4)
-
-	// get height and width of password modal
-	renderedPasswordModal := m.passwordModal.View().Content
-	getPasswordModalHeight := lipgloss.Height(renderedPasswordModal)
-	getPasswordModalWidth := lipgloss.Width(renderedPasswordModal)
-
-	// calculate X and Y coordinates of password modal
-	m.passwordModal.X = (m.width / 2) - (getPasswordModalWidth / 2)
-	m.passwordModal.Y = (m.height / 2) - (getPasswordModalHeight / 2)
-
-	// error modal
-	m.errorModal.Width = m.width / 3
-	m.errorModal.MaxHeight = m.height / 5
-	m.errorModal.X = (m.width / 2) - (m.errorModal.Width / 2)
-	m.errorModal.Y = (m.height / 2) - (m.errorModal.Height / 2)
 }
 
 func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
