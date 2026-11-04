@@ -1,4 +1,4 @@
-package keybindingsmodal
+package help
 
 import (
 	"strings"
@@ -26,7 +26,7 @@ type Model struct {
 	IsFocused     bool
 }
 
-func NewKeybindsModal(cfg config.AppConfig) Model {
+func NewHelpMenu(cfg config.AppConfig) Model {
 	m := Model{
 		theme: &cfg.Theme,
 		vp:    viewport.New(),
@@ -64,7 +64,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 
 		case key.Matches(msg, m.keys.Cancel.ToBubbles()):
-			return m, events.CloseKeybindsModal()
+			return m, events.CloseHelpMenu()
 		}
 	}
 
@@ -74,18 +74,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 func (m Model) View() tea.View {
 	container := comp.NewBorderContent(
-		m.theme.KeybindsModal.Border.Color,
-		m.theme.KeybindsModal.BorderContent.Color,
+		m.theme.HelpMenu.Border.Color,
+		m.theme.HelpMenu.BorderContent.Color,
 		m.Height,
 	)
 
-	return tea.NewView(container.Render("Keybindings", m.vp.View(), m.Width))
+	return tea.NewView(container.Render("Help", m.vp.View(), m.Width))
 }
 
 func (m Model) HelpView() []key.Binding {
-	// Note: OpenKeybindingsModal is excluded because it is handled
-	// by the root model's HelpView.
-
 	// Override default help descriptions to provide modal-specific context.
 	cancel := m.keys.Cancel.ToBubbles()
 	scrollUp := m.keys.Up.ToBubbles()
@@ -116,7 +113,7 @@ func (m *Model) renderContent() {
 
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(m.theme.KeybindsModal.GroupText.Color).
+		Foreground(m.theme.HelpMenu.GroupText.Color).
 		MarginBottom(1)
 
 	groupStyle := lipgloss.NewStyle().
@@ -128,10 +125,10 @@ func (m *Model) renderContent() {
 	// styling the bindings
 	help := m.help
 	help.Styles.FullKey = lipgloss.NewStyle().
-		Foreground(m.theme.KeybindsModal.KeybindsText.Color)
+		Foreground(m.theme.HelpMenu.KeybindsText.Color)
 
 	help.Styles.FullDesc = lipgloss.NewStyle().
-		Foreground(m.theme.KeybindsModal.DescriptionText.Color)
+		Foreground(m.theme.HelpMenu.DescriptionText.Color)
 
 	for _, group := range groups {
 		title := titleStyle.Render("── " + group.Title + " ──")

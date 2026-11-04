@@ -35,7 +35,7 @@ type Keybindings struct {
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
 	Cancel               Binding
-	OpenKeybindingsModal Binding // NOTE: Cancel is used to close the modal
+	OpenHelpMenu         Binding // NOTE: Cancel is used to close the modal
 	Quit                 Binding
 
 	// WiFi
@@ -62,15 +62,15 @@ type Keybindings struct {
 
 type Binding struct {
 	// used to match against which View is focused so we can display keybindings for the
-	// focused View at the top of the keybindings modal.
+	// focused View at the top of the help menu.
 	ViewName string
-	Group    string // used for grouping in the keybindings modal
+	Group    string // used for grouping in the help menu
 
 	Keys []string
 
 	HelpKey         string // which key to display in the help view
 	HelpDescription string // the help text for bubbles key.Binding.Help
-	Description     string // the longer full description displayed in the keybindings modal
+	Description     string // the longer full description displayed in the help menu
 }
 
 type BindingGroup struct {
@@ -104,13 +104,13 @@ var DefaultKeybinds = Keybindings{
 		HelpDescription: "cancel",
 		Description:     "Cancel",
 	},
-	OpenKeybindingsModal: Binding{
+	OpenHelpMenu: Binding{
 		ViewName:        globalView,
 		Group:           globalGroup,
 		Keys:            []string{"?"},
 		HelpKey:         "?",
-		HelpDescription: "keybindings",
-		Description:     "Open keybindings menu",
+		HelpDescription: "Help",
+		Description:     "Open help menu",
 	},
 	Quit: Binding{
 		ViewName:        globalView,
@@ -260,7 +260,7 @@ func (k Keybindings) All() []Binding {
 	return []Binding{
 		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Cancel, k.Quit, k.WifiConnectSaved,
 		k.WifiDisconnect, k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable,
-		k.Up, k.Down, k.GotoTop, k.GotoBottom, k.OpenKeybindingsModal, k.ErrorDismiss,
+		k.Up, k.Down, k.GotoTop, k.GotoBottom, k.OpenHelpMenu, k.ErrorDismiss,
 		k.PasswordVisibility, k.PasswordSubmit,
 	}
 }

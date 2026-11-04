@@ -111,9 +111,9 @@ prompt-focused = "#444444"
 prompt-muted = "#444444"
 cursor = "#c0c0c0"
 
-# theming config for the keybinds modal which shows you all available keybinds. The default keybind
+# theming config for the help menu which shows you all available keybinds. The default keybind
 # to open/show the modal is "?"
-[theme.keybinds-modal]
+[theme.help-menu]
 border = "#008800"
 border-content = "#008800"
 group-text = "#008800"
@@ -157,7 +157,7 @@ go-to-top = ["t"]
 go-to-bottom = ["b"]
 # dismiss the error modal
 dismiss-error = ["esc", "enter"]
-open-keybinds-modal = ["?"]
+open-help-menu = ["?"]
 # when entering the password to connect to a new network this is used to show/hide the password
 toggle-password-visibility = ["ctrl+t"]
 # once you've entered your password, this keybind is used to submit it (in other words: to continue connecting)

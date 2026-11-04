@@ -33,14 +33,14 @@ var DefaultTheme = Theme{
 		PromptBlurred:      HexColor{Color: lipgloss.Color("238")},
 		Cursor:             HexColor{Color: lipgloss.White},
 	},
-	KeybindsModal: KeybindsModalTheme{
+	HelpMenu: HelpMenuTheme{
 		Border:          HexColor{Color: lipgloss.Green},
 		BorderContent:   HexColor{Color: lipgloss.Green},
 		GroupText:       HexColor{Color: lipgloss.Green},
 		KeybindsText:    HexColor{Color: lipgloss.Color("#038B5A")},
 		DescriptionText: HexColor{Color: lipgloss.White},
 	},
-	Help: HelpTheme{
+	HelpView: HelpViewTheme{
 		ShortKey:       HexColor{Color: lipgloss.White},
 		ShortDesc:      HexColor{Color: lipgloss.Color("#6e6a86")},
 		ShortSeparator: HexColor{Color: lipgloss.Color("#6e6a86")},

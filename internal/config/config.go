@@ -28,12 +28,12 @@ type customTheme struct {
 
 	Success HexColor `toml:"success"`
 
-	Table         TableTheme         `toml:"table"`
-	Error         ErrorTheme         `toml:"error-modal"`
-	Password      PasswordTheme      `toml:"password-modal"`
-	Input         InputTheme         `toml:"input"`
-	KeybindsModal KeybindsModalTheme `toml:"keybinds-modal"`
-	Help          HelpTheme          `toml:"help-view"`
+	Table    TableTheme    `toml:"table"`
+	Error    ErrorTheme    `toml:"error-modal"`
+	Password PasswordTheme `toml:"password-modal"`
+	Input    InputTheme    `toml:"input"`
+	HelpMenu HelpMenuTheme `toml:"help-menu"`
+	HelpView HelpViewTheme `toml:"help-view"`
 }
 
 type keybinds struct {
@@ -48,7 +48,7 @@ type keybinds struct {
 	GoToTop                  []string `toml:"go-to-top"`
 	GoToBottom               []string `toml:"go-to-bottom"`
 	DismissError             []string `toml:"dismiss-error"`
-	OpenKeybindsModal        []string `toml:"open-keybinds-modal"`
+	OpenHelpMenu             []string `toml:"open-help-menu"`
 	TogglePasswordVisibility []string `toml:"toggle-password-visibility"`
 	SubmitPassword           []string `toml:"submit-password"`
 	Cancel                   []string `toml:"cancel"`
@@ -174,7 +174,7 @@ func applyCfg(cfg *config) *AppConfig {
 	applyKeys(&appCfg.Keybinds.GotoTop, cfg.Keybinds.GoToTop)
 	applyKeys(&appCfg.Keybinds.GotoBottom, cfg.Keybinds.GoToBottom)
 	applyKeys(&appCfg.Keybinds.ErrorDismiss, cfg.Keybinds.DismissError)
-	applyKeys(&appCfg.Keybinds.OpenKeybindingsModal, cfg.Keybinds.OpenKeybindsModal)
+	applyKeys(&appCfg.Keybinds.OpenHelpMenu, cfg.Keybinds.OpenHelpMenu)
 	applyKeys(&appCfg.Keybinds.PasswordVisibility, cfg.Keybinds.TogglePasswordVisibility)
 	applyKeys(&appCfg.Keybinds.PasswordSubmit, cfg.Keybinds.SubmitPassword)
 	applyKeys(&appCfg.Keybinds.Cancel, cfg.Keybinds.Cancel)
@@ -201,8 +201,8 @@ func applyTheme(ct *customTheme) *Theme {
 	ct.Error.ApplyTo(&t)
 	ct.Password.ApplyTo(&t)
 	ct.Input.ApplyTo(&t)
-	ct.KeybindsModal.ApplyTo(&t)
-	ct.Help.ApplyTo(&t)
+	ct.HelpMenu.ApplyTo(&t)
+	ct.HelpView.ApplyTo(&t)
 
 	return &t
 }

@@ -430,7 +430,7 @@ func TestApplyTheme_PartialOverride(t *testing.T) {
 	// set nested sections' colors using lipgloss.<color_name>, color.RGBA{} and hex values
 	cfg.Table.HeaderFG = HexColor{Color: lipgloss.White}
 	cfg.Input.Cursor = HexColor{Color: color.RGBA{R: 208, G: 12, B: 247}}
-	cfg.Help.ShortSeparator = HexColor{Color: lipgloss.Color("#d00cf7")}
+	cfg.HelpView.ShortSeparator = HexColor{Color: lipgloss.Color("#d00cf7")}
 
 	got := applyTheme(cfg)
 
@@ -458,10 +458,10 @@ func TestApplyTheme_PartialOverride(t *testing.T) {
 			got.Input.Cursor.Color, cfg.Input.Cursor.Color,
 		)
 	}
-	if got.Help.ShortSeparator.Color != cfg.Help.ShortSeparator.Color {
+	if got.HelpView.ShortSeparator.Color != cfg.HelpView.ShortSeparator.Color {
 		t.Errorf(
-			"Help ShortSeparator = %v, want custom Help ShortSeparator %v",
-			got.Help.ShortSeparator.Color, cfg.Help.ShortSeparator.Color,
+			"HelpView ShortSeparator = %v, want custom HelpView ShortSeparator %v",
+			got.HelpView.ShortSeparator.Color, cfg.HelpView.ShortSeparator.Color,
 		)
 	}
 }
@@ -526,16 +526,16 @@ func TestApplyTheme_NilConfig(t *testing.T) {
 			got.Success.Color, DefaultTheme.Success.Color,
 		)
 	}
-	if got.KeybindsModal.GroupText.Color != DefaultTheme.KeybindsModal.GroupText.Color {
+	if got.HelpMenu.GroupText.Color != DefaultTheme.HelpMenu.GroupText.Color {
 		t.Errorf(
-			"KeybindsModal GroupText = %v, expected default KeybindsModal GroupText %v",
-			got.KeybindsModal.GroupText.Color, DefaultTheme.KeybindsModal.GroupText.Color,
+			"HelpMenu GroupText = %v, expected default HelpMenu GroupText %v",
+			got.HelpMenu.GroupText.Color, DefaultTheme.HelpMenu.GroupText.Color,
 		)
 	}
-	if got.Help.ShortKey.Color != DefaultTheme.Help.ShortKey.Color {
+	if got.HelpView.ShortKey.Color != DefaultTheme.HelpView.ShortKey.Color {
 		t.Errorf(
-			"Help ShortKey = %v, expected default Help ShortKey %v",
-			got.Help.ShortKey.Color, DefaultTheme.Help.ShortKey.Color,
+			"HelpView ShortKey = %v, expected default HelpView ShortKey %v",
+			got.HelpView.ShortKey.Color, DefaultTheme.HelpView.ShortKey.Color,
 		)
 	}
 }

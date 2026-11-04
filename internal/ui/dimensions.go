@@ -4,7 +4,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	kbmodal "github.com/thecentinol/tuwi/internal/ui/keybindings_modal"
+	apphelp "github.com/thecentinol/tuwi/internal/ui/help"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 )
 
@@ -13,7 +13,7 @@ func (m *Model) setDimensions() {
 
 	setWifiDimensions(&m.wifiSaved, &m.wifiAvailable, m.width/2, m.height-helpViewHeight,
 		m.height-helpViewHeight-2)
-	setKeybindsModalDimensions(&m.keybindingsModal, m.width, m.height)
+	setHelpMenuDimensions(&m.HelpMenu, m.width, m.height)
 	setPasswordModalDimensionsAndPos(&m.passwordModal, m.width, m.height, m.width/3)
 	setErrorModalDimensionsAndPos(&m.errorModal, m.width, m.height)
 }
@@ -34,7 +34,7 @@ func setWifiDimensions(
 	available.Table.SetHeight(tableHeight)
 }
 
-func setKeybindsModalDimensions(m *kbmodal.Model, parentWidth, parentHeight int) {
+func setHelpMenuDimensions(m *apphelp.Model, parentWidth, parentHeight int) {
 	m.SetSize(parentWidth/2, (parentHeight*3)/4)
 	m.X = (parentWidth / 2) - (m.Width / 2)
 	m.Y = (parentHeight / 2) - (m.Height / 2)

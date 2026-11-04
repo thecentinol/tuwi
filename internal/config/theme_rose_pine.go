@@ -76,14 +76,14 @@ var RosePine = Theme{
 
 		Cursor: HexColor{Color: lipgloss.Color(foam)},
 	},
-	KeybindsModal: KeybindsModalTheme{
+	HelpMenu: HelpMenuTheme{
 		Border:          HexColor{Color: lipgloss.Color(foam)},
 		BorderContent:   HexColor{Color: lipgloss.Color(foam)},
 		GroupText:       HexColor{Color: lipgloss.Color(foam)},
 		KeybindsText:    HexColor{Color: lipgloss.Color(gold)},
 		DescriptionText: HexColor{Color: lipgloss.White},
 	},
-	Help: HelpTheme{
+	HelpView: HelpViewTheme{
 		ShortKey:       HexColor{Color: lipgloss.Color(gold)},
 		ShortDesc:      HexColor{Color: lipgloss.Color(muted)},
 		ShortSeparator: HexColor{Color: lipgloss.Color(muted)},
@@ -129,14 +129,14 @@ var RosePineMoon = Theme{
 
 		Cursor: HexColor{Color: lipgloss.Color(moonFoam)},
 	},
-	KeybindsModal: KeybindsModalTheme{
+	HelpMenu: HelpMenuTheme{
 		Border:          HexColor{Color: lipgloss.Color(moonFoam)},
 		BorderContent:   HexColor{Color: lipgloss.Color(moonFoam)},
 		GroupText:       HexColor{Color: lipgloss.Color(moonFoam)},
 		KeybindsText:    HexColor{Color: lipgloss.Color(moonGold)},
 		DescriptionText: HexColor{Color: lipgloss.White},
 	},
-	Help: HelpTheme{
+	HelpView: HelpViewTheme{
 		ShortKey:       HexColor{Color: lipgloss.Color(moonGold)},
 		ShortDesc:      HexColor{Color: lipgloss.Color(moonSubtle)},
 		ShortSeparator: HexColor{Color: lipgloss.Color(moonSubtle)},

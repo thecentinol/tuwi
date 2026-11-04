@@ -58,12 +58,12 @@ type Theme struct {
 
 	Success HexColor
 
-	Table         TableTheme
-	Error         ErrorTheme
-	Password      PasswordTheme
-	Input         InputTheme
-	KeybindsModal KeybindsModalTheme
-	Help          HelpTheme
+	Table    TableTheme
+	Error    ErrorTheme
+	Password PasswordTheme
+	Input    InputTheme
+	HelpMenu HelpMenuTheme
+	HelpView HelpViewTheme
 }
 
 type TableTheme struct {
@@ -101,7 +101,7 @@ type InputTheme struct {
 	Cursor HexColor `toml:"cursor"`
 }
 
-type KeybindsModalTheme struct {
+type HelpMenuTheme struct {
 	Border          HexColor `toml:"border"`
 	BorderContent   HexColor `toml:"border-content"`
 	GroupText       HexColor `toml:"group-text"`
@@ -110,7 +110,7 @@ type KeybindsModalTheme struct {
 }
 
 // the help view
-type HelpTheme struct {
+type HelpViewTheme struct {
 	Ellipsis       HexColor `toml:"ellipsis"`
 	ShortKey       HexColor `toml:"short-key"`
 	ShortDesc      HexColor `toml:"short-description"`
@@ -190,46 +190,46 @@ func (i *InputTheme) ApplyTo(t *Theme) {
 	}
 }
 
-// same as ApplyTo on TableTheme, but for the KeybindsModalTheme
-func (k *KeybindsModalTheme) ApplyTo(t *Theme) {
+// same as ApplyTo on TableTheme, but for the HelpMenuTheme
+func (k *HelpMenuTheme) ApplyTo(t *Theme) {
 	if k.Border.Color != nil {
-		t.KeybindsModal.Border = k.Border
+		t.HelpMenu.Border = k.Border
 	}
 	if k.BorderContent.Color != nil {
-		t.KeybindsModal.BorderContent = k.BorderContent
+		t.HelpMenu.BorderContent = k.BorderContent
 	}
 	if k.GroupText.Color != nil {
-		t.KeybindsModal.GroupText = k.GroupText
+		t.HelpMenu.GroupText = k.GroupText
 	}
 	if k.KeybindsText.Color != nil {
-		t.KeybindsModal.KeybindsText = k.KeybindsText
+		t.HelpMenu.KeybindsText = k.KeybindsText
 	}
 	if k.DescriptionText.Color != nil {
-		t.KeybindsModal.DescriptionText = k.DescriptionText
+		t.HelpMenu.DescriptionText = k.DescriptionText
 	}
 }
 
 // same as ApplyTo on TableTheme, but for the HelpTheme
-func (h *HelpTheme) ApplyTo(t *Theme) {
+func (h *HelpViewTheme) ApplyTo(t *Theme) {
 	if h.Ellipsis.Color != nil {
-		t.Help.Ellipsis = h.Ellipsis
+		t.HelpView.Ellipsis = h.Ellipsis
 	}
 	if h.ShortKey.Color != nil {
-		t.Help.ShortKey = h.ShortKey
+		t.HelpView.ShortKey = h.ShortKey
 	}
 	if h.ShortDesc.Color != nil {
-		t.Help.ShortDesc = h.ShortDesc
+		t.HelpView.ShortDesc = h.ShortDesc
 	}
 	if h.ShortSeparator.Color != nil {
-		t.Help.ShortSeparator = h.ShortSeparator
+		t.HelpView.ShortSeparator = h.ShortSeparator
 	}
 	if h.FullKey.Color != nil {
-		t.Help.FullKey = h.FullKey
+		t.HelpView.FullKey = h.FullKey
 	}
 	if h.FullDesc.Color != nil {
-		t.Help.FullDesc = h.FullDesc
+		t.HelpView.FullDesc = h.FullDesc
 	}
 	if h.FullSeparator.Color != nil {
-		t.Help.FullSeparator = h.FullSeparator
+		t.HelpView.FullSeparator = h.FullSeparator
 	}
 }

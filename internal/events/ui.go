@@ -15,20 +15,20 @@ type PasswordResultMsg struct {
 	Password  string
 }
 
-type OpenKeybindsModalMsg struct{}
+type OpenHelpMenuMsg struct{}
 
-type CloseKeybindsModalMsg struct{}
+type CloseHelpMenuMsg struct{}
 
-// returns OpenKeybindsModalMsg{}
-func OpenKeybindsModal() tea.Cmd {
+// returns OpenHelpMenuMsg{}
+func OpenHelpMenu() tea.Cmd {
 	return func() tea.Msg {
-		return OpenKeybindsModalMsg{}
+		return OpenHelpMenuMsg{}
 	}
 }
 
-// returns CloseKeybindsModalMsg{}
-func CloseKeybindsModal() tea.Cmd {
+// returns CloseHelpMenuMsg{}
+func CloseHelpMenu() tea.Cmd {
 	return func() tea.Msg {
-		return CloseKeybindsModalMsg{}
+		return CloseHelpMenuMsg{}
 	}
 }
