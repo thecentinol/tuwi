@@ -8,14 +8,12 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/keybindings"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type PasswordModel struct {
-	theme *theme.Theme
+	theme *config.Theme
 	Input textinput.Model
-	keys  keybindings.Keybindings
+	keys  config.Keybindings
 
 	Content string
 

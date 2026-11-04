@@ -11,8 +11,6 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/pelletier/go-toml/v2"
-
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 // test if decoded config keybinds are loaded correctly
@@ -119,7 +117,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 		name      string
 		content   string
 		wantErr   bool
-		wantTheme theme.Theme
+		wantTheme Theme
 	}{
 		{
 			name: "missing double quote",
@@ -128,7 +126,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			connect-saved = ["enter]
 			`,
 			wantErr:   true,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "incorrect keybind field name",
@@ -149,7 +147,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			quit = ["q", "ctrl+c"]
 			`,
 			wantErr:   true,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "empty keybind string",
@@ -157,7 +155,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			[keybinds]
 			disconnect = [""]
 			`,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "valid theme",
@@ -165,7 +163,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             [theme]
             preset = "rose-pine"
 			`,
-			wantTheme: theme.RosePine,
+			wantTheme: RosePine,
 		},
 		{
 			name: "valid theme with invalid keybind field",
@@ -176,7 +174,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			auto-connecttt = ["a"]
 			`,
 			wantErr:   true,
-			wantTheme: theme.Default,
+			wantTheme: RosePine,
 		},
 		{
 			name: "valid theme with malformed keybind",
@@ -187,7 +185,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			go-to-top = ["t]
 			`,
 			wantErr:   true,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "empty dismiss error keybind",
@@ -195,7 +193,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			[keybinds]
 			dismiss-error = [""]
 			`,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "valid theme without keybinds",
@@ -203,7 +201,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             [theme]
             preset = "rose-pine-moon"
 			`,
-			wantTheme: theme.RosePineMoon,
+			wantTheme: RosePineMoon,
 		},
 		{
 			name: "valid theme valid keybinds",
@@ -225,7 +223,7 @@ func TestLoadFromPathReturns(t *testing.T) {
 			cancel = ["esc"]
 			quit = ["q", "ctrl+c"]
 			`,
-			wantTheme: theme.RosePineMoon,
+			wantTheme: RosePineMoon,
 		},
 		{
 			name: "default theme",
@@ -234,7 +232,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             preset = "default"
 			`,
 			wantErr:   false,
-			wantTheme: theme.Default,
+			wantTheme: DefaultTheme,
 		},
 		{
 			name: "defaultt theme",
@@ -267,7 +265,7 @@ func TestLoadFromPathReturns(t *testing.T) {
             preset = "rose-pine-moon"
 			`,
 			wantErr:   false,
-			wantTheme: theme.RosePineMoon,
+			wantTheme: RosePineMoon,
 		},
 		{
 			name: "rose-pine-sun",
@@ -328,28 +326,28 @@ func TestApplyTheme_PresetDefault(t *testing.T) {
 
 	got := applyTheme(cfg)
 
-	if got.BG.Color != theme.Default.BG.Color {
+	if got.BG.Color != DefaultTheme.BG.Color {
 		t.Errorf(
 			"BG = %v, want default BG %v",
-			got.BG.Color, theme.Default.BG.Color,
+			got.BG.Color, DefaultTheme.BG.Color,
 		)
 	}
-	if got.Border.Color != theme.Default.Border.Color {
+	if got.Border.Color != DefaultTheme.Border.Color {
 		t.Errorf(
 			"Border = %v, want default Border %v",
-			got.Border.Color, theme.Default.Border.Color,
+			got.Border.Color, DefaultTheme.Border.Color,
 		)
 	}
-	if got.Error.Text.Color != theme.Default.Error.Text.Color {
+	if got.Error.Text.Color != DefaultTheme.Error.Text.Color {
 		t.Errorf(
 			"ErrorModal Text = %v, want default ErrorModal Text %v",
-			got.Error.Text.Color, theme.Default.Error.Text.Color,
+			got.Error.Text.Color, DefaultTheme.Error.Text.Color,
 		)
 	}
-	if got.Password.BorderContent.Color != theme.Default.Password.BorderContent.Color {
+	if got.Password.BorderContent.Color != DefaultTheme.Password.BorderContent.Color {
 		t.Errorf(
 			"PasswordModal BorderContent = %v, want default PasswordModal BorderContent %v",
-			got.Password.BorderContent.Color, theme.Default.Password.BorderContent.Color,
+			got.Password.BorderContent.Color, DefaultTheme.Password.BorderContent.Color,
 		)
 	}
 }
@@ -362,28 +360,28 @@ func TestApplyTheme_PresetRosePine(t *testing.T) {
 
 	got := applyTheme(cfg)
 
-	if got.BG.Color != theme.RosePine.BG.Color {
+	if got.BG.Color != RosePine.BG.Color {
 		t.Errorf(
 			"BG = %v, want RosePine BG %v",
-			got.BG.Color, theme.RosePine.BG.Color,
+			got.BG.Color, RosePine.BG.Color,
 		)
 	}
-	if got.Border.Color != theme.RosePine.Border.Color {
+	if got.Border.Color != RosePine.Border.Color {
 		t.Errorf(
 			"Border = %v, want RosePine Border %v",
-			got.Border.Color, theme.RosePine.Border.Color,
+			got.Border.Color, RosePine.Border.Color,
 		)
 	}
-	if got.Error.Text.Color != theme.RosePine.Error.Text.Color {
+	if got.Error.Text.Color != RosePine.Error.Text.Color {
 		t.Errorf(
 			"ErrorModal Text = %v, want RosePine ErrorModal Text %v",
-			got.Error.Text.Color, theme.RosePine.Error.Text.Color,
+			got.Error.Text.Color, RosePine.Error.Text.Color,
 		)
 	}
-	if got.Password.BorderContent.Color != theme.RosePine.Password.BorderContent.Color {
+	if got.Password.BorderContent.Color != RosePine.Password.BorderContent.Color {
 		t.Errorf(
 			"PasswordModal BorderContent = %v, want RosePine PasswordModal BorderContent %v",
-			got.Password.BorderContent.Color, theme.RosePine.Password.BorderContent.Color,
+			got.Password.BorderContent.Color, RosePine.Password.BorderContent.Color,
 		)
 	}
 }
@@ -396,28 +394,28 @@ func TestApplyTheme_PresetRosePineMoon(t *testing.T) {
 
 	got := applyTheme(cfg)
 
-	if got.BG.Color != theme.RosePineMoon.BG.Color {
+	if got.BG.Color != RosePineMoon.BG.Color {
 		t.Errorf(
 			"BG = %v, want RosePineMoon BG %v",
-			got.BG.Color, theme.RosePineMoon.BG.Color,
+			got.BG.Color, RosePineMoon.BG.Color,
 		)
 	}
-	if got.Border.Color != theme.RosePineMoon.Border.Color {
+	if got.Border.Color != RosePineMoon.Border.Color {
 		t.Errorf(
 			"Border = %v, want RosePineMoon Border %v",
-			got.Border.Color, theme.RosePineMoon.Border.Color,
+			got.Border.Color, RosePineMoon.Border.Color,
 		)
 	}
-	if got.Error.Text.Color != theme.RosePineMoon.Error.Text.Color {
+	if got.Error.Text.Color != RosePineMoon.Error.Text.Color {
 		t.Errorf(
 			"ErrorModal Text = %v, want RosePineMoon ErrorModal Text %v",
-			got.Error.Text.Color, theme.RosePineMoon.Error.Text.Color,
+			got.Error.Text.Color, RosePineMoon.Error.Text.Color,
 		)
 	}
-	if got.Password.BorderContent.Color != theme.RosePineMoon.Password.BorderContent.Color {
+	if got.Password.BorderContent.Color != RosePineMoon.Password.BorderContent.Color {
 		t.Errorf(
 			"PasswordModal BorderContent = %v, want RosePineMoon PasswordModal BorderContent %v",
-			got.Password.BorderContent.Color, theme.RosePineMoon.Password.BorderContent.Color,
+			got.Password.BorderContent.Color, RosePineMoon.Password.BorderContent.Color,
 		)
 	}
 }
@@ -426,23 +424,23 @@ func TestApplyTheme_PresetRosePineMoon(t *testing.T) {
 func TestApplyTheme_PartialOverride(t *testing.T) {
 	cfg := &customTheme{
 		Preset: "default",
-		BG:     theme.HexColor{Color: lipgloss.Black},
+		BG:     HexColor{Color: lipgloss.Black},
 	}
 
 	// set nested sections' colors using lipgloss.<color_name>, color.RGBA{} and hex values
-	cfg.Table.HeaderFG = theme.HexColor{Color: lipgloss.White}
-	cfg.Input.Cursor = theme.HexColor{Color: color.RGBA{R: 208, G: 12, B: 247}}
-	cfg.Help.ShortSeparator = theme.HexColor{Color: lipgloss.Color("#d00cf7")}
+	cfg.Table.HeaderFG = HexColor{Color: lipgloss.White}
+	cfg.Input.Cursor = HexColor{Color: color.RGBA{R: 208, G: 12, B: 247}}
+	cfg.Help.ShortSeparator = HexColor{Color: lipgloss.Color("#d00cf7")}
 
 	got := applyTheme(cfg)
 
-	if got.FG.Color != theme.Default.FG.Color {
-		t.Errorf("FG = %v, want default preset FG %v", got.FG.Color, theme.Default.FG.Color)
+	if got.FG.Color != DefaultTheme.FG.Color {
+		t.Errorf("FG = %v, want default preset FG %v", got.FG.Color, DefaultTheme.FG.Color)
 	}
-	if got.Password.Border.Color != theme.Default.Password.Border.Color {
+	if got.Password.Border.Color != DefaultTheme.Password.Border.Color {
 		t.Errorf(
 			"Password Border = %v, want default preset Password Border %v",
-			got.Password.Border.Color, theme.Default.Password.Border.Color,
+			got.Password.Border.Color, DefaultTheme.Password.Border.Color,
 		)
 	}
 	if got.BG.Color != cfg.BG.Color {
@@ -472,8 +470,8 @@ func TestApplyTheme_PartialOverride(t *testing.T) {
 func TestApplyTheme_Custom(t *testing.T) {
 	cfg := &customTheme{
 		Preset: "custom",
-		BG:     theme.HexColor{Color: lipgloss.Blue},
-		Border: theme.HexColor{Color: lipgloss.BrightMagenta},
+		BG:     HexColor{Color: lipgloss.Blue},
+		Border: HexColor{Color: lipgloss.BrightMagenta},
 	}
 
 	got := applyTheme(cfg)
@@ -490,22 +488,22 @@ func TestApplyTheme_Custom(t *testing.T) {
 			got.Border.Color, cfg.Border.Color,
 		)
 	}
-	if got.FG.Color == theme.Default.FG.Color {
+	if got.FG.Color == DefaultTheme.FG.Color {
 		t.Errorf(
 			"FG = %v, unexpected default FG %v",
-			got.FG.Color, theme.Default.FG.Color,
+			got.FG.Color, DefaultTheme.FG.Color,
 		)
 	}
-	if got.BorderContent.Color == theme.Default.BorderContent.Color {
+	if got.BorderContent.Color == DefaultTheme.BorderContent.Color {
 		t.Errorf(
 			"BorderContent = %v, unexpected BorderContent %v",
-			got.BorderContent.Color, theme.Default.BorderContent.Color,
+			got.BorderContent.Color, DefaultTheme.BorderContent.Color,
 		)
 	}
-	if got.Table.HeaderFG.Color == theme.Default.Table.HeaderFG.Color {
+	if got.Table.HeaderFG.Color == DefaultTheme.Table.HeaderFG.Color {
 		t.Errorf(
 			"Table HeaderFG = %v, unexpected Table HeaderFG %v",
-			got.Table.HeaderFG.Color, theme.Default.Table.HeaderFG.Color,
+			got.Table.HeaderFG.Color, DefaultTheme.Table.HeaderFG.Color,
 		)
 	}
 }
@@ -516,28 +514,28 @@ func TestApplyTheme_NilConfig(t *testing.T) {
 
 	got := applyTheme(cfg)
 
-	if got.FG.Color != theme.Default.FG.Color {
+	if got.FG.Color != DefaultTheme.FG.Color {
 		t.Errorf(
 			"FG = %v, expected default FG %v",
-			got.FG.Color, theme.Default.FG.Color,
+			got.FG.Color, DefaultTheme.FG.Color,
 		)
 	}
-	if got.Success.Color != theme.Default.Success.Color {
+	if got.Success.Color != DefaultTheme.Success.Color {
 		t.Errorf(
 			"Success = %v, expected default Success %v",
-			got.Success.Color, theme.Default.Success.Color,
+			got.Success.Color, DefaultTheme.Success.Color,
 		)
 	}
-	if got.KeybindsModal.GroupText.Color != theme.Default.KeybindsModal.GroupText.Color {
+	if got.KeybindsModal.GroupText.Color != DefaultTheme.KeybindsModal.GroupText.Color {
 		t.Errorf(
 			"KeybindsModal GroupText = %v, expected default KeybindsModal GroupText %v",
-			got.KeybindsModal.GroupText.Color, theme.Default.KeybindsModal.GroupText.Color,
+			got.KeybindsModal.GroupText.Color, DefaultTheme.KeybindsModal.GroupText.Color,
 		)
 	}
-	if got.Help.ShortKey.Color != theme.Default.Help.ShortKey.Color {
+	if got.Help.ShortKey.Color != DefaultTheme.Help.ShortKey.Color {
 		t.Errorf(
 			"Help ShortKey = %v, expected default Help ShortKey %v",
-			got.Help.ShortKey.Color, theme.Default.Help.ShortKey.Color,
+			got.Help.ShortKey.Color, DefaultTheme.Help.ShortKey.Color,
 		)
 	}
 }

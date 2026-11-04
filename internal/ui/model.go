@@ -9,11 +9,9 @@ import (
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	kbmodal "github.com/thecentinol/tuwi/internal/ui/keybindings_modal"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 	"github.com/thecentinol/tuwi/internal/ui/wifi"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 )
@@ -34,8 +32,8 @@ type Model struct {
 	height int
 	focus  Focused
 	help   help.Model
-	keys   keybindings.Keybindings
-	theme  *theme.Theme
+	keys   config.Keybindings
+	theme  *config.Theme
 
 	wifiSaved       wifiui.SavedModel
 	wifiAvailable   wifiui.AvailableModel

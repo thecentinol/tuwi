@@ -6,22 +6,21 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/thecentinol/tuwi/internal/keybindings"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
+	"github.com/thecentinol/tuwi/internal/config"
 )
 
 type TableModel struct {
 	table table.Model
-	theme *theme.Theme
-	keys  keybindings.Keybindings
+	theme *config.Theme
+	keys  config.Keybindings
 	help  help.Model
 }
 
 func NewTable(
 	cols []table.Column,
 	rows []table.Row,
-	keys keybindings.Keybindings,
-	theme *theme.Theme,
+	keys config.Keybindings,
+	theme *config.Theme,
 ) TableModel {
 	t := table.New(
 		table.WithColumns(cols),

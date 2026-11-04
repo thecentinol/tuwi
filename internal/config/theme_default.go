@@ -1,8 +1,8 @@
-package theme
+package config
 
 import "charm.land/lipgloss/v2"
 
-var Default = Theme{
+var DefaultTheme = Theme{
 	FG:                   HexColor{Color: lipgloss.White},
 	Border:               HexColor{Color: lipgloss.Color("238")},
 	BorderFocused:        HexColor{Color: lipgloss.Green},

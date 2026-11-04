@@ -10,17 +10,15 @@ import (
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type AvailableModel struct {
 	client *dbus.Client
 	state  *State
-	theme  *theme.Theme
+	theme  *config.Theme
 
 	// displayedNetworks is used for indexing when slecting
 	// a network to connect to because relying on the state of
@@ -32,7 +30,7 @@ type AvailableModel struct {
 	height    int
 	frameSize [2]int
 
-	keys      keybindings.Keybindings
+	keys      config.Keybindings
 	IsFocused bool
 }
 

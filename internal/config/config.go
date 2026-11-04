@@ -7,9 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
-
-	kb "github.com/thecentinol/tuwi/internal/keybindings"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 // temporary config for decoding into, see loadFile()
@@ -20,23 +17,23 @@ type config struct {
 }
 
 type customTheme struct {
-	Preset string         `toml:"preset"`
-	BG     theme.HexColor `toml:"bg"`
-	FG     theme.HexColor `toml:"fg"`
+	Preset string   `toml:"preset"`
+	BG     HexColor `toml:"bg"`
+	FG     HexColor `toml:"fg"`
 
-	Border               theme.HexColor `toml:"border"`
-	BorderFocused        theme.HexColor `toml:"border-focused"`
-	BorderContent        theme.HexColor `toml:"border-content"`
-	BorderContentFocused theme.HexColor `toml:"border-content-focused"`
+	Border               HexColor `toml:"border"`
+	BorderFocused        HexColor `toml:"border-focused"`
+	BorderContent        HexColor `toml:"border-content"`
+	BorderContentFocused HexColor `toml:"border-content-focused"`
 
-	Success theme.HexColor `toml:"success"`
+	Success HexColor `toml:"success"`
 
-	Table         theme.TableTheme         `toml:"table"`
-	Error         theme.ErrorTheme         `toml:"error-modal"`
-	Password      theme.PasswordTheme      `toml:"password-modal"`
-	Input         theme.InputTheme         `toml:"input"`
-	KeybindsModal theme.KeybindsModalTheme `toml:"keybinds-modal"`
-	Help          theme.HelpTheme          `toml:"help-view"`
+	Table         TableTheme         `toml:"table"`
+	Error         ErrorTheme         `toml:"error-modal"`
+	Password      PasswordTheme      `toml:"password-modal"`
+	Input         InputTheme         `toml:"input"`
+	KeybindsModal KeybindsModalTheme `toml:"keybinds-modal"`
+	Help          HelpTheme          `toml:"help-view"`
 }
 
 type keybinds struct {
@@ -60,13 +57,13 @@ type keybinds struct {
 
 // the config thats used throughout the app
 type AppConfig struct {
-	Theme    theme.Theme
-	Keybinds kb.Keybindings
+	Theme    Theme
+	Keybinds Keybindings
 }
 
 // applies non-nil colors to the *theme.Theme for the following fields exclusively:
 // BG, FG, Border, BorderFocused, BorderContent, BorderContentFocused, Success
-func (c *customTheme) applyTo(t *theme.Theme) {
+func (c *customTheme) applyTo(t *Theme) {
 	if c.BG.Color != nil {
 		t.BG = c.BG
 	}
@@ -148,8 +145,8 @@ func loadFile(path string) (*config, error) {
 
 func defaultConfig() *AppConfig {
 	return &AppConfig{
-		Theme:    theme.Default,
-		Keybinds: kb.Default,
+		Theme:    DefaultTheme,
+		Keybinds: DefaultKeybinds,
 	}
 }
 
@@ -159,7 +156,7 @@ func applyCfg(cfg *config) *AppConfig {
 	t := applyTheme(&cfg.Theme)
 	appCfg.Theme = *t
 
-	applyKeys := func(dst *kb.Binding, keys []string) {
+	applyKeys := func(dst *Binding, keys []string) {
 		if len(keys) > 0 && keys[0] != "" {
 			dst.Keys = keys
 			dst.HelpKey = keys[0]
@@ -186,17 +183,17 @@ func applyCfg(cfg *config) *AppConfig {
 	return appCfg
 }
 
-func applyTheme(ct *customTheme) *theme.Theme {
-	var t theme.Theme
+func applyTheme(ct *customTheme) *Theme {
+	var t Theme
 	switch ct.Preset {
 	case "rose-pine":
-		t = theme.RosePine
+		t = RosePine
 	case "rose-pine-moon":
-		t = theme.RosePineMoon
+		t = RosePineMoon
 	case "custom":
 		// allows full custom theming
 	default:
-		t = theme.Default
+		t = DefaultTheme
 	}
 
 	ct.applyTo(&t)

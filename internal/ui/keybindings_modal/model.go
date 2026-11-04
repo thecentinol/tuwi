@@ -11,16 +11,14 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
-	kb "github.com/thecentinol/tuwi/internal/keybindings"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type Model struct {
-	theme *theme.Theme
+	theme *config.Theme
 	vp    viewport.Model
 
-	keys kb.Keybindings
+	keys config.Keybindings
 	help help.Model
 
 	Height, Width int
@@ -139,7 +137,7 @@ func (m *Model) renderContent() {
 		title := titleStyle.Render("── " + group.Title + " ──")
 
 		bindings := help.FullHelpView([][]key.Binding{
-			kb.ToBubblesBatch(group.Bindings),
+			config.ToBubblesBatch(group.Bindings),
 		})
 
 		section := groupStyle.Render(

@@ -9,12 +9,10 @@ import (
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/events"
-	"github.com/thecentinol/tuwi/internal/keybindings"
-	"github.com/thecentinol/tuwi/internal/ui/theme"
 )
 
 type ErrorModel struct {
-	theme *theme.Theme
+	theme *config.Theme
 	Text  string
 
 	Width     int
@@ -23,7 +21,7 @@ type ErrorModel struct {
 	X         int
 	Y         int
 
-	keys      keybindings.Keybindings
+	keys      config.Keybindings
 	IsFocused bool
 }
 

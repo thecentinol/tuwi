@@ -1,4 +1,4 @@
-package theme
+package config
 
 import (
 	"fmt"
@@ -7,6 +7,12 @@ import (
 
 	"charm.land/lipgloss/v2"
 )
+
+var Themes = map[string]Theme{
+	"base":           DefaultTheme,
+	"rose-pine":      RosePine,
+	"rose-pine-moon": RosePineMoon,
+}
 
 type HexColor struct {
 	color.Color
