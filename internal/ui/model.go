@@ -13,7 +13,6 @@ import (
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	apphelp "github.com/thecentinol/tuwi/internal/ui/help"
 	"github.com/thecentinol/tuwi/internal/ui/wifi"
-	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 )
 
 type Focused string
@@ -35,8 +34,8 @@ type Model struct {
 	keys   config.Keybindings
 	theme  *config.Theme
 
-	wifiSaved       wifiui.SavedModel
-	wifiAvailable   wifiui.AvailableModel
+	wifiSaved       wifi.SavedModel
+	wifiAvailable   wifi.AvailableModel
 	selectedNetwork *nm.AccessPoint
 
 	HelpMenu     apphelp.Model
@@ -58,8 +57,8 @@ func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
 		Client:        client,
 		focus:         FocusWifiSaved,
 		help:          help.New(),
-		wifiSaved:     wifiui.NewWifiSavedModel(client, state, cfg),
-		wifiAvailable: wifiui.NewWifiAvailableModel(client, state, cfg),
+		wifiSaved:     wifi.NewWifiSavedModel(client, state, cfg),
+		wifiAvailable: wifi.NewWifiAvailableModel(client, state, cfg),
 		HelpMenu:      apphelp.NewHelpMenu(cfg),
 		passwordModal: comp.NewPasswordModal(cfg),
 		errorModal:    comp.NewErrorModal(cfg),

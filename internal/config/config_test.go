@@ -355,7 +355,7 @@ func TestApplyTheme_PresetDefault(t *testing.T) {
 // test that the RosePine theme's colors are applied, including the nested sections' colors
 func TestApplyTheme_PresetRosePine(t *testing.T) {
 	cfg := &customTheme{
-		Preset: "rose-pine",
+		Preset: rosePinePreset,
 	}
 
 	got := applyTheme(cfg)
@@ -389,7 +389,7 @@ func TestApplyTheme_PresetRosePine(t *testing.T) {
 // test that the RosePineMoon theme's colors are applied, including the nested sections' colors
 func TestApplyTheme_PresetRosePineMoon(t *testing.T) {
 	cfg := &customTheme{
-		Preset: "rose-pine",
+		Preset: rosePineMoonPreset,
 	}
 
 	got := applyTheme(cfg)
@@ -423,7 +423,7 @@ func TestApplyTheme_PresetRosePineMoon(t *testing.T) {
 // test that the default theme's colors are correctly overridden when customized
 func TestApplyTheme_PartialOverride(t *testing.T) {
 	cfg := &customTheme{
-		Preset: "default",
+		Preset: defaultPreset,
 		BG:     HexColor{Color: lipgloss.Black},
 	}
 
@@ -469,7 +469,7 @@ func TestApplyTheme_PartialOverride(t *testing.T) {
 // test that a fully custom theme's colors are applied with no defaults overriding any
 func TestApplyTheme_Custom(t *testing.T) {
 	cfg := &customTheme{
-		Preset: "custom",
+		Preset: customPreset,
 		BG:     HexColor{Color: lipgloss.Blue},
 		Border: HexColor{Color: lipgloss.BrightMagenta},
 	}

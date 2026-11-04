@@ -131,10 +131,10 @@ func loadFile(path string) (*config, error) {
 		return nil, fmt.Errorf("error %s occurred at row %v column %v", derr.String(), row, col)
 	}
 	validThemes := map[string]struct{}{
-		"default":        {},
-		"rose-pine":      {},
-		"rose-pine-moon": {},
-		"custom":         {},
+		defaultPreset:      {},
+		customPreset:       {},
+		rosePinePreset:     {},
+		rosePineMoonPreset: {},
 	}
 	if _, valid := validThemes[cfg.Theme.Preset]; !valid && cfg.Theme.Preset != "" {
 		return nil, fmt.Errorf("invalid theme preset")
@@ -186,11 +186,11 @@ func applyCfg(cfg *config) *AppConfig {
 func applyTheme(ct *customTheme) *Theme {
 	var t Theme
 	switch ct.Preset {
-	case "rose-pine":
+	case rosePinePreset:
 		t = RosePine
-	case "rose-pine-moon":
+	case rosePineMoonPreset:
 		t = RosePineMoon
-	case "custom":
+	case customPreset:
 		// allows full custom theming
 	default:
 		t = DefaultTheme

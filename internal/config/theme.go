@@ -8,10 +8,17 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+const (
+	defaultPreset      string = "default"
+	customPreset       string = "custom"
+	rosePinePreset     string = "rose-pine"
+	rosePineMoonPreset string = "rose-pine-moon"
+)
+
 var Themes = map[string]Theme{
-	"base":           DefaultTheme,
-	"rose-pine":      RosePine,
-	"rose-pine-moon": RosePineMoon,
+	defaultPreset:      DefaultTheme,
+	rosePinePreset:     RosePine,
+	rosePineMoonPreset: RosePineMoon,
 }
 
 type HexColor struct {
