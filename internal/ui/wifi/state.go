@@ -1,4 +1,4 @@
-package service
+package wifi
 
 import (
 	"slices"
@@ -6,6 +6,7 @@ import (
 	godbus "github.com/godbus/dbus/v5"
 
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
+	"github.com/thecentinol/tuwi/internal/service"
 )
 
 type State struct {
@@ -68,7 +69,7 @@ func (s *State) RemoveAvailable(apPath godbus.ObjectPath) {
 }
 
 func (s *State) RefreshNearby() {
-	s.Nearby = DisplaySavedConnections(
+	s.Nearby = service.DisplaySavedConnections(
 		s.Saved, s.Available,
 	)
 }

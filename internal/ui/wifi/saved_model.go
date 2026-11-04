@@ -19,7 +19,7 @@ import (
 
 type SavedModel struct {
 	client *dbus.Client
-	state  *service.State
+	state  *State
 	theme  *theme.Theme
 
 	Table comp.TableModel
@@ -33,7 +33,7 @@ type SavedModel struct {
 
 func NewWifiSavedModel(
 	c *dbus.Client,
-	state *service.State,
+	state *State,
 	cfg config.AppConfig,
 ) SavedModel {
 	return SavedModel{

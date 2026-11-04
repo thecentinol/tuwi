@@ -11,10 +11,10 @@ import (
 	"github.com/thecentinol/tuwi/internal/events"
 	"github.com/thecentinol/tuwi/internal/keybindings"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
-	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	kbmodal "github.com/thecentinol/tuwi/internal/ui/keybindings_modal"
 	"github.com/thecentinol/tuwi/internal/ui/theme"
+	"github.com/thecentinol/tuwi/internal/ui/wifi"
 	wifiui "github.com/thecentinol/tuwi/internal/ui/wifi"
 )
 
@@ -54,7 +54,7 @@ type Model struct {
 }
 
 func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
-	state := &service.State{}
+	state := &wifi.State{}
 
 	return Model{
 		Client:           client,

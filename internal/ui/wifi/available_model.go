@@ -19,7 +19,7 @@ import (
 
 type AvailableModel struct {
 	client *dbus.Client
-	state  *service.State
+	state  *State
 	theme  *theme.Theme
 
 	// displayedNetworks is used for indexing when slecting
@@ -38,7 +38,7 @@ type AvailableModel struct {
 
 func NewWifiAvailableModel(
 	c *dbus.Client,
-	state *service.State,
+	state *State,
 	cfg config.AppConfig,
 ) AvailableModel {
 	return AvailableModel{
