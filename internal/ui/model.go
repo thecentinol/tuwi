@@ -244,9 +244,6 @@ func (m Model) View() tea.View {
 func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 	switch {
-	case key.Matches(msg, m.keys.FocusedInfoPane.ToBubbles()):
-		m.focus = FocusInfoPane
-
 	case m.showPasswordModal:
 		m.passwordModal, cmd = m.passwordModal.Update(msg)
 
@@ -269,6 +266,9 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 
 	case key.Matches(msg, m.keys.FocusedWifiAvailable.ToBubbles()):
 		m.focus = FocusWifiAvailable
+
+	case key.Matches(msg, m.keys.FocusedInfoPane.ToBubbles()):
+		m.focus = FocusInfoPane
 
 	case m.wifiSaved.IsFocused:
 		m.wifiSaved, cmd = m.wifiSaved.Update(msg)
@@ -297,6 +297,9 @@ func (m Model) HelpView() string {
 	}
 	if m.focus == FocusWifiAvailable && !m.showPasswordModal {
 		help = append(help, m.wifiAvailable.HelpView()...)
+	}
+	if m.focus == FocusInfoPane && !m.showPasswordModal {
+		help = append(help, m.infoPane.HelpView()...)
 	}
 
 	help = append(help, m.keys.Quit.ToBubbles())
