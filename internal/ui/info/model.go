@@ -92,3 +92,19 @@ func (m *Model) SetDimensions(w, h int) {
 	m.vp.SetWidth(w)
 	m.vp.SetHeight(h - 2)
 }
+
+func (m Model) HelpView() []key.Binding {
+	// Override default help descriptions
+	scrollUp := m.keys.Up.ToBubbles()
+	scrollDown := m.keys.Down.ToBubbles()
+	scrollUp.SetHelp(m.keys.Up.HelpKey, "Scroll up")
+	scrollDown.SetHelp(m.keys.Down.HelpKey, "Scroll down")
+
+	bindings := []key.Binding{
+		scrollUp,
+		scrollDown,
+		m.keys.GotoTop.ToBubbles(),
+		m.keys.GotoBottom.ToBubbles(),
+	}
+	return bindings
+}
