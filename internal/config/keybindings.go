@@ -34,6 +34,7 @@ type Keybindings struct {
 	// Global
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
+	FocusedInfoPane      Binding
 	Cancel               Binding
 	OpenHelpMenu         Binding // NOTE: Cancel is used to close the modal
 	Quit                 Binding
@@ -95,6 +96,14 @@ var DefaultKeybinds = Keybindings{
 		HelpKey:         "2",
 		HelpDescription: "",
 		Description:     "Switch focus to available wifi networks pane",
+	},
+	FocusedInfoPane: Binding{
+		ViewName:        globalView,
+		Group:           globalGroup,
+		Keys:            []string{"3"},
+		HelpKey:         "3",
+		HelpDescription: "",
+		Description:     "Switch focus to info pane",
 	},
 	Cancel: Binding{
 		ViewName:        globalView,
