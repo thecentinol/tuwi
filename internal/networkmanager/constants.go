@@ -236,6 +236,12 @@ const (
 	NmSecMgmtOwe       = 0x00000800
 	NmSecMgmtOweTm     = 0x00001000
 	NmSecMgmtSuiteB192 = 0x00002000 // WPA3 Enterprise Suite-B
+
+	NmApModeUnknown = 0
+	NmApModeAdhoc   = 1
+	NmApModeInfra   = 2
+	NmApModeAp      = 3
+	NmApModeMesh    = 4
 )
 
 // Wi-Fi Access Point
