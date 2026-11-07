@@ -6,18 +6,24 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
 
-type ShowPasswordModalMsg struct {
-	Network *nm.AccessPoint
+type (
+	ShowPasswordModalMsg struct {
+		Network *nm.AccessPoint
+	}
+	PasswordResultMsg struct {
+		Cancelled bool
+		Password  string
+	}
+)
+
+type (
+	OpenHelpMenuMsg  struct{}
+	CloseHelpMenuMsg struct{}
+)
+
+type TableCursorMovedMsg struct {
+	Idx int
 }
-
-type PasswordResultMsg struct {
-	Cancelled bool
-	Password  string
-}
-
-type OpenHelpMenuMsg struct{}
-
-type CloseHelpMenuMsg struct{}
 
 // returns OpenHelpMenuMsg{}
 func OpenHelpMenu() tea.Cmd {
