@@ -1,15 +1,22 @@
 package info
 
 import (
+	"strings"
+
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
-	nm "github.com/thecentinol/tuwi/internal/networkmanager"
-	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+)
+
+const (
+	// SetContent
+	indent     = 2 // left margin for every row
+	contentGap = 2 // space between the label column and the values
 )
 
 type Model struct {
@@ -107,4 +114,43 @@ func (m Model) HelpView() []key.Binding {
 		m.keys.GotoBottom.ToBubbles(),
 	}
 	return bindings
+}
+
+func (m *Model) SetContent(fields []Field) {
+	m.Fields = fields
+	var builder strings.Builder
+
+	labelW := 0
+	for _, f := range m.Fields {
+		labelW = max(labelW, lipgloss.Width(f.Label))
+	}
+
+	labelStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(m.theme.Success).
+		Width(labelW + contentGap)
+
+	valueStyle := lipgloss.NewStyle().
+		Width(max(m.vp.Width()-labelW-contentGap, 1))
+
+	fieldStyle := lipgloss.NewStyle().
+		PaddingLeft(1)
+
+	for _, f := range m.Fields {
+		label := labelStyle.Render(f.Label)
+		value := valueStyle.Render(f.Value)
+
+		field := fieldStyle.Render(
+			lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				label,
+				value,
+			),
+		)
+
+		builder.WriteString(field) //nolint:revive // the length and nil error are redundant
+		builder.WriteString("\n")  //nolint:revive // the length and nil error are redundant
+	}
+
+	m.vp.SetContent(builder.String())
 }
