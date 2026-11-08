@@ -107,6 +107,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	case events.SavedWifiMsg:
 		s.state.SetSaved(msg.Networks)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.AvailableWifiMsg:
 		s.state.SetAvailable(msg.Networks)
@@ -119,10 +120,12 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		}
 		s.state.AddSaved(*conn)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.ConnectionRemovedMsg:
 		s.state.RemoveSaved(msg.ConnectionPath)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.UpdateActiveConnectionMsg:
 		an, err := service.GetActiveNetwork(s.client)
@@ -133,10 +136,12 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			s.state.SetActiveConnection(*an)
 			s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 		}
+		return s, events.WifiListChanged()
 
 	case events.ClearActiveConnectionMsg:
 		s.state.ClearActiveConnection()
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 	}
 
 	s.Table, cmd = s.Table.Update(msg)

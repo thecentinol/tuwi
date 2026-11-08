@@ -95,6 +95,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
@@ -109,6 +110,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
@@ -123,6 +125,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.WifiConnectReqMsg:
 		err := service.ConnectSecured(

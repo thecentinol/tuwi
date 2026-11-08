@@ -106,6 +106,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.setDimensions()
 
+	case events.WifiListChangedMsg:
+		m.syncInfoPane()
+
+	case events.TableCursorMovedMsg:
+		m.syncInfoPane()
+
 	case events.OpenHelpMenuMsg:
 		m.showHelpMenu = true
 		return m, m.HelpMenu.Init()
@@ -263,9 +269,11 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 
 	case key.Matches(msg, m.keys.FocusedWifiSaved.ToBubbles()):
 		m.focus = FocusWifiSaved
+		m.syncInfoPane()
 
 	case key.Matches(msg, m.keys.FocusedWifiAvailable.ToBubbles()):
 		m.focus = FocusWifiAvailable
+		m.syncInfoPane()
 
 	case key.Matches(msg, m.keys.FocusedInfoPane.ToBubbles()):
 		m.focus = FocusInfoPane
@@ -275,6 +283,9 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 
 	case m.wifiAvailable.IsFocused:
 		m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
+
+	case m.infoPane.Focused:
+		m.infoPane, cmd = m.infoPane.Update(msg)
 	}
 
 	return cmd
@@ -331,4 +342,13 @@ func (m Model) HelpView() string {
 		Foreground(m.theme.HelpView.FullSeparator)
 
 	return render.ShortHelpView(help)
+}
+
+func (m *Model) syncInfoPane() {
+	switch m.focus {
+	case FocusWifiSaved:
+		m.infoPane.SetContent(m.wifiSaved.InfoFields())
+	case FocusWifiAvailable:
+		m.infoPane.SetContent(m.wifiAvailable.InfoFields())
+	}
 }
