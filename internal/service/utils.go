@@ -189,3 +189,49 @@ func FormatAccessPointMode(mode uint32) string {
 func FormatBandwidth(hertz uint32) string {
 	return strconv.FormatUint(uint64(hertz), 10) + " MHz"
 }
+
+func FormatSavedConnectionBand(band string) string {
+	switch band {
+	case "":
+		return "Any"
+	case "a":
+		return "5 Ghz only"
+	case "bg":
+		return "2.4 Ghz only"
+	case "6Ghz":
+		return "6 Ghz only"
+	}
+
+	return band
+}
+
+func FormatSavedConnectionProto(p []string) string {
+	if p == nil {
+		return "allow WPA/RSN"
+	}
+
+	return FormatList(p)
+}
+
+// formats the NMSettingSecretFlags
+func FormatSecretFlags(f nm.SecretFlags) string {
+	if f == nm.CspSettingSecretFlagNone {
+		return "System managed"
+	}
+
+	var flags []string
+	if f.Has(nm.CspSettingSecretFlagAgentOwned) {
+		flags = append(flags, "Managed by agent")
+	}
+	if f.Has(nm.CspSettingSecretFlagNotSaved) {
+		flags = append(flags, "Ask every time")
+	}
+	if f.Has(nm.CspSettingSecretFlagNotRequired) {
+		flags = append(flags, "Not required")
+	}
+	if unknown := f &^ nm.CspSettingSecretFlagsKnown; unknown != 0 {
+		flags = append(flags, fmt.Sprintf("0x%x", uint32(unknown)))
+	}
+
+	return strings.Join(flags, ", ")
+}
