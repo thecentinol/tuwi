@@ -120,6 +120,27 @@ const (
 	CspUnsaved  = baseSettConnServiceName + ".Unsaved"
 	CspFlags    = baseSettConnServiceName + ".Flags"
 	CspFilename = baseSettConnServiceName + ".Filename"
+
+	// NMSettingSecretFlags
+	CspSettingSecretFlagNone        SecretFlags = 0
+	CspSettingSecretFlagAgentOwned  SecretFlags = 1 << 0
+	CspSettingSecretFlagNotSaved    SecretFlags = 1 << 1
+	CspSettingSecretFlagNotRequired SecretFlags = 1 << 2
+	CspSettingSecretFlagsKnown                  = CspSettingSecretFlagAgentOwned |
+		CspSettingSecretFlagNotSaved | CspSettingSecretFlagNotRequired
+
+	// NMWepKeyType
+	CspWepKeyTypeUnknown    WepKeyType = 0
+	CspWepKeyTypeKey        WepKeyType = 1
+	CspWepKeyTypePassphrase WepKeyType = 2
+
+	// wps-method flags
+	CspWpsMethodDefault    WpsMethod = 0
+	CspWpsMethodDisabled   WpsMethod = 1 << 0
+	CspWpsMethodAuto       WpsMethod = 1 << 1
+	CspWpsMethodPbc        WpsMethod = 1 << 2
+	CspWpsMethodPin        WpsMethod = 1 << 3
+	CspWpsMethodPinDisplay WpsMethod = 1 << 4
 )
 
 // Device
