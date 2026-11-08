@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+	"strconv"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
@@ -13,6 +14,7 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/info"
 )
 
 type SavedModel struct {
@@ -195,4 +197,47 @@ func (s *SavedModel) setSavedColumns() {
 		{Title: "Signal", Width: colWidth},
 	}
 	s.Table.SetColumns(cols)
+}
+
+func (s *SavedModel) InfoFields() []info.Field {
+	i := s.Table.Cursor()
+	if i < 0 || i >= len(s.state.Saved) {
+		return nil
+	}
+
+	sc := s.state.Saved[i]
+	// TODO: replace magic num 16 with const
+	fields := make([]info.Field, 0, 16)
+
+	add := func(label, value string) {
+		fields = append(fields, info.Field{Label: label, Value: value})
+	}
+
+	addIf := func(label, value string) {
+		if value != "" {
+			add(label, value)
+		}
+	}
+
+	add("ConnectionPath", string(sc.ConnectionPath))
+
+	add("UUID", string(sc.UUID))
+	add("Auto Connect", strconv.FormatBool(sc.AutoConnect))
+
+	add("SSID", sc.SSID)
+	add("Seen BSSIDs", service.FormatList(sc.BSSIDs))
+	add("Mode", string(sc.Mode))
+	add("Band", service.FormatSavedConnectionBand(sc.Band))
+	add("Hidden", strconv.FormatBool(sc.Hidden))
+	addIf("Mac Address", sc.MacAddress)
+
+	add("Key Mgmt", sc.KeyMgmt)
+	add("Auth Alg", string(sc.AuthAlg))
+	add("Proto", service.FormatSavedConnectionProto(sc.Proto))
+	add("PSK Flags", service.FormatSecretFlags(nm.SecretFlags(sc.PskFlags)))
+	add("WEP Key Flags", service.FormatSecretFlags(nm.SecretFlags(sc.WepKeyFlags)))
+	add("WEP Key Type", sc.WepKeyType.String())
+	add("WPS Method", sc.WpsMethod.String())
+
+	return fields
 }
