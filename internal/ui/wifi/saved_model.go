@@ -78,9 +78,11 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected == nil {
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
-			_, err := service.ConnectSaved(s.client, *selected)
-			if err != nil {
-				return s, events.ShowError(err)
+			if selected.Connection.ConnectionPath != s.state.ActiveConnection.Connection {
+				_, err := service.ConnectSaved(s.client, *selected)
+				if err != nil {
+					return s, events.ShowError(err)
+				}
 			}
 
 		case key.Matches(msg, s.keys.WifiDisconnect.ToBubbles()):
