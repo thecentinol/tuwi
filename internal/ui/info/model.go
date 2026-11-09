@@ -1,30 +1,22 @@
 package info
 
 import (
-	"strings"
-
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbles/v2/viewport"
+	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 )
 
-const (
-	// SetContent
-	indent     = 2 // left margin for every row
-	contentGap = 2 // space between the label column and the values
-)
-
 type Model struct {
 	client *dbus.Client
-	vp     viewport.Model
 	theme  *config.Theme
 	keys   config.Keybindings
+
 	Fields []Field
+	Table  InfoTableModel
 
 	width,
 	height int
@@ -43,9 +35,14 @@ func NewInfoModel(
 ) Model {
 	return Model{
 		client: c,
-		vp:     viewport.New(),
 		theme:  &cfg.Theme,
 		keys:   cfg.Keybinds,
+		Table: NewInfoTable(
+			[]table.Column{},
+			[]table.Row{},
+			cfg.Keybinds,
+			&cfg.Theme,
+		),
 	}
 }
 
@@ -54,32 +51,10 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	cmds := make([]tea.Cmd, 0, 1)
 	var cmd tea.Cmd
+	m.Table, cmd = m.Table.Update(msg)
 
-	switch msg := msg.(type) {
-	case tea.KeyPressMsg:
-		switch {
-		case key.Matches(msg, m.keys.Up.ToBubbles()):
-			m.vp.ScrollUp(3)
-
-		case key.Matches(msg, m.keys.Down.ToBubbles()):
-			m.vp.ScrollDown(3)
-
-		case key.Matches(msg, m.keys.GotoTop.ToBubbles()):
-			m.vp.GotoTop()
-			return m, nil
-
-		case key.Matches(msg, m.keys.GotoBottom.ToBubbles()):
-			m.vp.GotoBottom()
-			return m, nil
-		}
-	}
-
-	m.vp, cmd = m.vp.Update(msg)
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
 func (m Model) View() tea.View {
@@ -91,13 +66,28 @@ func (m Model) View() tea.View {
 	}
 	title := comp.NewBorderContent(borderColor.Color, borderContent.Color, m.height)
 
-	return tea.NewView(title.Render("[3]-Info", m.vp.View(), m.width))
+	return tea.NewView(title.Render("[3]-Info", m.Table.View().Content, m.width))
 }
 
 func (m *Model) SetDimensions(w, h int) {
-	m.width, m.height = w, h
-	m.vp.SetWidth(w)
-	m.vp.SetHeight(h - 2)
+	m.width = w
+	m.setColumnsBro()
+
+	m.height = h
+
+	m.Table.SetWidth(w)
+	m.Table.SetHeight(h - 2)
+}
+
+func (m *Model) setColumnsBro() {
+	labelWidth := ((m.width * 1) / 3) - 3
+	valueWidth := ((m.width * 2) / 3) - 3
+
+	cols := []table.Column{
+		{Title: "", Width: labelWidth},
+		{Title: "", Width: valueWidth},
+	}
+	m.Table.SetColumns(cols)
 }
 
 func (m Model) HelpView() []key.Binding {
@@ -118,39 +108,14 @@ func (m Model) HelpView() []key.Binding {
 
 func (m *Model) SetContent(fields []Field) {
 	m.Fields = fields
-	var builder strings.Builder
 
-	labelW := 0
-	for _, f := range m.Fields {
-		labelW = max(labelW, lipgloss.Width(f.Label))
+	rows := make([]table.Row, 0, len(fields))
+	for _, f := range fields {
+		rows = append(rows, table.Row{
+			f.Label,
+			f.Value,
+		})
 	}
 
-	labelStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(m.theme.Success).
-		Width(labelW + contentGap)
-
-	valueStyle := lipgloss.NewStyle().
-		Width(max(m.vp.Width()-labelW-contentGap, 1))
-
-	fieldStyle := lipgloss.NewStyle().
-		PaddingLeft(1)
-
-	for _, f := range m.Fields {
-		label := labelStyle.Render(f.Label)
-		value := valueStyle.Render(f.Value)
-
-		field := fieldStyle.Render(
-			lipgloss.JoinHorizontal(
-				lipgloss.Top,
-				label,
-				value,
-			),
-		)
-
-		builder.WriteString(field) //nolint:revive // the length and nil error are redundant
-		builder.WriteString("\n")  //nolint:revive // the length and nil error are redundant
-	}
-
-	m.vp.SetContent(builder.String())
+	m.Table.SetRows(rows)
 }
