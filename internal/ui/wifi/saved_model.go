@@ -230,7 +230,7 @@ func (s *SavedModel) InfoFields() []info.Field {
 	add("Auto Connect", strconv.FormatBool(sc.AutoConnect))
 
 	add("SSID", sc.SSID)
-	add("Seen BSSIDs", service.FormatList(sc.BSSIDs))
+	add("Seen BSSIDs", service.FormatSlice(sc.BSSIDs))
 	add("Mode", string(sc.Mode))
 	add("Band", service.FormatSavedConnectionBand(sc.Band))
 	add("Hidden", strconv.FormatBool(sc.Hidden))

@@ -163,12 +163,12 @@ func FormatLastSeen(t time.Time) string {
 	return t.Format(time.TimeOnly)
 }
 
-// FormatList joins items one per line, or returns "—" if there are none.
-func FormatList(items []string) string {
+// Joins items separated by a `;`, or returns "—" if there are none.
+func FormatSlice(items []string) string {
 	if len(items) == 0 {
 		return "—"
 	}
-	return strings.Join(items, "\n")
+	return strings.Join(items, "; ")
 }
 
 func FormatAccessPointMode(mode uint32) string {
@@ -210,7 +210,7 @@ func FormatSavedConnectionProto(p []string) string {
 		return "allow WPA/RSN"
 	}
 
-	return FormatList(p)
+	return FormatSlice(p)
 }
 
 // formats the NMSettingSecretFlags
