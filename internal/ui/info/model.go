@@ -1,12 +1,16 @@
 package info
 
 import (
+	"fmt"
+
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
+	"github.com/atotto/clipboard"
 
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
+	"github.com/thecentinol/tuwi/internal/events"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 )
 
@@ -52,6 +56,18 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch {
+		case key.Matches(msg, m.keys.CopyInfoField.ToBubbles()):
+			err := m.Copy()
+			if err != nil {
+				return m, events.ShowError(fmt.Errorf("failed to copy to clipboard: %w", err))
+			}
+		}
+	}
+
 	m.Table, cmd = m.Table.Update(msg)
 
 	return m, cmd
@@ -91,17 +107,12 @@ func (m *Model) setColumnsBro() {
 }
 
 func (m Model) HelpView() []key.Binding {
-	// Override default help descriptions
-	scrollUp := m.keys.Up.ToBubbles()
-	scrollDown := m.keys.Down.ToBubbles()
-	scrollUp.SetHelp(m.keys.Up.HelpKey, "Scroll up")
-	scrollDown.SetHelp(m.keys.Down.HelpKey, "Scroll down")
-
 	bindings := []key.Binding{
-		scrollUp,
-		scrollDown,
+		m.keys.Up.ToBubbles(),
+		m.keys.Down.ToBubbles(),
 		m.keys.GotoTop.ToBubbles(),
 		m.keys.GotoBottom.ToBubbles(),
+		m.keys.CopyInfoField.ToBubbles(),
 	}
 	return bindings
 }
@@ -118,4 +129,18 @@ func (m *Model) SetContent(fields []Field) {
 	}
 
 	m.Table.SetRows(rows)
+}
+
+// copy the Value of a Field
+func (m *Model) Copy() error {
+	if len(m.Fields) == 0 {
+		return nil
+	}
+
+	field := m.Fields[m.Table.Cursor()]
+	if err := clipboard.WriteAll(field.Value); err != nil {
+		return err
+	}
+
+	return nil
 }
