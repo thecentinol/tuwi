@@ -50,6 +50,9 @@ func (t *InfoTableModel) SetColumns(cols []table.Column) {
 
 func (t *InfoTableModel) SetRows(rows []table.Row) {
 	t.Table.SetRows(rows)
+	if len(rows) > 0 && t.Cursor() < 0 {
+		t.Table.SetCursor(0)
+	}
 }
 
 func (t *InfoTableModel) SetHeight(height int) {

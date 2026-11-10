@@ -53,6 +53,9 @@ func (t *TableModel) SetColumns(cols []table.Column) {
 
 func (t *TableModel) SetRows(rows []table.Row) {
 	t.table.SetRows(rows)
+	if len(rows) > 0 && t.Cursor() < 0 {
+		t.table.SetCursor(0)
+	}
 }
 
 func (t *TableModel) SetHeight(height int) {
