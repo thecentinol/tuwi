@@ -233,8 +233,8 @@ func (a *AvailableModel) setAvailableColumns() {
 	colWidth := (a.width / 5) - 3
 
 	cols := []table.Column{
-		{Title: "SSID", Width: colWidth},
-		{Title: "Security", Width: colWidth},
+		{Title: labelSSID, Width: colWidth},
+		{Title: labelSecurity, Width: colWidth},
 		{Title: "Freq", Width: colWidth},
 		{Title: "Signal", Width: colWidth},
 		{Title: "Channel", Width: colWidth},
@@ -251,14 +251,14 @@ func (a *AvailableModel) InfoFields() []info.Field {
 	ap := a.displayedNetworks[i]
 
 	return []info.Field{
-		{Label: "SSID", Value: service.FormatSSID(ap.SSID)},
+		{Label: labelSSID, Value: service.FormatSSID(ap.SSID)},
 		{Label: "Frequency", Value: fmt.Sprintf("%s (Ch %v)",
 			service.FormatFrequencyLong(ap.Frequency),
 			service.DetermineChannel(ap.Frequency),
 		)},
 		{Label: "BSSID", Value: string(ap.BSSID)},
 		{
-			Label: "Security",
+			Label: labelSecurity,
 			Value: service.DetermineSecurityType(ap.Flags, ap.WpaFlags, ap.RsnFlags),
 		},
 		{Label: "Mode", Value: service.FormatAccessPointMode(ap.Mode)},

@@ -195,9 +195,9 @@ func (s *SavedModel) setSavedColumns() {
 	colWidth := (s.width / 5) - 3
 
 	cols := []table.Column{
-		{Title: "SSID", Width: colWidth},
+		{Title: labelSSID, Width: colWidth},
 		{Title: "Status", Width: colWidth},
-		{Title: "Security", Width: colWidth},
+		{Title: labelSecurity, Width: colWidth},
 		{Title: "Hidden", Width: colWidth},
 		{Title: "Signal", Width: colWidth},
 	}
@@ -229,7 +229,7 @@ func (s *SavedModel) InfoFields() []info.Field {
 	add("UUID", string(sc.UUID))
 	add("Auto Connect", strconv.FormatBool(sc.AutoConnect))
 
-	add("SSID", sc.SSID)
+	add(labelSSID, sc.SSID)
 	add("Seen BSSIDs", service.FormatSlice(sc.BSSIDs))
 	add("Mode", string(sc.Mode))
 	add("Band", service.FormatSavedConnectionBand(sc.Band))
