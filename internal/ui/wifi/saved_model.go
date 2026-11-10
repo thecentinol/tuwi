@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+	"strconv"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
@@ -13,6 +14,7 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/info"
 )
 
 type SavedModel struct {
@@ -105,6 +107,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	case events.SavedWifiMsg:
 		s.state.SetSaved(msg.Networks)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.AvailableWifiMsg:
 		s.state.SetAvailable(msg.Networks)
@@ -117,10 +120,12 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		}
 		s.state.AddSaved(*conn)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.ConnectionRemovedMsg:
 		s.state.RemoveSaved(msg.ConnectionPath)
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 
 	case events.UpdateActiveConnectionMsg:
 		an, err := service.GetActiveNetwork(s.client)
@@ -131,10 +136,12 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			s.state.SetActiveConnection(*an)
 			s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
 		}
+		return s, events.WifiListChanged()
 
 	case events.ClearActiveConnectionMsg:
 		s.state.ClearActiveConnection()
 		s.Table.SetRows(setSavedRows(s.state.Nearby, &s.state.ActiveConnection))
+		return s, events.WifiListChanged()
 	}
 
 	s.Table, cmd = s.Table.Update(msg)
@@ -188,11 +195,54 @@ func (s *SavedModel) setSavedColumns() {
 	colWidth := (s.width / 5) - 3
 
 	cols := []table.Column{
-		{Title: "SSID", Width: colWidth},
+		{Title: labelSSID, Width: colWidth},
 		{Title: "Status", Width: colWidth},
-		{Title: "Security", Width: colWidth},
+		{Title: labelSecurity, Width: colWidth},
 		{Title: "Hidden", Width: colWidth},
 		{Title: "Signal", Width: colWidth},
 	}
 	s.Table.SetColumns(cols)
+}
+
+func (s *SavedModel) InfoFields() []info.Field {
+	i := s.Table.Cursor()
+	if i < 0 || i >= len(s.state.Saved) {
+		return nil
+	}
+
+	sc := s.state.Saved[i]
+	// TODO: replace magic num 16 with const
+	fields := make([]info.Field, 0, 16)
+
+	add := func(label, value string) {
+		fields = append(fields, info.Field{Label: label, Value: value})
+	}
+
+	addIf := func(label, value string) {
+		if value != "" {
+			add(label, value)
+		}
+	}
+
+	add("ConnectionPath", string(sc.ConnectionPath))
+
+	add("UUID", string(sc.UUID))
+	add("Auto Connect", strconv.FormatBool(sc.AutoConnect))
+
+	add(labelSSID, sc.SSID)
+	add("Seen BSSIDs", service.FormatSlice(sc.BSSIDs))
+	add("Mode", string(sc.Mode))
+	add("Band", service.FormatSavedConnectionBand(sc.Band))
+	add("Hidden", strconv.FormatBool(sc.Hidden))
+	addIf("Mac Address", sc.MacAddress)
+
+	add("Key Mgmt", sc.KeyMgmt)
+	add("Auth Alg", string(sc.AuthAlg))
+	add("Proto", service.FormatSavedConnectionProto(sc.Proto))
+	add("PSK Flags", service.FormatSecretFlags(nm.SecretFlags(sc.PskFlags)))
+	add("WEP Key Flags", service.FormatSecretFlags(nm.SecretFlags(sc.WepKeyFlags)))
+	add("WEP Key Type", sc.WepKeyType.String())
+	add("WPS Method", sc.WpsMethod.String())
+
+	return fields
 }

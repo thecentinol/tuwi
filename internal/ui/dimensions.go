@@ -11,11 +11,12 @@ import (
 func (m *Model) setDimensions() {
 	helpViewHeight := 2
 
-	setWifiDimensions(&m.wifiSaved, &m.wifiAvailable, m.width/2, m.height-helpViewHeight,
+	setWifiDimensions(&m.wifiSaved, &m.wifiAvailable, (m.width*2)/3, m.height-helpViewHeight,
 		m.height-helpViewHeight-2)
 	setHelpMenuDimensions(&m.HelpMenu, m.width, m.height)
 	setPasswordModalDimensionsAndPos(&m.passwordModal, m.width, m.height, m.width/3)
 	setErrorModalDimensionsAndPos(&m.errorModal, m.width, m.height)
+	m.infoPane.SetDimensions(m.width/3, m.height-helpViewHeight)
 }
 
 func setWifiDimensions(
@@ -24,14 +25,14 @@ func setWifiDimensions(
 	width, height, tableHeight int,
 ) {
 	saved.SetWidth(width)
-	saved.Setheight(height)
-	saved.Table.SetWidth(width)
-	saved.Table.SetHeight(tableHeight)
+	saved.Setheight(height / 2)
+	saved.Table.SetWidth(width + 10)
+	saved.Table.SetHeight(tableHeight / 2)
 
 	available.SetWidth(width)
-	available.Setheight(height)
+	available.Setheight(height / 2)
 	available.Table.SetWidth(width)
-	available.Table.SetHeight(tableHeight)
+	available.Table.SetHeight(tableHeight / 2)
 }
 
 func setHelpMenuDimensions(m *apphelp.Model, parentWidth, parentHeight int) {

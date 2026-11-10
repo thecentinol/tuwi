@@ -120,6 +120,27 @@ const (
 	CspUnsaved  = baseSettConnServiceName + ".Unsaved"
 	CspFlags    = baseSettConnServiceName + ".Flags"
 	CspFilename = baseSettConnServiceName + ".Filename"
+
+	// NMSettingSecretFlags
+	CspSettingSecretFlagNone        SecretFlags = 0
+	CspSettingSecretFlagAgentOwned  SecretFlags = 1 << 0
+	CspSettingSecretFlagNotSaved    SecretFlags = 1 << 1
+	CspSettingSecretFlagNotRequired SecretFlags = 1 << 2
+	CspSettingSecretFlagsKnown                  = CspSettingSecretFlagAgentOwned |
+		CspSettingSecretFlagNotSaved | CspSettingSecretFlagNotRequired
+
+	// NMWepKeyType
+	CspWepKeyTypeUnknown    WepKeyType = 0
+	CspWepKeyTypeKey        WepKeyType = 1
+	CspWepKeyTypePassphrase WepKeyType = 2
+
+	// wps-method flags
+	CspWpsMethodDefault    WpsMethod = 0
+	CspWpsMethodDisabled   WpsMethod = 1 << 0
+	CspWpsMethodAuto       WpsMethod = 1 << 1
+	CspWpsMethodPbc        WpsMethod = 1 << 2
+	CspWpsMethodPin        WpsMethod = 1 << 3
+	CspWpsMethodPinDisplay WpsMethod = 1 << 4
 )
 
 // Device
@@ -236,6 +257,12 @@ const (
 	NmSecMgmtOwe       = 0x00000800
 	NmSecMgmtOweTm     = 0x00001000
 	NmSecMgmtSuiteB192 = 0x00002000 // WPA3 Enterprise Suite-B
+
+	NmApModeUnknown = 0
+	NmApModeAdhoc   = 1
+	NmApModeInfra   = 2
+	NmApModeAp      = 3
+	NmApModeMesh    = 4
 )
 
 // Wi-Fi Access Point

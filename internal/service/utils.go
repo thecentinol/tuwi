@@ -1,7 +1,12 @@
 package service
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
+	"time"
+
+	"golang.org/x/sys/unix"
 
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 )
@@ -73,6 +78,11 @@ func DetermineFrequency(hertz uint32) string {
 	return freqUnknown
 }
 
+// converts a frequency to a string and preserves its MHz
+func FormatFrequencyLong(hertz uint32) string {
+	return strconv.FormatUint(uint64(hertz), 10) + " MHz"
+}
+
 func DetermineChannel(freq uint32) uint32 {
 	var channel uint32
 
@@ -116,4 +126,112 @@ func DetermineStatus(isNearby, isActive bool) string {
 	default:
 		return statusUnreachable
 	}
+}
+
+// format MaxBitrate as a string, convert Kb/s to Gbit/s or Mbit/s
+func FormatMaxBitrate(kbps uint32) string {
+	switch {
+	case kbps == 0:
+		return "—"
+	case kbps >= 1_000_000:
+		return strings.TrimSuffix(fmt.Sprintf("%.1f", float64(kbps)/1_000_000), ".0") + " Gbit/s"
+	default:
+		return strings.TrimSuffix(fmt.Sprintf("%.1f", float64(kbps)/1000), ".0") + " Mbit/s"
+	}
+}
+
+// converts the CLOCK_BOOTTIME seconds to a time.Time
+func ClockBootTimeToTime(secs int32) time.Time {
+	if secs < 0 {
+		return time.Time{}
+	}
+
+	var ts unix.Timespec
+	if err := unix.ClockGettime(unix.CLOCK_BOOTTIME, &ts); err != nil {
+		return time.Time{}
+	}
+
+	age := max(ts.Sec-int64(secs), 0)
+	return time.Now().Add(-time.Duration(age) * time.Second)
+}
+
+// format LastSeen to show absolute time
+func FormatLastSeen(t time.Time) string {
+	if t.IsZero() {
+		return "Never"
+	}
+	return t.Format(time.TimeOnly)
+}
+
+// Joins items separated by a `;`, or returns "—" if there are none.
+func FormatSlice(items []string) string {
+	if len(items) == 0 {
+		return "—"
+	}
+	return strings.Join(items, "; ")
+}
+
+func FormatAccessPointMode(mode uint32) string {
+	switch mode {
+	case nm.NmApModeAdhoc:
+		return "Ad-Hoc"
+	case nm.NmApModeInfra:
+		return "infrastructure"
+	case nm.NmApModeAp:
+		return "access point"
+	case nm.NmApModeMesh:
+		return "mesh"
+	}
+
+	return "unknown"
+}
+
+func FormatBandwidth(hertz uint32) string {
+	return strconv.FormatUint(uint64(hertz), 10) + " MHz"
+}
+
+func FormatSavedConnectionBand(band string) string {
+	switch band {
+	case "":
+		return "Any"
+	case "a":
+		return "5 Ghz only"
+	case "bg":
+		return "2.4 Ghz only"
+	case "6Ghz":
+		return "6 Ghz only"
+	}
+
+	return band
+}
+
+func FormatSavedConnectionProto(p []string) string {
+	if p == nil {
+		return "allow WPA/RSN"
+	}
+
+	return FormatSlice(p)
+}
+
+// formats the NMSettingSecretFlags
+func FormatSecretFlags(f nm.SecretFlags) string {
+	if f == nm.CspSettingSecretFlagNone {
+		return "System managed"
+	}
+
+	var flags []string
+	if f.Has(nm.CspSettingSecretFlagAgentOwned) {
+		flags = append(flags, "Managed by agent")
+	}
+	if f.Has(nm.CspSettingSecretFlagNotSaved) {
+		flags = append(flags, "Ask every time")
+	}
+	if f.Has(nm.CspSettingSecretFlagNotRequired) {
+		flags = append(flags, "Not required")
+	}
+	if unknown := f &^ nm.CspSettingSecretFlagsKnown; unknown != 0 {
+		flags = append(flags, fmt.Sprintf("0x%x", uint32(unknown)))
+	}
+
+	return strings.Join(flags, ", ")
 }

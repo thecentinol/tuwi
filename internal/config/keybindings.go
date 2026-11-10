@@ -11,6 +11,7 @@ const (
 	globalView        = global
 	wifiSavedView     = "wifi-saved"
 	wifiAvailableView = "wifi-available"
+	infoView          = "info"
 	errModalView      = "error-modal"
 	passwordView      = "password-modal"
 
@@ -18,6 +19,7 @@ const (
 	globalGroup        = global
 	wifiSavedGroup     = "saved connections"
 	wifiAvailableGroup = "available networks"
+	infoGroup          = "info menu"
 	navGroup           = "navigation"
 	errModalGroup      = "error modal"
 	passwordGroup      = "password modal"
@@ -34,6 +36,7 @@ type Keybindings struct {
 	// Global
 	FocusedWifiSaved     Binding
 	FocusedWifiAvailable Binding
+	FocusedInfoPane      Binding
 	Cancel               Binding
 	OpenHelpMenu         Binding // NOTE: Cancel is used to close the modal
 	Quit                 Binding
@@ -45,6 +48,9 @@ type Keybindings struct {
 	WifiAutoConnect      Binding
 	WifiScan             Binding
 	WifiConnectAvailable Binding
+
+	// Info
+	CopyInfoField Binding
 
 	// Navigation
 	Up         Binding
@@ -95,6 +101,14 @@ var DefaultKeybinds = Keybindings{
 		HelpKey:         "2",
 		HelpDescription: "",
 		Description:     "Switch focus to available wifi networks pane",
+	},
+	FocusedInfoPane: Binding{
+		ViewName:        globalView,
+		Group:           globalGroup,
+		Keys:            []string{"3"},
+		HelpKey:         "3",
+		HelpDescription: "",
+		Description:     "Switch focus to info pane",
 	},
 	Cancel: Binding{
 		ViewName:        globalView,
@@ -171,6 +185,16 @@ var DefaultKeybinds = Keybindings{
 		HelpKey:         keyEnter,
 		HelpDescription: "connect",
 		Description:     "Connect",
+	},
+
+	// Info
+	CopyInfoField: Binding{
+		ViewName:        infoView,
+		Group:           infoGroup,
+		Keys:            []string{"c"},
+		HelpKey:         "c",
+		HelpDescription: "copy to clipboard",
+		Description:     "Copy the selected info in the info pane to the clipboard",
 	},
 
 	// Navigation
@@ -258,10 +282,10 @@ func ToBubblesBatch(keys []Binding) []key.Binding {
 // Returns all keybindings
 func (k Keybindings) All() []Binding {
 	return []Binding{
-		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.Cancel, k.Quit, k.WifiConnectSaved,
-		k.WifiDisconnect, k.WifiForget, k.WifiAutoConnect, k.WifiScan, k.WifiConnectAvailable,
-		k.Up, k.Down, k.GotoTop, k.GotoBottom, k.OpenHelpMenu, k.ErrorDismiss,
-		k.PasswordVisibility, k.PasswordSubmit,
+		k.FocusedWifiSaved, k.FocusedWifiAvailable, k.FocusedInfoPane, k.Cancel, k.Quit,
+		k.WifiConnectSaved, k.WifiDisconnect, k.WifiForget, k.WifiAutoConnect, k.CopyInfoField,
+		k.WifiScan, k.WifiConnectAvailable, k.Up, k.Down, k.GotoTop, k.GotoBottom, k.OpenHelpMenu,
+		k.ErrorDismiss, k.PasswordVisibility, k.PasswordSubmit,
 	}
 }
 
@@ -271,6 +295,7 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 	var global BindingGroup
 	var wifiSaved BindingGroup
 	var wifiAvailable BindingGroup
+	var info BindingGroup
 	var nav BindingGroup
 	var err BindingGroup
 	var password BindingGroup
@@ -300,6 +325,12 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 				Bindings: k.ByGroup(wifiAvailableGroup),
 			}
 		}
+		if b.Group == infoGroup {
+			info = BindingGroup{
+				Title:    b.Group,
+				Bindings: k.ByGroup(infoGroup),
+			}
+		}
 		if b.Group == errModalGroup {
 			err = BindingGroup{
 				Title:    b.Group,
@@ -318,6 +349,7 @@ func (k Keybindings) AllGrouped() []BindingGroup {
 	groups = append(groups, nav)
 	groups = append(groups, wifiSaved)
 	groups = append(groups, wifiAvailable)
+	groups = append(groups, info)
 	groups = append(groups, err)
 	groups = append(groups, password)
 	return groups

@@ -13,6 +13,7 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/service"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
+	"github.com/thecentinol/tuwi/internal/ui/info"
 )
 
 type AvailableModel struct {
@@ -94,6 +95,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.AccessPointAddedMsg:
 		a.state.AddAvailable(msg.AP)
@@ -108,6 +110,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.AccessPointRemovedMsg:
 		a.state.RemoveAvailable(msg.ApPath)
@@ -122,6 +125,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		)
 		a.displayedNetworks = aps
 		a.Table.SetRows(setAvailableRows(a.displayedNetworks))
+		return a, events.WifiListChanged()
 
 	case events.WifiConnectReqMsg:
 		err := service.ConnectSecured(
@@ -229,11 +233,41 @@ func (a *AvailableModel) setAvailableColumns() {
 	colWidth := (a.width / 5) - 3
 
 	cols := []table.Column{
-		{Title: "SSID", Width: colWidth},
-		{Title: "Security", Width: colWidth},
+		{Title: labelSSID, Width: colWidth},
+		{Title: labelSecurity, Width: colWidth},
 		{Title: "Freq", Width: colWidth},
 		{Title: "Signal", Width: colWidth},
 		{Title: "Channel", Width: colWidth},
 	}
 	a.Table.SetColumns(cols)
+}
+
+func (a *AvailableModel) InfoFields() []info.Field {
+	i := a.Table.Cursor()
+	if i < 0 || i >= len(a.displayedNetworks) {
+		return nil
+	}
+
+	ap := a.displayedNetworks[i]
+
+	return []info.Field{
+		{Label: labelSSID, Value: service.FormatSSID(ap.SSID)},
+		{Label: "Frequency", Value: fmt.Sprintf("%s (Ch %v)",
+			service.FormatFrequencyLong(ap.Frequency),
+			service.DetermineChannel(ap.Frequency),
+		)},
+		{Label: "BSSID", Value: string(ap.BSSID)},
+		{
+			Label: labelSecurity,
+			Value: service.DetermineSecurityType(ap.Flags, ap.WpaFlags, ap.RsnFlags),
+		},
+		{Label: "Mode", Value: service.FormatAccessPointMode(ap.Mode)},
+		{Label: "Max Bitrate", Value: service.FormatMaxBitrate(ap.MaxBitrate)},
+		{Label: "Bandwidth", Value: service.FormatBandwidth(ap.Bandwidth)},
+		{Label: "Strength", Value: service.FormatStrength(ap.Strength)},
+		{
+			Label: "Last Seen",
+			Value: service.FormatLastSeen(service.ClockBootTimeToTime(ap.LastSeen)),
+		},
+	}
 }

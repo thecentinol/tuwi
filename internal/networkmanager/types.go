@@ -46,8 +46,8 @@ type SavedConnection struct {
 	Proto       []string
 	PskFlags    uint32
 	WepKeyFlags uint32
-	WepKeyType  uint32
-	WpsMethod   uint32
+	WepKeyType  WepKeyType
+	WpsMethod   WpsMethod
 }
 
 // a saved connection that is currently visible
@@ -75,3 +75,12 @@ type ActiveConnection struct {
 	Controller     godbus.ObjectPath
 	Master         godbus.ObjectPath
 }
+
+type (
+	// used for NMSettingSecretFlags bitmask
+	SecretFlags uint32
+	// used for NMWepKeyType
+	WepKeyType uint32
+	// used as the WpsMethod type in SavedConnection
+	WpsMethod uint32
+)

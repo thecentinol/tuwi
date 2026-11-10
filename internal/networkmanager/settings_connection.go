@@ -150,9 +150,46 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 		Proto:          proto,
 		PskFlags:       pskFlags,
 		WepKeyFlags:    wepKeyFlags,
-		WepKeyType:     wepKeyType,
-		WpsMethod:      wpsMethod,
+		WepKeyType:     WepKeyType(wepKeyType),
+		WpsMethod:      WpsMethod(wpsMethod),
 	}
 
 	return &sc, nil
+}
+
+// checks if a SecretFlags has the given flag
+func (f SecretFlags) Has(flag SecretFlags) bool { return f&flag != 0 }
+
+// returns the string representation of a NMWepKeyType
+func (t WepKeyType) String() string {
+	switch t {
+	case CspWepKeyTypeUnknown:
+		return "Unknown"
+	case CspWepKeyTypeKey:
+		return "Key"
+	case CspWepKeyTypePassphrase:
+		return "Passphrase"
+	}
+
+	return fmt.Sprintf("Unknown (%d)", uint32(t))
+}
+
+// returns the string representation of a WpsMethod
+func (m WpsMethod) String() string {
+	switch m {
+	case CspWpsMethodDefault:
+		return "Default"
+	case CspWpsMethodDisabled:
+		return "Disabled"
+	case CspWpsMethodAuto:
+		return "Auto"
+	case CspWpsMethodPbc:
+		return "Push Button Connect"
+	case CspWpsMethodPin:
+		return "PIN"
+	case CspWpsMethodPinDisplay:
+		return "PIN (display)"
+	}
+
+	return fmt.Sprintf("0x%x", uint32(m))
 }

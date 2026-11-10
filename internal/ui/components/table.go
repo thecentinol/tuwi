@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/thecentinol/tuwi/internal/config"
+	"github.com/thecentinol/tuwi/internal/events"
 )
 
 type TableModel struct {
@@ -70,12 +71,19 @@ func (t *TableModel) Update(msg tea.Msg) (TableModel, tea.Cmd) {
 		switch {
 		case key.Matches(msg, t.keys.Up.ToBubbles()):
 			t.table.MoveUp(1)
+			return *t, t.SendCursorPosition(t.Cursor())
+
 		case key.Matches(msg, t.keys.Down.ToBubbles()):
 			t.table.MoveDown(1)
+			return *t, t.SendCursorPosition(t.Cursor())
+
 		case key.Matches(msg, t.keys.GotoTop.ToBubbles()):
 			t.table.GotoTop()
+			return *t, t.SendCursorPosition(t.Cursor())
+
 		case key.Matches(msg, t.keys.GotoBottom.ToBubbles()):
 			t.table.GotoBottom()
+			return *t, t.SendCursorPosition(t.Cursor())
 		}
 	}
 
@@ -98,4 +106,10 @@ func (t TableModel) HelpView() []key.Binding {
 
 func (t *TableModel) Cursor() int {
 	return t.table.Cursor()
+}
+
+func (t *TableModel) SendCursorPosition(pos int) tea.Cmd {
+	return func() tea.Msg {
+		return events.TableCursorMovedMsg{Idx: pos}
+	}
 }

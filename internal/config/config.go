@@ -43,6 +43,7 @@ type keybinds struct {
 	AutoConnect              []string `toml:"auto-connect"`
 	Scan                     []string `toml:"scan"`
 	ConnectAvailable         []string `toml:"connect-available"`
+	CopyInfoField            []string `toml:"copy-info-field"`
 	Up                       []string `toml:"up"`
 	Down                     []string `toml:"down"`
 	GoToTop                  []string `toml:"go-to-top"`
@@ -169,6 +170,7 @@ func applyCfg(cfg *config) *AppConfig {
 	applyKeys(&appCfg.Keybinds.WifiAutoConnect, cfg.Keybinds.AutoConnect)
 	applyKeys(&appCfg.Keybinds.WifiScan, cfg.Keybinds.Scan)
 	applyKeys(&appCfg.Keybinds.WifiConnectAvailable, cfg.Keybinds.ConnectAvailable)
+	applyKeys(&appCfg.Keybinds.CopyInfoField, cfg.Keybinds.CopyInfoField)
 	applyKeys(&appCfg.Keybinds.Up, cfg.Keybinds.Up)
 	applyKeys(&appCfg.Keybinds.Down, cfg.Keybinds.Down)
 	applyKeys(&appCfg.Keybinds.GotoTop, cfg.Keybinds.GoToTop)

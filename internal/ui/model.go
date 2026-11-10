@@ -12,6 +12,7 @@ import (
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	comp "github.com/thecentinol/tuwi/internal/ui/components"
 	apphelp "github.com/thecentinol/tuwi/internal/ui/help"
+	"github.com/thecentinol/tuwi/internal/ui/info"
 	"github.com/thecentinol/tuwi/internal/ui/wifi"
 )
 
@@ -20,6 +21,7 @@ type Focused string
 const (
 	FocusWifiSaved     Focused = "wifi-saved"
 	FocusWifiAvailable Focused = "wifi-available"
+	FocusInfoPane      Focused = "info-pane"
 	FocusHelpMenu      Focused = "help-menu"
 	FocusPasswordModal Focused = "password-modal"
 	FocusErrorModal    Focused = "error-modal"
@@ -37,6 +39,8 @@ type Model struct {
 	wifiSaved       wifi.SavedModel
 	wifiAvailable   wifi.AvailableModel
 	selectedNetwork *nm.AccessPoint
+
+	infoPane info.Model
 
 	HelpMenu     apphelp.Model
 	showHelpMenu bool
@@ -59,6 +63,7 @@ func NewModel(client *dbus.Client, cfg config.AppConfig) Model {
 		help:          help.New(),
 		wifiSaved:     wifi.NewWifiSavedModel(client, state, cfg),
 		wifiAvailable: wifi.NewWifiAvailableModel(client, state, cfg),
+		infoPane:      info.NewInfoModel(client, cfg),
 		HelpMenu:      apphelp.NewHelpMenu(cfg),
 		passwordModal: comp.NewPasswordModal(cfg),
 		errorModal:    comp.NewErrorModal(cfg),
@@ -100,6 +105,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.setDimensions()
+
+	case events.WifiListChangedMsg:
+		m.syncInfoPane()
+
+	case events.TableCursorMovedMsg:
+		m.syncInfoPane()
 
 	case events.OpenHelpMenuMsg:
 		m.showHelpMenu = true
@@ -145,6 +156,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
 		cmds = append(cmds, cmd)
 
+		m.infoPane, cmd = m.infoPane.Update(msg)
+		cmds = append(cmds, cmd)
+
 		if m.showPasswordModal {
 			m.passwordModal, cmd = m.passwordModal.Update(msg)
 			cmds = append(cmds, cmd)
@@ -161,6 +175,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.wifiSaved.IsFocused = m.focus == FocusWifiSaved
 	m.wifiAvailable.IsFocused = m.focus == FocusWifiAvailable
+	m.infoPane.Focused = m.focus == FocusInfoPane
 	m.HelpMenu.IsFocused = m.focus == FocusHelpMenu
 
 	return m, tea.Batch(cmds...)
@@ -174,17 +189,24 @@ func (m Model) View() tea.View {
 	helpView := m.HelpView()
 	passwordView := m.passwordModal.View().Content
 	errorModalView := m.errorModal.View().Content
+	infoView := m.infoPane.View().Content
 
-	wifiView := lipgloss.JoinHorizontal(
-		lipgloss.Top,
+	wifiView := lipgloss.JoinVertical(
+		lipgloss.Left,
 		wifiSavedView,
 		wifiAvailableView,
+	)
+
+	main := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		wifiView,
+		infoView,
 	)
 
 	base := lipgloss.NewLayer(
 		lipgloss.JoinVertical(
 			lipgloss.Left,
-			wifiView,
+			main,
 			helpView,
 		),
 	).Z(0)
@@ -247,15 +269,23 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 
 	case key.Matches(msg, m.keys.FocusedWifiSaved.ToBubbles()):
 		m.focus = FocusWifiSaved
+		m.syncInfoPane()
 
 	case key.Matches(msg, m.keys.FocusedWifiAvailable.ToBubbles()):
 		m.focus = FocusWifiAvailable
+		m.syncInfoPane()
+
+	case key.Matches(msg, m.keys.FocusedInfoPane.ToBubbles()):
+		m.focus = FocusInfoPane
 
 	case m.wifiSaved.IsFocused:
 		m.wifiSaved, cmd = m.wifiSaved.Update(msg)
 
 	case m.wifiAvailable.IsFocused:
 		m.wifiAvailable, cmd = m.wifiAvailable.Update(msg)
+
+	case m.infoPane.Focused:
+		m.infoPane, cmd = m.infoPane.Update(msg)
 	}
 
 	return cmd
@@ -278,6 +308,9 @@ func (m Model) HelpView() string {
 	}
 	if m.focus == FocusWifiAvailable && !m.showPasswordModal {
 		help = append(help, m.wifiAvailable.HelpView()...)
+	}
+	if m.focus == FocusInfoPane && !m.showPasswordModal {
+		help = append(help, m.infoPane.HelpView()...)
 	}
 
 	help = append(help, m.keys.Quit.ToBubbles())
@@ -309,4 +342,13 @@ func (m Model) HelpView() string {
 		Foreground(m.theme.HelpView.FullSeparator)
 
 	return render.ShortHelpView(help)
+}
+
+func (m *Model) syncInfoPane() {
+	switch m.focus {
+	case FocusWifiSaved:
+		m.infoPane.SetContent(m.wifiSaved.InfoFields())
+	case FocusWifiAvailable:
+		m.infoPane.SetContent(m.wifiAvailable.InfoFields())
+	}
 }
