@@ -79,10 +79,6 @@ func GetActiveConnectionProperties(c *dbus.Client, path godbus.ObjectPath) (*Act
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveConnectionProperties Controller property: %w", err)
 	}
-	master, err := obj.GetProperty(ActConMaster)
-	if err != nil {
-		return nil, fmt.Errorf("GetActiveConnectionProperties Master property: %w", err)
-	}
 
 	ac := ActiveConnection{
 		Connection:     conn.Value().(godbus.ObjectPath),
@@ -101,7 +97,6 @@ func GetActiveConnectionProperties(c *dbus.Client, path godbus.ObjectPath) (*Act
 		DHCP6Config:    dhcp6.Value().(godbus.ObjectPath),
 		VPN:            vpn.Value().(bool),
 		Controller:     controller.Value().(godbus.ObjectPath),
-		Master:         master.Value().(godbus.ObjectPath),
 	}
 	return &ac, nil
 }

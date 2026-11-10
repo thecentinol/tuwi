@@ -73,7 +73,6 @@ type ActiveConnection struct {
 	DHCP6Config    godbus.ObjectPath
 	VPN            bool
 	Controller     godbus.ObjectPath
-	Master         godbus.ObjectPath
 }
 
 type (
