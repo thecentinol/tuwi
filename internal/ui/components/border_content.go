@@ -49,9 +49,9 @@ func (b BorderContent) Render(label, content string, width int) string {
 
 	top := topLeft + renderedLabel + topBorderStyler(topBorder) + topRight
 
-	bottomStyle := b.BorderStyle
-	bottom := bottomStyle.
+	bottom := b.BorderStyle.
 		BorderTop(false).
+		Height(b.BorderStyle.GetHeight() - 1).
 		Width(width).
 		Render(content)
 
