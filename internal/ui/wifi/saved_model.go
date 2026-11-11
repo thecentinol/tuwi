@@ -173,12 +173,12 @@ func (s SavedModel) HelpView() []key.Binding {
 	return bindings
 }
 
-func (s *SavedModel) Setheight(height int) {
-	s.height = height
-}
-
-func (s *SavedModel) SetWidth(width int) {
+func (s *SavedModel) SetDimensions(width, height int) {
 	s.width = width
+	s.height = height
+	s.Table.SetWidth(width)
+	s.Table.SetHeight(s.height - 2)
+
 	s.setSavedColumns()
 }
 

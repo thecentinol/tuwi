@@ -27,9 +27,8 @@ type AvailableModel struct {
 	displayedNetworks []nm.AccessPoint
 	Table             comp.TableModel
 
-	width     int
-	height    int
-	frameSize [2]int
+	width  int
+	height int
 
 	keys      config.Keybindings
 	IsFocused bool
@@ -178,8 +177,6 @@ func (a AvailableModel) View() tea.View {
 	}
 
 	title := comp.NewBorderContent(borderColor.Color, borderContent.Color, a.height)
-	h, v := title.ContentStyle.GetFrameSize()
-	a.frameSize = [2]int{h, v}
 	return tea.NewView(title.Render("[2]-Available networks", a.Table.View().Content, a.width))
 }
 
@@ -192,12 +189,12 @@ func (a AvailableModel) HelpView() []key.Binding {
 	return bindings
 }
 
-func (a *AvailableModel) Setheight(height int) {
-	a.height = height
-}
-
-func (a *AvailableModel) SetWidth(width int) {
+func (a *AvailableModel) SetDimensions(width, height int) {
 	a.width = width
+	a.height = height
+	a.Table.SetWidth(width)
+	a.Table.SetHeight(a.height - 2)
+
 	a.setAvailableColumns()
 }
 
