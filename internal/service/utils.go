@@ -151,7 +151,8 @@ func ClockBootTimeToTime(secs int32) time.Time {
 		return time.Time{}
 	}
 
-	age := max(ts.Sec-int64(secs), 0)
+	bootSecs, _ := ts.Unix()
+	age := max(bootSecs-int64(secs), 0)
 	return time.Now().Add(-time.Duration(age) * time.Second)
 }
 
