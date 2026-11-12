@@ -1,8 +1,9 @@
 BINARY_NAME := tuwi
 PREFIX ?= /usr
 BINDIR := $(PREFIX)/bin
+CROSS_TARGETS ?= linux/amd64 linux/arm64 linux/386 linux/arm
 
-.PHONY: install-deps build install install-local uninstall \
+.PHONY: install-deps build cross-build install install-local uninstall \
 	run-dev run-debug run unit-test fuzz test lint format-check \
 	format-write clean help
 
@@ -11,6 +12,21 @@ install-deps:
 
 build:
 	@go build -ldflags="-s -w" -o $(BINARY_NAME) .
+
+cross-build:
+	@failed=0; \
+	for t in $(CROSS_TARGETS); do \
+		os=$$(echo $$t | cut -d/ -f1); \
+		arch=$$(echo $$t | cut -d/ -f2); \
+		arm=$$(echo $$t | cut -s -d/ -f3); \
+		printf '%-14s' "$$t"; \
+		if out=$$(CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch GOARM=$$arm go build $(PKGS) 2>&1); then \
+			echo OK; \
+		else \
+			echo FAIL; echo "$$out" | sed 's/^/    /'; failed=1; \
+		fi; \
+	done; \
+	exit $$failed
 
 install: build
 	@sudo install -m 755 ./$(BINARY_NAME) /usr/bin
