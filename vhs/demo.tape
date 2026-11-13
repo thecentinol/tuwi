@@ -16,27 +16,26 @@ Sleep 0.7
 Type "2"
 Sleep 2000ms
 
-Type "t"
-Sleep 0.3
-
 Enter
 Sleep 0.9
 
 Type "<password>"
 Sleep 0.5
-Enter
-Sleep 0.2
-
-Type "1"
+Escape
 Sleep 0.5
 
-Enter
+Type "1"
+Sleep 0.8
+
+Type "?"
 Sleep 0.5
 
 Type "j"
-Sleep 0.5
+Sleep 0.8
+Type "j"
+Sleep 0.8
 
-Type "f"
+Escape
 Sleep 0.5
 
 Type "q"
