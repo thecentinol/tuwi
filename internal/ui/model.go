@@ -234,8 +234,8 @@ func (m Model) View() tea.View {
 	if m.showHelpMenu && !m.showErrorModal && !m.showPasswordModal {
 		kbModal := lipgloss.NewLayer(kbView).
 			Z(1).
-			X(m.HelpMenu.X).
-			Y(m.HelpMenu.Y)
+			X(m.HelpMenu.GetXposition()).
+			Y(m.HelpMenu.GetYposition())
 
 		layers = append(layers, kbModal)
 	}

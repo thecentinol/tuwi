@@ -31,9 +31,25 @@ func setWifiDimensions(
 }
 
 func setHelpMenuDimensions(m *apphelp.Model, parentWidth, parentHeight int) {
-	m.SetSize(parentWidth/2, (parentHeight*3)/4)
-	m.X = (parentWidth / 2) - (m.Width / 2)
-	m.Y = (parentHeight / 2) - (m.Height / 2)
+	// 2 for borders and another 2 for a little extra
+	// because it looks better
+	width := parentWidth - 4
+	height := parentHeight - 4
+
+	// TODO: use consts instead of magic numbers
+	if parentHeight > 35 {
+		height = 28
+	}
+	if parentWidth > 95 {
+		width = 90
+	}
+
+	m.SetDimensions(width, height)
+
+	content := m.View().Content
+	overlayX := (parentWidth / 2) - (lipgloss.Width(content) / 2)
+	overlayY := (parentHeight / 2) - (lipgloss.Height(content) / 2)
+	m.SetOverlayPosition(overlayX, overlayY)
 }
 
 // set the dimensions and X/Y position of the password modal

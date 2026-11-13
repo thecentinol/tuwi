@@ -21,8 +21,8 @@ type Model struct {
 	keys config.Keybindings
 	help help.Model
 
-	Height, Width int
-	X, Y          int
+	height, width int
+	x, y          int
 	IsFocused     bool
 }
 
@@ -76,10 +76,10 @@ func (m Model) View() tea.View {
 	container := comp.NewBorderContent(
 		m.theme.HelpMenu.Border.Color,
 		m.theme.HelpMenu.BorderContent.Color,
-		m.Height,
+		m.height,
 	)
 
-	return tea.NewView(container.Render("Help", m.vp.View(), m.Width))
+	return tea.NewView(container.Render("Help", m.vp.View(), m.width))
 }
 
 func (m Model) HelpView() []key.Binding {
@@ -101,11 +101,15 @@ func (m Model) HelpView() []key.Binding {
 	return binds
 }
 
-func (m *Model) SetSize(width, height int) {
-	m.Width = width
-	m.Height = height
+func (m *Model) SetDimensions(width, height int) {
+	m.width = width
+	m.height = height
 	m.vp.SetWidth(width)
 	m.vp.SetHeight(height)
+}
+
+func (m *Model) SetOverlayPosition(overlayX, overlayY int) {
+	m.x, m.y = overlayX, overlayY
 }
 
 func (m *Model) renderContent() {
@@ -152,4 +156,12 @@ func (m *Model) renderContent() {
 	}
 
 	m.vp.SetContent(builder.String())
+}
+
+func (m *Model) GetXposition() int {
+	return m.x
+}
+
+func (m *Model) GetYposition() int {
+	return m.y
 }
