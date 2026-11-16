@@ -14,7 +14,7 @@ func ConnectSaved(client *dbus.Client, nc nm.NearbyConnection) (godbus.ObjectPat
 	if nc.AP == nil {
 		return "", fmt.Errorf("ConnectSaved: network is out of range")
 	}
-	obj, err := nm.ActivateConnection(
+	obj, err := nm.ConnectionManager.ActivateConnection(
 		client,
 		nc.Connection.ConnectionPath,
 		nc.AP.DevicePath,
@@ -30,12 +30,12 @@ func ConnectSaved(client *dbus.Client, nc nm.NearbyConnection) (godbus.ObjectPat
 // connect to an available wifi network that is not open
 func ConnectSecured(
 	client *dbus.Client,
-	network *nm.AccessPoint,
+	network *nm.AccessPointProperties,
 	password string,
 ) error {
 	securityType := DetermineSecurityType(network.Flags, network.WpaFlags, network.RsnFlags)
 
-	err := nm.AddAndActivateConnection(
+	err := nm.ConnectionManager.AddAndActivateConnection2(
 		client,
 		*network,
 		password,
@@ -51,11 +51,11 @@ func ConnectSecured(
 // connect to an available wifi network that is open
 func ConnectOpen(
 	client *dbus.Client,
-	network *nm.AccessPoint,
+	network *nm.AccessPointProperties,
 ) error {
 	securityType := DetermineSecurityType(network.Flags, network.WpaFlags, network.RsnFlags)
 
-	err := nm.AddAndActivateConnection(
+	err := nm.ConnectionManager.AddAndActivateConnection2(
 		client,
 		*network,
 		"",
@@ -70,11 +70,11 @@ func ConnectOpen(
 
 // disconnect from a wifi network
 func Disconnect(client *dbus.Client) error {
-	ACs, err := nm.GetActiveConnections(client)
+	ACs, err := nm.ConnectionManager.ActiveConnections(client)
 	if err != nil {
 		return fmt.Errorf("Disconnect: %w", err)
 	}
-	err = nm.DeactivateConnection(client, ACs)
+	err = nm.ConnectionManager.DeactivateConnection(client, ACs)
 	if err != nil {
 		return fmt.Errorf("Disconnect: %w", err)
 	}
@@ -83,7 +83,7 @@ func Disconnect(client *dbus.Client) error {
 
 // forget a wifi network - deletes the saved connection profile if using NetworkManager backend
 func Forget(client *dbus.Client, conPath godbus.ObjectPath) error {
-	err := nm.DeleteConnection(client, conPath)
+	err := nm.SettingsConnection.Delete(client, conPath)
 	if err != nil {
 		return fmt.Errorf("Forget: %w", err)
 	}

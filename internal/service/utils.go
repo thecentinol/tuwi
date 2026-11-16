@@ -30,23 +30,23 @@ const (
 func DetermineSecurityType(flags, wpaFlags, rsnFlags uint32) string {
 	var secType string
 	switch {
-	case rsnFlags&nm.NmSecMgmtSae != 0 && wpaFlags&nm.NmSecMgmtPsk != 0:
+	case rsnFlags&nm.NmApSecMgmtSae != 0 && wpaFlags&nm.NmApSecMgmtPsk != 0:
 		secType = "WPA2/WPA3"
-	case rsnFlags&nm.NmSecMgmtSae != 0:
+	case rsnFlags&nm.NmApSecMgmtSae != 0:
 		secType = "WPA3"
-	case rsnFlags&nm.NmSecMgmtPsk != 0:
+	case rsnFlags&nm.NmApSecMgmtPsk != 0:
 		secType = "WPA2"
-	case wpaFlags&nm.NmSecMgmtPsk != 0:
+	case wpaFlags&nm.NmApSecMgmtPsk != 0:
 		secType = "WPA"
-	case wpaFlags&nm.NmSecMgmt8021 != 0:
+	case wpaFlags&nm.NmApSecMgmt8021 != 0:
 		secType = "WPA-ENT"
-	case rsnFlags&nm.NmSecMgmt8021 != 0:
+	case rsnFlags&nm.NmApSecMgmt8021 != 0:
 		secType = "WPA2-ENT"
-	case rsnFlags&nm.NmSecMgmtSuiteB192 != 0:
+	case rsnFlags&nm.NmApSecMgmtSuiteB192 != 0:
 		secType = "WPA3-ENT"
-	case rsnFlags&nm.NmSecMgmtOwe != 0:
+	case rsnFlags&nm.NmApSecMgmtOwe != 0:
 		secType = "OWE"
-	case rsnFlags&nm.NmSecMgmtOweTm != 0:
+	case rsnFlags&nm.NmApSecMgmtOweTm != 0:
 		secType = "OWE-TM"
 	case flags&nm.NmApFlagsPrivacy != 0:
 		secType = "wep"
@@ -174,13 +174,13 @@ func FormatSlice(items []string) string {
 
 func FormatAccessPointMode(mode uint32) string {
 	switch mode {
-	case nm.NmApModeAdhoc:
+	case nm.NmModeAdhoc:
 		return "Ad-Hoc"
-	case nm.NmApModeInfra:
+	case nm.NmModeInfra:
 		return "infrastructure"
-	case nm.NmApModeAp:
+	case nm.NmModeAp:
 		return "access point"
-	case nm.NmApModeMesh:
+	case nm.NmModeMesh:
 		return "mesh"
 	}
 
@@ -216,21 +216,21 @@ func FormatSavedConnectionProto(p []string) string {
 
 // formats the NMSettingSecretFlags
 func FormatSecretFlags(f nm.SecretFlags) string {
-	if f == nm.CspSettingSecretFlagNone {
+	if f == nm.SettingsConnectionSettingSecretFlagNone {
 		return "System managed"
 	}
 
 	var flags []string
-	if f.Has(nm.CspSettingSecretFlagAgentOwned) {
+	if f.Has(nm.SettingsConnectionSettingSecretFlagAgentOwned) {
 		flags = append(flags, "Managed by agent")
 	}
-	if f.Has(nm.CspSettingSecretFlagNotSaved) {
+	if f.Has(nm.SettingsConnectionSettingSecretFlagNotSaved) {
 		flags = append(flags, "Ask every time")
 	}
-	if f.Has(nm.CspSettingSecretFlagNotRequired) {
+	if f.Has(nm.SettingsConnectionSettingSecretFlagNotRequired) {
 		flags = append(flags, "Not required")
 	}
-	if unknown := f &^ nm.CspSettingSecretFlagsKnown; unknown != 0 {
+	if unknown := f &^ nm.SettingsConnectionSettingSecretFlagsKnown; unknown != 0 {
 		flags = append(flags, fmt.Sprintf("0x%x", uint32(unknown)))
 	}
 

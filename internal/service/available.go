@@ -8,25 +8,25 @@ import (
 )
 
 // get a slice of the available wifi networks in range
-func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
-	wifiDevicePath, err := nm.GetWifiDevice(c)
+func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPointProperties, error) {
+	wifiDevicePath, err := nm.Device.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableNetworks: GetWifiDevice: %w", err)
 	}
 
-	if err := nm.RequestScan(c, wifiDevicePath); err != nil {
+	if err := nm.DeviceWireless.RequestScan(c, wifiDevicePath); err != nil {
 		return nil, fmt.Errorf("GetAvailableNetworks: %w", err)
 	}
 
-	accessPoints, err := nm.GetAccessPoints(c, wifiDevicePath)
+	accessPoints, err := nm.DeviceWireless.GetAllAccessPoints(c, wifiDevicePath)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableNetworks: GetAccessPoints: %w", err)
 	}
 
-	var networks []nm.AccessPoint
+	var networks []nm.AccessPointProperties
 
 	for _, accessPointPath := range accessPoints {
-		ap, err := nm.GetAccessPointProperties(c, wifiDevicePath, accessPointPath)
+		ap, err := nm.DeviceWireless.GetAccessPointProperties(c, wifiDevicePath, accessPointPath)
 		if err != nil {
 			return nil, fmt.Errorf("GetAvailableNetworks: %w", err)
 		}
@@ -40,8 +40,10 @@ func GetAvailableNetworks(c *dbus.Client) ([]nm.AccessPoint, error) {
 // used to filter out any access points that match a saved connection
 // profile that's available to connect to and only return a slice of
 // access points that don't match any saved nearby connection profile.
-func DisplayAvailableAPs(nearbySaved []nm.SavedConnection, available []nm.AccessPoint) []nm.AccessPoint {
-	var accessPoints []nm.AccessPoint
+func DisplayAvailableAPs(
+	nearbySaved []nm.ConnectionSettings, available []nm.AccessPointProperties,
+) []nm.AccessPointProperties {
+	var accessPoints []nm.AccessPointProperties
 
 	savedBSSIDs := make(map[string]struct{})
 	savedSSIDs := make(map[string]struct{})

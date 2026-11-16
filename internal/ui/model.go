@@ -38,7 +38,7 @@ type Model struct {
 
 	wifiSaved       wifi.SavedModel
 	wifiAvailable   wifi.AvailableModel
-	selectedNetwork *nm.AccessPoint
+	selectedNetwork *nm.AccessPointProperties
 
 	infoPane info.Model
 
