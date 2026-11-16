@@ -8,7 +8,7 @@ import (
 
 // Device Wireless
 type AccessPointAddedMsg struct {
-	AP nm.AccessPoint
+	AP nm.AccessPointProperties
 }
 type AccessPointRemovedMsg struct {
 	ApPath godbus.ObjectPath

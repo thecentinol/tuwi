@@ -8,16 +8,29 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
-	devices, err := GetDevices(c)
+const (
+	deviceIface = baseIface + ".Device"
+
+	// Properties
+	deviceType                 = deviceIface + ".DeviceType"
+	deviceAvailableConnections = deviceIface + ".AvailableConnections"
+)
+
+var Device device
+
+type device struct{}
+
+// GetWifiDevice calls ...GetAllDevices(), finds the 802.11 Wi-Fi device and returns its object path
+func (device) GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
+	devices, err := ConnectionManager.GetAllDevices(c)
 	if err != nil {
 		return "", fmt.Errorf("GetWifiDevice: %w", err)
 	}
 
 	// finding the wifi device
 	for _, v := range devices {
-		device := c.Conn.Object(BaseServiceName, v)
-		variant, err := device.GetProperty(DeviceType)
+		device := c.Conn.Object(baseIface, v)
+		variant, err := device.GetProperty(deviceType)
 		if err != nil {
 			return "", fmt.Errorf("GetWifiDevice: failed to get DeviceType property %w", err)
 		}
@@ -30,17 +43,17 @@ func GetWifiDevice(c *dbus.Client) (godbus.ObjectPath, error) {
 	return "", fmt.Errorf("GetWifiDevice: no wifi device found")
 }
 
-// this gets the object paths of saved connection profiles that
-// are currently available to connect to.
-func AvailableConnections(c *dbus.Client) ([]godbus.ObjectPath, error) {
-	wifiDevice, err := GetWifiDevice(c)
+// AvailableConnections gets a slice of object paths of every configured connection
+// that is currently 'available'
+func (d device) AvailableConnections(c *dbus.Client) ([]godbus.ObjectPath, error) {
+	wifiDevice, err := d.GetWifiDevice(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableConnections: %w", err)
 	}
 
-	obj := c.Conn.Object(BaseServiceName, wifiDevice)
+	obj := c.Conn.Object(baseIface, wifiDevice)
 
-	availableConnections, err := obj.GetProperty(DeviceAvailableConnections)
+	availableConnections, err := obj.GetProperty(deviceAvailableConnections)
 	if err != nil {
 		return nil, fmt.Errorf("GetAvailableConnections: AvailableConnections property %w", err)
 	}

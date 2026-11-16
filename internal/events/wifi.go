@@ -8,9 +8,9 @@ import (
 
 type (
 	// initial saved connections have loaded
-	SavedWifiMsg struct{ Networks []nm.SavedConnection }
+	SavedWifiMsg struct{ Networks []nm.ConnectionSettings }
 	// initial available access points have loaded
-	AvailableWifiMsg struct{ Networks []nm.AccessPoint }
+	AvailableWifiMsg struct{ Networks []nm.AccessPointProperties }
 
 	// used when the saved or available wifi list has changed
 	// so the info pane must be updated
@@ -18,7 +18,7 @@ type (
 )
 
 type WifiConnectReqMsg struct {
-	Network  *nm.AccessPoint
+	Network  *nm.AccessPointProperties
 	Password string
 }
 

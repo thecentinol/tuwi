@@ -8,7 +8,7 @@ import (
 
 type (
 	ShowPasswordModalMsg struct {
-		Network *nm.AccessPoint
+		Network *nm.AccessPointProperties
 	}
 	PasswordResultMsg struct {
 		Cancelled bool
