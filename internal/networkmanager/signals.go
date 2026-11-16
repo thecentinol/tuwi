@@ -8,13 +8,13 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func handleAccessPointAdded(c *dbus.Client, signal *godbus.Signal) (*AccessPoint, error) {
+func handleAccessPointAdded(c *dbus.Client, signal *godbus.Signal) (*AccessPointProperties, error) {
 	body := signal.Body
 	if len(body) != 1 {
 		return nil, fmt.Errorf("handleAccessPointAdded: signal body missing")
 	}
 	apPath := body[0].(godbus.ObjectPath)
-	ap, err := GetAccessPointProperties(c, signal.Path, apPath)
+	ap, err := DeviceWireless.GetAccessPointProperties(c, signal.Path, apPath)
 	if err != nil {
 		return nil, fmt.Errorf("handleAccessPointAdded: %w", err)
 	}
@@ -63,7 +63,6 @@ func handleConnectionRemoved(signal *godbus.Signal) (godbus.ObjectPath, error) {
 	return conPath, nil
 }
 
-// org.freedesktop.NetworkManager.Connection.Active
 func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) {
 	body := signal.Body
 	if len(body) != 2 {
@@ -84,7 +83,7 @@ func handleActiveConnectionState(signal *godbus.Signal) (uint32, uint32, error) 
 }
 
 type SignalCallbacks struct {
-	OnAccessPointAdded   func(AccessPoint)
+	OnAccessPointAdded   func(AccessPointProperties)
 	OnAccessPointRemoved func(godbus.ObjectPath)
 
 	OnNewConnection          func(godbus.ObjectPath)
@@ -98,7 +97,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	ch := make(chan *godbus.Signal, 10)
 	c.Conn.Signal(ch)
 	errApAdded := c.Conn.AddMatchSignal(
-		godbus.WithMatchInterface(baseWirelessServiceName),
+		godbus.WithMatchInterface(deviceWirelessIface),
 		godbus.WithMatchMember("AccessPointAdded"),
 	)
 	if errApAdded != nil {
@@ -106,7 +105,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	}
 
 	errApRm := c.Conn.AddMatchSignal(
-		godbus.WithMatchInterface(baseWirelessServiceName),
+		godbus.WithMatchInterface(deviceWirelessIface),
 		godbus.WithMatchMember("AccessPointRemoved"),
 	)
 	if errApRm != nil {
@@ -114,7 +113,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	}
 
 	errNewConn := c.Conn.AddMatchSignal(
-		godbus.WithMatchInterface(BaseServiceName+".Settings"),
+		godbus.WithMatchInterface(baseIface+".Settings"),
 		godbus.WithMatchMember("NewConnection"),
 	)
 	if errNewConn != nil {
@@ -122,7 +121,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	}
 
 	errConnRm := c.Conn.AddMatchSignal(
-		godbus.WithMatchInterface(BaseServiceName+".Settings"),
+		godbus.WithMatchInterface(baseIface+".Settings"),
 		godbus.WithMatchMember("ConnectionRemoved"),
 	)
 	if errConnRm != nil {
@@ -130,7 +129,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 	}
 
 	errStateChanged := c.Conn.AddMatchSignal(
-		godbus.WithMatchInterface(baseActiveConnServiceName),
+		godbus.WithMatchInterface(activeConnectionIface),
 		godbus.WithMatchMember("StateChanged"),
 	)
 	if errStateChanged != nil {
@@ -139,7 +138,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 
 	for sig := range ch {
 		switch sig.Name {
-		case WirelessAccessPointAdded:
+		case deviceWirelessAccessPointAdded:
 			ap, err := handleAccessPointAdded(c, sig)
 			if err != nil {
 				cb.OnError(err)
@@ -147,7 +146,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 				cb.OnAccessPointAdded(*ap)
 			}
 
-		case WirelessAccessPointRemoved:
+		case deviceWirelessAccessPointRemoved:
 			apPath, err := handleAccessPointRemoved(sig)
 			if err != nil {
 				cb.OnError(err)
@@ -155,7 +154,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 				cb.OnAccessPointRemoved(apPath)
 			}
 
-		case CspmNewConnection:
+		case settingsNewConnection:
 			conPath, err := handleNewConnection(sig)
 			if err != nil {
 				cb.OnError(err)
@@ -163,7 +162,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 				cb.OnNewConnection(conPath)
 			}
 
-		case CspmConnectionRemoved:
+		case settingsConnectionRemoved:
 			conPath, err := handleConnectionRemoved(sig)
 			if err != nil {
 				cb.OnError(err)
@@ -171,7 +170,7 @@ func ListenForSignals(c *dbus.Client, cb SignalCallbacks) {
 				cb.OnConnectionRemoved(conPath)
 			}
 
-		case AcStateChanged:
+		case activeConnectionStateChanged:
 			state, reason, err := handleActiveConnectionState(sig)
 			if err != nil {
 				cb.OnError(err)

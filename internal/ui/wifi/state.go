@@ -10,22 +10,22 @@ import (
 )
 
 type State struct {
-	Saved     []nm.SavedConnection
-	Available []nm.AccessPoint
+	Saved     []nm.ConnectionSettings
+	Available []nm.AccessPointProperties
 
 	Nearby           []nm.NearbyConnection
-	ActiveConnection nm.ActiveConnection
+	ActiveConnection nm.ActiveConnectionProperties
 
 	Scanning bool
 	Error    error
 }
 
-func (s *State) SetSaved(connections []nm.SavedConnection) {
+func (s *State) SetSaved(connections []nm.ConnectionSettings) {
 	s.Saved = connections
 	s.RefreshNearby()
 }
 
-func (s *State) AddSaved(conn nm.SavedConnection) {
+func (s *State) AddSaved(conn nm.ConnectionSettings) {
 	s.Saved = append(s.Saved, conn)
 	s.RefreshNearby()
 }
@@ -33,19 +33,19 @@ func (s *State) AddSaved(conn nm.SavedConnection) {
 // when a ConnectionRemovedMsg is received, this function is used to
 // remove the selected connection from the SavedConnection (networks) slice.
 func (s *State) RemoveSaved(path godbus.ObjectPath) {
-	result := slices.DeleteFunc(s.Saved, func(sc nm.SavedConnection) bool {
+	result := slices.DeleteFunc(s.Saved, func(sc nm.ConnectionSettings) bool {
 		return path == sc.ConnectionPath
 	})
 	s.Saved = result
 	s.RefreshNearby()
 }
 
-func (s *State) SetAvailable(networks []nm.AccessPoint) {
+func (s *State) SetAvailable(networks []nm.AccessPointProperties) {
 	s.Available = networks
 	s.RefreshNearby()
 }
 
-func (s *State) AddAvailable(ap nm.AccessPoint) {
+func (s *State) AddAvailable(ap nm.AccessPointProperties) {
 	savedBSSIDs := make(map[string]struct{})
 	for _, nearby := range s.Saved {
 		for _, bssid := range nearby.BSSIDs {
@@ -61,7 +61,7 @@ func (s *State) AddAvailable(ap nm.AccessPoint) {
 }
 
 func (s *State) RemoveAvailable(apPath godbus.ObjectPath) {
-	result := slices.DeleteFunc(s.Available, func(ap nm.AccessPoint) bool {
+	result := slices.DeleteFunc(s.Available, func(ap nm.AccessPointProperties) bool {
 		return apPath == ap.APPath
 	})
 	s.Available = result
@@ -74,12 +74,12 @@ func (s *State) RefreshNearby() {
 	)
 }
 
-func (s *State) SetActiveConnection(activeConnection nm.ActiveConnection) {
+func (s *State) SetActiveConnection(activeConnection nm.ActiveConnectionProperties) {
 	s.ActiveConnection = activeConnection
 }
 
 func (s *State) ClearActiveConnection() {
-	s.ActiveConnection = nm.ActiveConnection{}
+	s.ActiveConnection = nm.ActiveConnectionProperties{}
 }
 
 func (s *State) SetScanning(scanning bool) {

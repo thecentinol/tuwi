@@ -8,9 +8,77 @@ import (
 	"github.com/thecentinol/tuwi/internal/dbus"
 )
 
-func DeleteConnection(c *dbus.Client, conPath godbus.ObjectPath) error {
-	obj := c.Conn.Object(BaseServiceName, conPath)
-	call := obj.Call(CspDelete, 0)
+const (
+	settingsConnectionIface = settingsIface + ".Connection"
+
+	// Methods
+	settingsConnectionDelete      = settingsConnectionIface + ".Delete"
+	settingsConnectionGetSettings = settingsConnectionIface + ".GetSettings"
+
+	// NMSettingSecretFlags
+	SettingsConnectionSettingSecretFlagNone        SecretFlags = 0
+	SettingsConnectionSettingSecretFlagAgentOwned  SecretFlags = 1 << 0
+	SettingsConnectionSettingSecretFlagNotSaved    SecretFlags = 1 << 1
+	SettingsConnectionSettingSecretFlagNotRequired SecretFlags = 1 << 2
+	SettingsConnectionSettingSecretFlagsKnown                  = SettingsConnectionSettingSecretFlagAgentOwned |
+		SettingsConnectionSettingSecretFlagNotSaved | SettingsConnectionSettingSecretFlagNotRequired
+
+	// NMWepKeyType
+	settingsConnectionWepKeyTypeUnknown    WepKeyType = 0
+	settingsConnectionWepKeyTypeKey        WepKeyType = 1
+	settingsConnectionWepKeyTypePassphrase WepKeyType = 2
+
+	// wps-method flags
+	settingsConnectionWpsMethodDefault    WpsMethod = 0
+	settingsConnectionWpsMethodDisabled   WpsMethod = 1 << 0
+	settingsConnectionWpsMethodAuto       WpsMethod = 1 << 1
+	settingsConnectionWpsMethodPbc        WpsMethod = 1 << 2
+	settingsConnectionWpsMethodPin        WpsMethod = 1 << 3
+	settingsConnectionWpsMethodPinDisplay WpsMethod = 1 << 4
+
+	// the top level block's of settings map returned from ...Settings.Connection.GetSettings().
+	// the map type := map[string]map[string]godbus.Variant
+	ConnectionSettingsConnectionBlock       = "connection"               // the connection block
+	ConnectionSettingsWirelessBlock         = "802-11-wireless"          // the 802-11-wirless block
+	ConnectionSettingsWirelessSecurityBlock = "802-11-wireless-security" // the 802-11-wirless-security block
+	ConnectionSettingsIpv4Block             = "ipv4"                     // the IPv4 block
+	ConnectionSettingsIpv6Block             = "ipv6"                     // the IPv6 block
+)
+
+var SettingsConnection settingsConnection
+
+type settingsConnection struct{}
+
+// return type from ...Settings.Connection.GetSettings().
+// Does not include all settings, just the ones that are needed/wanted.
+type ConnectionSettings struct {
+	ConnectionPath godbus.ObjectPath
+
+	// connection block
+	UUID        string
+	AutoConnect bool // default is true
+
+	// 802-11-wireless block
+	SSID       string
+	BSSIDs     []string
+	Mode       string
+	Band       string
+	Hidden     bool
+	MacAddress string
+
+	// 802-11-wireless-security block
+	KeyMgmt     string
+	AuthAlg     string
+	Proto       []string
+	PskFlags    uint32
+	WepKeyFlags uint32
+	WepKeyType  WepKeyType
+	WpsMethod   WpsMethod
+}
+
+func (settingsConnection) Delete(c *dbus.Client, conPath godbus.ObjectPath) error {
+	obj := c.Conn.Object(baseIface, conPath)
+	call := obj.Call(settingsConnectionDelete, 0)
 
 	if call.Err != nil {
 		return fmt.Errorf("DeleteConnection: %w", call.Err)
@@ -19,7 +87,7 @@ func DeleteConnection(c *dbus.Client, conPath godbus.ObjectPath) error {
 	return nil
 }
 
-func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, error) {
+func (settingsConnection) GetSettings(c *dbus.Client, path godbus.ObjectPath) (*ConnectionSettings, error) {
 	// as per NM docs this is the response type from GetSettings:
 	var settings map[string]map[string]godbus.Variant
 	var uuid string
@@ -38,15 +106,15 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 	var wepKeyType uint32
 	var wpsMethod uint32
 
-	obj := c.Conn.Object(BaseServiceName, path)
-	err := obj.Call(CspGetSettings, 0).Store(&settings)
+	obj := c.Conn.Object(baseIface, path)
+	err := obj.Call(settingsConnectionGetSettings, 0).Store(&settings)
 	if err != nil {
 		return nil, fmt.Errorf("GetSettings: store: %w", err)
 	}
 
 	// filter out non-WiFi connections
 	connBlock, ok := settings["connection"]
-	if !ok || connBlock["type"].Value().(string) != SettingsWireless {
+	if !ok || connBlock["type"].Value().(string) != ConnectionSettingsWirelessBlock {
 		return nil, nil
 	}
 
@@ -97,7 +165,7 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 		macAddress = rawMac.Value().(string)
 	}
 
-	securityBlock, ok := settings[SettingsSecurity]
+	securityBlock, ok := settings[ConnectionSettingsWirelessSecurityBlock]
 	if ok {
 		rawKeyMgmt, ok := securityBlock["key-mgmt"]
 		if ok {
@@ -135,7 +203,7 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 		}
 	}
 
-	sc := SavedConnection{
+	sc := ConnectionSettings{
 		ConnectionPath: path,
 		UUID:           uuid,
 		AutoConnect:    autoConnect,
@@ -157,37 +225,37 @@ func GetSettings(c *dbus.Client, path godbus.ObjectPath) (*SavedConnection, erro
 	return &sc, nil
 }
 
-// checks if a SecretFlags has the given flag
+// Has checks if a SecretFlags has the given flag
 func (f SecretFlags) Has(flag SecretFlags) bool { return f&flag != 0 }
 
-// returns the string representation of a NMWepKeyType
+// String returns the string representation of a NMWepKeyType
 func (t WepKeyType) String() string {
 	switch t {
-	case CspWepKeyTypeUnknown:
+	case settingsConnectionWepKeyTypeUnknown:
 		return "Unknown"
-	case CspWepKeyTypeKey:
+	case settingsConnectionWepKeyTypeKey:
 		return "Key"
-	case CspWepKeyTypePassphrase:
+	case settingsConnectionWepKeyTypePassphrase:
 		return "Passphrase"
 	}
 
 	return fmt.Sprintf("Unknown (%d)", uint32(t))
 }
 
-// returns the string representation of a WpsMethod
+// String returns the string representation of a WpsMethod
 func (m WpsMethod) String() string {
 	switch m {
-	case CspWpsMethodDefault:
+	case settingsConnectionWpsMethodDefault:
 		return "Default"
-	case CspWpsMethodDisabled:
+	case settingsConnectionWpsMethodDisabled:
 		return "Disabled"
-	case CspWpsMethodAuto:
+	case settingsConnectionWpsMethodAuto:
 		return "Auto"
-	case CspWpsMethodPbc:
+	case settingsConnectionWpsMethodPbc:
 		return "Push Button Connect"
-	case CspWpsMethodPin:
+	case settingsConnectionWpsMethodPin:
 		return "PIN"
-	case CspWpsMethodPinDisplay:
+	case settingsConnectionWpsMethodPinDisplay:
 		return "PIN (display)"
 	}
 

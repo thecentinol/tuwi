@@ -9,7 +9,7 @@ import (
 	"github.com/thecentinol/tuwi/internal/service"
 )
 
-func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table.Row {
+func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnectionProperties) []table.Row {
 	rows := make([]table.Row, 0, len(nc))
 
 	for _, n := range nc {
@@ -42,7 +42,7 @@ func setSavedRows(nc []nm.NearbyConnection, active *nm.ActiveConnection) []table
 	return rows
 }
 
-func setAvailableRows(networks []nm.AccessPoint) []table.Row {
+func setAvailableRows(networks []nm.AccessPointProperties) []table.Row {
 	rows := make([]table.Row, 0, len(networks))
 
 	for _, n := range networks {

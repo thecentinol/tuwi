@@ -16,15 +16,15 @@ func TestDetermineSecurityType(t *testing.T) {
 		rsn   uint32
 		want  string
 	}{
-		{name: "WPA3 Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtSae, want: "WPA3"},
-		{name: "WPA2 Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtPsk, want: "WPA2"},
-		{name: "WPA Network", flags: 0, wpa: nm.NmSecMgmtPsk, rsn: 0, want: "WPA"},
-		{name: "WPA Enterprise Network", flags: 0, wpa: nm.NmSecMgmt8021, rsn: 0, want: "WPA-ENT"},
-		{name: "WPA2 Enterprise Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmt8021, want: "WPA2-ENT"},
-		{name: "WPA3 Enterprise Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtSuiteB192, want: "WPA3-ENT"},
-		{name: "OWE Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOwe, want: "OWE"},
-		{name: "OWE Transition Network", flags: 0, wpa: 0, rsn: nm.NmSecMgmtOweTm, want: "OWE-TM"},
-		{name: "WPA2_WPA3 Network", flags: 0, wpa: nm.NmSecMgmtPsk, rsn: nm.NmSecMgmtSae, want: "WPA2/WPA3"},
+		{name: "WPA3 Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmtSae, want: "WPA3"},
+		{name: "WPA2 Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmtPsk, want: "WPA2"},
+		{name: "WPA Network", flags: 0, wpa: nm.NmApSecMgmtPsk, rsn: 0, want: "WPA"},
+		{name: "WPA Enterprise Network", flags: 0, wpa: nm.NmApSecMgmt8021, rsn: 0, want: "WPA-ENT"},
+		{name: "WPA2 Enterprise Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmt8021, want: "WPA2-ENT"},
+		{name: "WPA3 Enterprise Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmtSuiteB192, want: "WPA3-ENT"},
+		{name: "OWE Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmtOwe, want: "OWE"},
+		{name: "OWE Transition Network", flags: 0, wpa: 0, rsn: nm.NmApSecMgmtOweTm, want: "OWE-TM"},
+		{name: "WPA2_WPA3 Network", flags: 0, wpa: nm.NmApSecMgmtPsk, rsn: nm.NmApSecMgmtSae, want: "WPA2/WPA3"},
 		{name: "Open Network with WPS", flags: nm.NmApFlagsWps, wpa: 0, rsn: 0, want: secTypeOpen},
 		{name: "Open Network no flags", flags: nm.NmApFlagsNone, wpa: 0, rsn: 0, want: secTypeOpen},
 	}
@@ -43,7 +43,7 @@ func TestDetermineSecurityType(t *testing.T) {
 
 func FuzzDetermineSecurityType(f *testing.F) {
 	f.Add(uint32(0), uint32(0), uint32(0))
-	f.Add(uint32(0), uint32(0), uint32(nm.NmSecMgmtSae))
+	f.Add(uint32(0), uint32(0), uint32(nm.NmApSecMgmtSae))
 
 	f.Fuzz(func(t *testing.T, flags, wpa, rsn uint32) {
 		result := DetermineSecurityType(flags, wpa, rsn)

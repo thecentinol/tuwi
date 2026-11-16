@@ -24,7 +24,7 @@ type AvailableModel struct {
 	// displayedNetworks is used for indexing when slecting
 	// a network to connect to because relying on the state of
 	// State.Available will produce bugs if some APs are filtered out.
-	displayedNetworks []nm.AccessPoint
+	displayedNetworks []nm.AccessPointProperties
 	Table             comp.TableModel
 
 	width  int
@@ -198,7 +198,7 @@ func (a *AvailableModel) SetDimensions(width, height int) {
 	a.setAvailableColumns()
 }
 
-func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
+func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPointProperties {
 	idx := a.Table.Cursor()
 
 	if idx < 0 || idx >= len(a.state.Available) {
@@ -207,7 +207,7 @@ func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPoint {
 	return &a.displayedNetworks[idx]
 }
 
-func (a *AvailableModel) handleConnect(connection nm.AccessPoint) (AvailableModel, tea.Cmd) {
+func (a *AvailableModel) handleConnect(connection nm.AccessPointProperties) (AvailableModel, tea.Cmd) {
 	securityType := service.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
 	isSecured := securityType != "open" && securityType != "unknown"
 	switch {

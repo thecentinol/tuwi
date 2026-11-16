@@ -40,7 +40,7 @@ func main() {
 	p := tea.NewProgram(model)
 
 	cb := nm.SignalCallbacks{
-		OnAccessPointAdded: func(ap nm.AccessPoint) {
+		OnAccessPointAdded: func(ap nm.AccessPointProperties) {
 			p.Send(events.AccessPointAddedMsg{AP: ap})
 		},
 		OnAccessPointRemoved: func(apPath godbus.ObjectPath) {

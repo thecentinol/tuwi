@@ -10,19 +10,16 @@ import (
 )
 
 // get a slice of the saved connection profile's
-func GetSavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
-	settingsObj := c.Conn.Object(nm.BaseServiceName, nm.SettingsBaseObjPath)
-
-	var connPaths []godbus.ObjectPath
-	err := settingsObj.Call(nm.CspmListConnections, 0).Store(&connPaths)
+func GetSavedNetworks(c *dbus.Client) ([]nm.ConnectionSettings, error) {
+	connPaths, err := nm.Settings.ListConnections(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetSavedNetworks: list connections: %w", err)
 	}
 
-	var savedNetworks []nm.SavedConnection
+	var savedNetworks []nm.ConnectionSettings
 
 	for _, path := range connPaths {
-		saved, err := nm.GetSettings(c, path)
+		saved, err := nm.SettingsConnection.GetSettings(c, path)
 		if err != nil {
 			return nil, fmt.Errorf("GetSavedNetworks: %w", err)
 		}
@@ -37,16 +34,16 @@ func GetSavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
 
 // uses the ObjectPaths of saved connection profiles that are available
 // to connect to and builds a SavedConnection struct for each one.
-func GetNearbySavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
-	available, err := nm.AvailableConnections(c)
+func GetNearbySavedNetworks(c *dbus.Client) ([]nm.ConnectionSettings, error) {
+	available, err := nm.Device.AvailableConnections(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetNearbySavedNetworks: %w", err)
 	}
 
-	var nearby []nm.SavedConnection
+	var nearby []nm.ConnectionSettings
 
 	for _, a := range available {
-		saved, err := nm.GetSettings(c, a)
+		saved, err := nm.SettingsConnection.GetSettings(c, a)
 		if err != nil {
 			return nil, fmt.Errorf("GetNearbySavedNetworks: %w", err)
 		}
@@ -59,8 +56,8 @@ func GetNearbySavedNetworks(c *dbus.Client) ([]nm.SavedConnection, error) {
 // when a NewConnectionMsg is received, this function is used to
 // build the SavedConnection struct from the returned connection-
 // path from NewConnectionMsg
-func BuildNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.SavedConnection, error) {
-	saved, err := nm.GetSettings(c, connectionPath)
+func BuildNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.ConnectionSettings, error) {
+	saved, err := nm.SettingsConnection.GetSettings(c, connectionPath)
 	if err != nil {
 		return nil, fmt.Errorf("AddNewConnection: %w", err)
 	}
@@ -69,14 +66,14 @@ func BuildNewConnection(c *dbus.Client, connectionPath godbus.ObjectPath) (*nm.S
 }
 
 // get the wifi network that we're currently connected to
-func GetActiveNetwork(c *dbus.Client) (*nm.ActiveConnection, error) {
-	activeConnections, err := nm.GetActiveConnections(c)
+func GetActiveNetwork(c *dbus.Client) (*nm.ActiveConnectionProperties, error) {
+	activeConnections, err := nm.ConnectionManager.ActiveConnections(c)
 	if err != nil {
 		return nil, fmt.Errorf("GetActiveNetwork: %w", err)
 	}
 
 	for _, ac := range activeConnections {
-		connection, err := nm.GetActiveConnectionProperties(c, ac)
+		connection, err := nm.ActiveConnection.Properties(c, ac)
 		if err != nil {
 			return nil, fmt.Errorf("GetActiveNetwork: %w", err)
 		}
@@ -95,13 +92,13 @@ func GetActiveNetwork(c *dbus.Client) (*nm.ActiveConnection, error) {
 // available to access point paths. If a saved connection is not in range we will
 // default to show info of the network available via its saved profile settings.
 func DisplaySavedConnections(
-	saved []nm.SavedConnection,
-	available []nm.AccessPoint,
+	saved []nm.ConnectionSettings,
+	available []nm.AccessPointProperties,
 ) []nm.NearbyConnection {
 	nearbyConnections := make([]nm.NearbyConnection, 0, len(saved))
 
-	visibleAPsByBSSID := make(map[string]*nm.AccessPoint)
-	visibleAPsByConnection := make(map[string]*nm.AccessPoint)
+	visibleAPsByBSSID := make(map[string]*nm.AccessPointProperties)
+	visibleAPsByConnection := make(map[string]*nm.AccessPointProperties)
 	for i := range available {
 		ap := &available[i]
 		if ap.BSSID != "" {
