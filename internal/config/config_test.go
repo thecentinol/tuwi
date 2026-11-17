@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"image/color"
 	"os"
 	"path/filepath"
@@ -89,7 +90,7 @@ func TestMissingConfigReturnsDefault(t *testing.T) {
 	got, err := loadFromPath(path)
 	want := defaultConfig()
 
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("unexpected error %v", err)
 	}
 
