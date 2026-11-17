@@ -103,9 +103,8 @@ func loadFromPath(path string) (*AppConfig, error) {
 	cfg, err := loadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return defaultConfig(), nil
 		}
-		return nil, err
+		return defaultConfig(), err
 	}
 
 	return applyCfg(cfg), nil
