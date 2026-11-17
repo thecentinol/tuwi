@@ -21,7 +21,7 @@ func Init() (*os.File, error) {
 
 	logPath := filepath.Join(logDir, "tuwi.log")
 
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o666)
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return nil, err
 	}
