@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -45,7 +44,7 @@ func run() error {
 
 	model := ui.NewModel(client, *cfg)
 
-	if !errors.Is(errCfg, os.ErrNotExist) && errCfg != nil {
+	if errCfg != nil {
 		model = model.SetStartupError(
 			fmt.Errorf("could not load config, using defaults: %w", errCfg),
 		)

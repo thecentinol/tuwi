@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"image/color"
 	"os"
 	"path/filepath"
@@ -90,7 +89,7 @@ func TestMissingConfigReturnsDefault(t *testing.T) {
 	got, err := loadFromPath(path)
 	want := defaultConfig()
 
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		t.Fatalf("unexpected error %v", err)
 	}
 
@@ -99,9 +98,8 @@ func TestMissingConfigReturnsDefault(t *testing.T) {
 	}
 }
 
-// If an incorrect theme is provided but the rest of the config is valid, the default theme must
-// NOT be set and an error must be returned. With a valid theme if the provided keybinds are
-// invalid then an error must be returned with a nil config - same vice versa.
+// TestLoadFromPathReturns checks that an invalid config file, in any way,
+// will always result in the defaultConfig() being used
 func TestLoadFromPathReturns(t *testing.T) {
 	t.Parallel()
 

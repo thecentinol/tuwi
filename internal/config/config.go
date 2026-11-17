@@ -103,6 +103,9 @@ func Load() (*AppConfig, error) {
 func loadFromPath(path string) (*AppConfig, error) {
 	cfg, err := loadFile(path)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return defaultConfig(), nil // no config file is fine
+		}
 		return defaultConfig(), err
 	}
 
