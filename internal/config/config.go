@@ -91,7 +91,7 @@ func (c *customTheme) applyTo(t *Theme) {
 func Load() (*AppConfig, error) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return nil, err
+		return defaultConfig(), err
 	}
 
 	path := filepath.Join(configDir, "tuwi", "config.toml")
