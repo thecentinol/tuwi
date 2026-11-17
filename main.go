@@ -24,18 +24,18 @@ func main() {
 }
 
 func run() error {
-	client, err := dbus.NewClient()
-	if err != nil {
-		return err
-	}
-	defer client.Close()
-
 	// initialize logger
 	logger, err := logger.Init()
 	if err != nil {
 		return err
 	}
 	defer logger.Close()
+
+	client, err := dbus.NewClient()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
 
 	// load config
 	cfg, errCfg := config.Load()
