@@ -144,7 +144,7 @@ func loadFile(path string) (*config, error) {
 		rosePineMoonPreset: {},
 	}
 	if _, valid := validThemes[cfg.Theme.Preset]; !valid && cfg.Theme.Preset != "" {
-		slog.Error("User provided invalid theme configuration")
+		slog.Error("User provided invalid theme configuration", "preset", cfg.Theme.Preset)
 		return nil, fmt.Errorf("invalid theme preset")
 	}
 
