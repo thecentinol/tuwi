@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"image/color"
 	"os"
 	"path/filepath"
@@ -82,11 +81,12 @@ func TestDecodeKeybinds(t *testing.T) {
 	}
 }
 
+// if the given path to the config file does not exist
+// defaultConfig() must be returned
 func TestLoadMissingConfig(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "config.toml")
-	_, err := loadFile(path)
-	if !errors.Is(err, os.ErrNotExist) {
-		t.Errorf("expected os.ErrNotExist, got %v", err)
+	cfg, err := loadFromPath("/some/random/dir/config.toml")
+	if err != nil && !reflect.DeepEqual(cfg, defaultConfig()) {
+		t.Errorf("expected defaultConfig(), got %v", cfg)
 	}
 }
 
