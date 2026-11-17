@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -27,9 +28,11 @@ func run() error {
 	// initialize logger
 	logger, err := logger.Init()
 	if err != nil {
-		return err
+		slog.SetDefault(slog.New(slog.DiscardHandler))
+		fmt.Fprintf(os.Stderr, "warning: logging disabled: %v\n", err) //nolint:revive
+	} else {
+		defer logger.Close()
 	}
-	defer logger.Close()
 
 	client, err := dbus.NewClient()
 	if err != nil {
