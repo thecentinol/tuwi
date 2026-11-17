@@ -81,15 +81,6 @@ func TestDecodeKeybinds(t *testing.T) {
 	}
 }
 
-// if the given path to the config file does not exist
-// defaultConfig() must be returned
-func TestLoadMissingConfig(t *testing.T) {
-	cfg, err := loadFromPath("/some/random/dir/config.toml")
-	if err != nil && !reflect.DeepEqual(cfg, defaultConfig()) {
-		t.Errorf("expected defaultConfig(), got %v", cfg)
-	}
-}
-
 // for a missing config file/dir loadFromPath() must always return defaultConfig()
 // and never return an err
 func TestMissingConfigReturnsDefault(t *testing.T) {
