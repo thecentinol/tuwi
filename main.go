@@ -39,13 +39,10 @@ func run() error {
 
 	// load config
 	cfg, errCfg := config.Load()
-	if !errors.Is(errCfg, os.ErrNotExist) && !errors.Is(errCfg, os.ErrPermission) && errCfg != nil {
-		return errCfg
-	}
 
 	model := ui.NewModel(client, *cfg)
 
-	if errors.Is(errCfg, os.ErrPermission) {
+	if !errors.Is(errCfg, os.ErrNotExist) && errCfg != nil {
 		model = model.SetStartupError(
 			fmt.Errorf("permission error when trying to read config file, falling back to default config"),
 		)
