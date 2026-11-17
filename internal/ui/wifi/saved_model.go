@@ -90,6 +90,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 					slog.Error(
 						"Failed to connect to saved connection",
 						"connection", selected.Connection.ConnectionPath,
+						"error", err,
 					)
 					return s, events.ShowError(err)
 				}
