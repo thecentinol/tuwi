@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -12,21 +11,36 @@ import (
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/logger"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/ui"
 )
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err) //nolint:revive
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	client, err := dbus.NewClient()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer client.Close()
+
+	// initialize logger
+	logger, err := logger.Init()
+	if err != nil {
+		return err
+	}
+	defer logger.Close()
 
 	// load config
 	cfg, errCfg := config.Load()
 	if !errors.Is(errCfg, os.ErrNotExist) && !errors.Is(errCfg, os.ErrPermission) && errCfg != nil {
-		log.Fatal(errCfg)
+		return errCfg
 	}
 
 	model := ui.NewModel(client, *cfg)
@@ -67,6 +81,8 @@ func main() {
 	go nm.ListenForSignals(client, cb)
 
 	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
