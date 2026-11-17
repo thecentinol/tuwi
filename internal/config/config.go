@@ -111,7 +111,7 @@ func loadFromPath(path string) (*AppConfig, error) {
 
 func loadFile(path string) (*config, error) {
 	file, err := os.Open(path)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err != nil {
 		slog.Warn("Could not open config file", "path", path, "error", err)
 		return nil, err
 	}
