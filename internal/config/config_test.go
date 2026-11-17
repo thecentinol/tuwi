@@ -301,8 +301,8 @@ func TestLoadFromPathReturns(t *testing.T) {
 			}
 
 			if tc.wantErr {
-				if cfg != nil {
-					t.Errorf("loadFromPath() config = %v, want nil on error", cfg)
+				if !reflect.DeepEqual(cfg, defaultConfig()) {
+					t.Errorf("loadFromPath() config = %v, want defaultConfig() on error", cfg)
 				}
 				return
 			}
