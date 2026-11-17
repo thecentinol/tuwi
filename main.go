@@ -44,7 +44,7 @@ func run() error {
 
 	if !errors.Is(errCfg, os.ErrNotExist) && errCfg != nil {
 		model = model.SetStartupError(
-			fmt.Errorf("permission error when trying to read config file, falling back to default config"),
+			fmt.Errorf("could not load config, using defaults: %w", errCfg),
 		)
 	}
 
