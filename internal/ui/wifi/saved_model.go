@@ -87,7 +87,10 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 			if selected.Connection.ConnectionPath != s.state.ActiveConnection.Connection {
 				_, err := service.ConnectSaved(s.client, *selected)
 				if err != nil {
-					slog.Error("Failed to connect to saved connection", "connection", selected.Connection.BSSIDs[0])
+					slog.Error(
+						"Failed to connect to saved connection",
+						"connection", selected.Connection.ConnectionPath,
+					)
 					return s, events.ShowError(err)
 				}
 			}
