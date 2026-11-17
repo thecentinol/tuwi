@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+	"log/slog"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
@@ -57,6 +58,7 @@ func (a AvailableModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		networks, err := service.GetAvailableNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to discover available networks", "error", err)
 			return events.ShowError(err)
 		}
 		return events.AvailableWifiMsg{Networks: networks}
@@ -85,6 +87,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 	case events.AvailableWifiMsg:
 		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to get available saved connections", "error", err)
 			return a, events.ShowError(err)
 		}
 
@@ -100,6 +103,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		a.state.AddAvailable(msg.AP)
 		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to get available saved connections", "error", err)
 			return a, events.ShowError(err)
 		}
 
@@ -115,6 +119,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 		a.state.RemoveAvailable(msg.ApPath)
 		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to get available saved connections", "error", err)
 			return a, events.ShowError(err)
 		}
 
@@ -133,12 +138,14 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 			msg.Password,
 		)
 		if err != nil {
+			slog.Error("Failed to connect available secured network", "error", err)
 			return a, events.ShowError(err)
 		}
 
 	case events.NewConnectionMsg:
 		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to get available saved connections", "error", err)
 			return a, events.ShowError(err)
 		}
 
@@ -151,6 +158,7 @@ func (a AvailableModel) Update(msg tea.Msg) (AvailableModel, tea.Cmd) {
 	case events.ConnectionRemovedMsg:
 		nearbySaved, err := service.GetNearbySavedNetworks(a.client)
 		if err != nil {
+			slog.Error("Failed to get available saved connections", "error", err)
 			return a, events.ShowError(err)
 		}
 
@@ -217,8 +225,8 @@ func (a *AvailableModel) handleConnect(connection nm.AccessPointProperties) (Ava
 		}
 
 	case securityType != "open" && securityType != "unknown":
-		err := service.ConnectOpen(a.client, &connection)
-		if err != nil {
+		if err := service.ConnectOpen(a.client, &connection); err != nil {
+			slog.Error("Failed to connect to available network", "error", err)
 			return *a, events.ShowError(err)
 		}
 	}

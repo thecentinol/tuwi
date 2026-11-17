@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"charm.land/bubbles/v2/key"
@@ -53,6 +54,7 @@ func NewWifiSavedModel(
 func (s SavedModel) Init() tea.Cmd {
 	an, err := service.GetActiveNetwork(s.client)
 	if err != nil {
+		slog.Error("Failed to get active saved connections", "error", err)
 		return events.ShowError(err)
 	}
 	if an != nil {
@@ -62,6 +64,7 @@ func (s SavedModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		saved, err := service.GetSavedNetworks(s.client)
 		if err != nil {
+			slog.Error("Failed to get saved connections", "error", err)
 			return events.ShowError(err)
 		}
 		return events.SavedWifiMsg{Networks: saved}
@@ -78,11 +81,13 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		case key.Matches(msg, s.keys.WifiConnectSaved.ToBubbles()):
 			selected := s.selectedSavedNetwork()
 			if selected == nil {
+				// TODO: add debug log
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
 			if selected.Connection.ConnectionPath != s.state.ActiveConnection.Connection {
 				_, err := service.ConnectSaved(s.client, *selected)
 				if err != nil {
+					slog.Error("Failed to connect to saved connection", "connection", selected.Connection.BSSIDs[0])
 					return s, events.ShowError(err)
 				}
 			}
@@ -90,16 +95,19 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 		case key.Matches(msg, s.keys.WifiDisconnect.ToBubbles()):
 			err := service.Disconnect(s.client)
 			if err != nil {
+				slog.Error("Failed to disconnect from network", "error", err)
 				return s, events.ShowError(err)
 			}
 
 		case key.Matches(msg, s.keys.WifiForget.ToBubbles()):
 			selected := s.selectedSavedNetwork()
 			if selected == nil {
+				// TODO: add debug log
 				return s, events.ShowError(fmt.Errorf("selectedSavedNetwork: no network selected"))
 			}
 			err := service.Forget(s.client, selected.Connection.ConnectionPath)
 			if err != nil {
+				slog.Error("Failed to forget saved connection", "error", err)
 				return s, events.ShowError(err)
 			}
 		}
@@ -116,6 +124,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	case events.NewConnectionMsg:
 		conn, err := service.BuildNewConnection(s.client, msg.ConnectionPath)
 		if err != nil {
+			slog.Error("Failed to get saved connection settings", "error", err)
 			return s, events.ShowError(err)
 		}
 		s.state.AddSaved(*conn)
@@ -130,6 +139,7 @@ func (s SavedModel) Update(msg tea.Msg) (SavedModel, tea.Cmd) {
 	case events.UpdateActiveConnectionMsg:
 		an, err := service.GetActiveNetwork(s.client)
 		if err != nil {
+			slog.Error("Failed to get active saved connection", "error", err)
 			return s, events.ShowError(err)
 		}
 		if an != nil {
