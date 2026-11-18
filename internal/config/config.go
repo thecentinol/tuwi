@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -91,21 +92,21 @@ func (c *customTheme) applyTo(t *Theme) {
 func Load() (*AppConfig, error) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return nil, err
+		slog.Warn("Could not determine user's config directory", "error", err)
+		return defaultConfig(), err
 	}
 
 	path := filepath.Join(configDir, "tuwi", "config.toml")
-	cfg, err := loadFromPath(path)
-	return cfg, err
+	return loadFromPath(path)
 }
 
 func loadFromPath(path string) (*AppConfig, error) {
 	cfg, err := loadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return defaultConfig(), nil
+			return defaultConfig(), nil // no config file is fine
 		}
-		return nil, err
+		return defaultConfig(), err
 	}
 
 	return applyCfg(cfg), nil
@@ -114,6 +115,7 @@ func loadFromPath(path string) (*AppConfig, error) {
 func loadFile(path string) (*config, error) {
 	file, err := os.Open(path)
 	if err != nil {
+		slog.Warn("Could not open config file", "path", path, "error", err)
 		return nil, err
 	}
 	defer file.Close()
@@ -129,6 +131,10 @@ func loadFile(path string) (*config, error) {
 	errDec := decoder.Decode(&cfg)
 	if errors.As(errDec, &derr) {
 		row, col := derr.Position()
+		slog.Error(
+			"Failed to decode config file",
+			"path", path, "row", row, "column", col, "error", errDec,
+		)
 		return nil, fmt.Errorf("error %s occurred at row %v column %v", derr.String(), row, col)
 	}
 	validThemes := map[string]struct{}{
@@ -138,6 +144,7 @@ func loadFile(path string) (*config, error) {
 		rosePineMoonPreset: {},
 	}
 	if _, valid := validThemes[cfg.Theme.Preset]; !valid && cfg.Theme.Preset != "" {
+		slog.Error("User provided invalid theme configuration", "preset", cfg.Theme.Preset)
 		return nil, fmt.Errorf("invalid theme preset")
 	}
 

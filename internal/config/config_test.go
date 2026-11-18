@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"image/color"
 	"os"
 	"path/filepath"
@@ -82,14 +81,6 @@ func TestDecodeKeybinds(t *testing.T) {
 	}
 }
 
-func TestLoadMissingConfig(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "config.toml")
-	_, err := loadFile(path)
-	if !errors.Is(err, os.ErrNotExist) {
-		t.Errorf("expected os.ErrNotExist, got %v", err)
-	}
-}
-
 // for a missing config file/dir loadFromPath() must always return defaultConfig()
 // and never return an err
 func TestMissingConfigReturnsDefault(t *testing.T) {
@@ -107,9 +98,8 @@ func TestMissingConfigReturnsDefault(t *testing.T) {
 	}
 }
 
-// If an incorrect theme is provided but the rest of the config is valid, the default theme must
-// NOT be set and an error must be returned. With a valid theme if the provided keybinds are
-// invalid then an error must be returned with a nil config - same vice versa.
+// TestLoadFromPathReturns checks that an invalid config file, in any way,
+// will always result in the defaultConfig() being used
 func TestLoadFromPathReturns(t *testing.T) {
 	t.Parallel()
 
@@ -301,8 +291,8 @@ func TestLoadFromPathReturns(t *testing.T) {
 			}
 
 			if tc.wantErr {
-				if cfg != nil {
-					t.Errorf("loadFromPath() config = %v, want nil on error", cfg)
+				if !reflect.DeepEqual(cfg, defaultConfig()) {
+					t.Errorf("loadFromPath() config = %v, want defaultConfig() on error", cfg)
 				}
 				return
 			}

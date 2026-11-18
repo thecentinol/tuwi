@@ -2,6 +2,7 @@ package info
 
 import (
 	"fmt"
+	"log/slog"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
@@ -63,6 +64,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.CopyInfoField.ToBubbles()):
 			err := m.Copy()
 			if err != nil {
+				slog.Error(
+					"Failed to copy info pane field",
+					"field", m.Fields[m.Table.Cursor()].Label,
+					"error", err,
+				)
 				return m, events.ShowError(fmt.Errorf("failed to copy to clipboard: %w", err))
 			}
 		}

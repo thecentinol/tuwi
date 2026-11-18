@@ -1,9 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -12,28 +11,42 @@ import (
 	"github.com/thecentinol/tuwi/internal/config"
 	"github.com/thecentinol/tuwi/internal/dbus"
 	"github.com/thecentinol/tuwi/internal/events"
+	"github.com/thecentinol/tuwi/internal/logger"
 	nm "github.com/thecentinol/tuwi/internal/networkmanager"
 	"github.com/thecentinol/tuwi/internal/ui"
 )
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err) //nolint:revive
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	// initialize logger
+	logger, err := logger.Init()
+	if err != nil {
+		slog.SetDefault(slog.New(slog.DiscardHandler))
+		fmt.Fprintf(os.Stderr, "warning: logging disabled: %v\n", err) //nolint:revive
+	} else {
+		defer logger.Close()
+	}
+
 	client, err := dbus.NewClient()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer client.Close()
 
 	// load config
 	cfg, errCfg := config.Load()
-	if !errors.Is(errCfg, os.ErrNotExist) && !errors.Is(errCfg, os.ErrPermission) && errCfg != nil {
-		log.Fatal(errCfg)
-	}
 
 	model := ui.NewModel(client, *cfg)
 
-	if errors.Is(errCfg, os.ErrPermission) {
+	if errCfg != nil {
 		model = model.SetStartupError(
-			fmt.Errorf("permission error when trying to read config file, falling back to default config"),
+			fmt.Errorf("could not load config, using defaults: %w", errCfg),
 		)
 	}
 
@@ -67,6 +80,8 @@ func main() {
 	go nm.ListenForSignals(client, cb)
 
 	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }

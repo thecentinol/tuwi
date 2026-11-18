@@ -2,6 +2,7 @@ package dbus
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -13,8 +14,10 @@ type Client struct {
 func NewClient() (*Client, error) {
 	conn, err := dbus.SystemBus()
 	if err != nil {
-		return nil, fmt.Errorf("DBus Client: failed to connect to system bus: %w", err)
+		slog.Error("Connection to system bus failed", "error", err)
+		return nil, fmt.Errorf("D-Bus: failed to connect to system bus: %w", err)
 	}
+
 	return &Client{Conn: conn}, nil
 }
 
