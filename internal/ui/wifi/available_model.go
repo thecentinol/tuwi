@@ -215,19 +215,35 @@ func (a *AvailableModel) selectedAvailableNetwork() *nm.AccessPointProperties {
 	return &a.displayedNetworks[idx]
 }
 
-func (a *AvailableModel) handleConnect(connection nm.AccessPointProperties) (AvailableModel, tea.Cmd) {
-	securityType := service.DetermineSecurityType(connection.Flags, connection.WpaFlags, connection.RsnFlags)
-	isSecured := securityType != "open" && securityType != "unknown"
-	switch {
-	case isSecured:
-		return *a, func() tea.Msg {
-			return events.ShowPasswordModalMsg{Network: &connection}
+func (a *AvailableModel) handleConnect(
+	connection nm.AccessPointProperties,
+) (AvailableModel, tea.Cmd) {
+	securityType := service.DetermineSecurityType(connection.Flags, connection.WpaFlags,
+		connection.RsnFlags)
+
+	switch securityType {
+	case "open":
+		if err := service.ConnectOpen(a.client, &connection); err != nil {
+			slog.Error("Failed to connect to open network", "error", err)
+			return *a, events.ShowError(err)
 		}
 
-	case securityType != "open" && securityType != "unknown":
-		if err := service.ConnectOpen(a.client, &connection); err != nil {
-			slog.Error("Failed to connect to available network", "error", err)
-			return *a, events.ShowError(err)
+	case "unknown":
+		slog.Warn(
+			"Cannot connect: unknown security type",
+			"ap_path", connection.APPath,
+			"flags", connection.Flags,
+			"wpa_flags", connection.WpaFlags,
+			"rsn_flags", connection.RsnFlags,
+			"determined_sec_t", securityType,
+		)
+		return *a, events.ShowError(
+			fmt.Errorf("cannot connect: unknown security type"),
+		)
+
+	default:
+		return *a, func() tea.Msg {
+			return events.ShowPasswordModalMsg{Network: &connection}
 		}
 	}
 
